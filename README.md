@@ -4,7 +4,7 @@ Heritrix é o rastreador de web do Internet Archive com qualidade de arquivament
 Esse guia explica como instalar , configurar e usar o Heritrix para rastrear a web. Assume-se que o usuário possui um conhecimento geral de conceitos computacionais como HTML e URLs.
 
 Usuários:
-Os usuários desse documento constituem-se de administradores do Heritrix e outras equipes técnicas que desejam crawl a internet usando o Heritrix.
+Os usuários desse documento constituem-se de administradores do Heritrix e outras equipes técnicas que desejam rastrear a internet usando o Heritrix.
 
 Versões:
 As informações desse guia referem-se a versão 3.0 do Heritrix, a não ser que o contŕário seja informado. Seções referentes à versão 3.1 estão marcadas com a nota "Na versão 3.1".
@@ -64,6 +64,31 @@ Se prático, esta configuração padrão deve ser mantida. Uma técnica como o t
 
 ssh -L localhost:9999:localhost:8443 crawloperator@crawler.example.com -N
 
+Isso diz ao SSH para abrir um túnel que encaminha conexões para "localhost: 9999" (na máquina local) para a própria ideia de "localhost: 8443" das máquinas remotas. Como resultado, a IU da Web do rastreador estará disponível por meio de "https: // localhost: 9999 /" enquanto o túnel existir (até que o comando ssh ou a conexão sejam interrompidos). Ninguém mais na rede pode conectar-se diretamente à porta 8443 em 'crawler.example.com' (já que está ouvindo apenas no endereço de loopback local), e ninguém em outro lugar na rede pode se conectar diretamente à porta 9999 do operador (já que também só está ouvindo o endereço de loopback local). 
 
+Se você precisar da porta de escuta do Heritrix vinculada a um endereço público, o sinalizador de linha de comando '-b' poderá ser usado.  Esse sinalizador usa (como argumento) o nome do host/endereço a ser usado. O caractere '/' pode ser usado para indicar todos os endereços.
 
-This tells SSH to open a tunnel which forwards conections to "localhost:9999" (on the local machine) to the remote machines' own idea of "localhost:8443". As a result, the crawler's Web UI will be available via "https://localhost:9999/" for as long as the tunnel exists (until the ssh command is killed or connection otherwise broken). No one else on the network may directly connect to port 8443 on 'crawler.example.com' (since it is only listening on the local loopback address), and no one elsewhere on the net may directly connect to the operator's port 9999 (since it also is only listening on the local loopback address).
+Se você usar essa opção, deve escolher um conjunto de credenciais de login ainda mais unique/unguessable/brute-force-search-resistant. Talvez você ainda deva considerar o uso de outras políticas de rede/firewall para bloquear o acesso de origens não autorizadas.
+
+Controle de acesso de autenticação de login 
+
+O usuário e a senha administrativos proporcionam uma segurança rudimentar contra acessos não autorizados. Para mais segurança, você deve: 
+1. Usar um nome de usuário e senha únicos e difíceis de adivinhar para proteger a IU da Web. O Heritrix usa HTTPS para criptografar comunicações entre os clientes e a IU da Web. Tenha em mente que definir o nome de usuário e senha na linha de comando pode causar que eles fiquem visíveis para outros usuários da máquina de rastreamento - por exemplo, através da saída de uma ferramenta como 'ps' que mostra as linhas de comando usadas para processos de lançamento. Tenha em mente também que essas informações são ecoadas em texto simples no heritrix_out.log para referência do operador. Na versão 3.1, o nome de usuário e senha administrativos não são ecoados no heritrix_out.logl.  Ainda na versão 3.1, se o parâmetro fornecido para a opção de linhas de comando -a -web-admin é uma string começando com "@", o resto da string será interpretada como um arquivo local de nome contendo o login e a senha do operador. Assim, as credenciais não são visíveis para as outras máquinas que usam o comando listar processos (ps).
+  2. Inicie a VM Java de hospedagem do Heritrix com uma conta de usuário que tenha os privilégios mínimos necessários para operar o rastreador. Isso limitará os danos no caso de a IU da Web ser acessada de maneira maliciosa.
+  
+Um guia rápido para executar seu primeiro rastreamento
+
+A página do Controle Principal aparece depois da instalação do Heritrix e do acesso da IUW.
+
+1. Insira o nome do novo trabalho na caixa de texto abaixo de "Criar novo trabalho com configuração inicial recomendada". Depois clique em "criar".
+
+O trabalho recémn criado aparecerá na lista de trabalhos na página do Controle Principal. No Heritrix 3.0, o trabalho será baseado no perfil profile-defaults. Na versão 3.1, esse perfil foi eliminado. Ver Perfis para mais informações.
+
+2. Clique no nome do novo trabalho e você será redirecionado para a página do trabalho.
+O nome do arquivo de configuração, crawler-beans.cxml, aparecerá no topo da página. Ao lado, encontra-se a opção de "editar".
+
+3. CLique em "editar" e os conteúdos do arquivo de configuração aparecerão em uma área de texto editável.
+
+Nesse passo você deve inserir várias propriedades para tornar o trabalho executável.
+i. Primeiro, adicione um value válido na propriedade metadata.operatorContactUrl, como http://www.archive.org. 
+ii. Next, populate the <prop> element of the longerOverrides bean with the seed values for the crawl.  A test seed is configured for reference.  When done click "save changes" at the top of the page. For more detailed information on configuring jobs see Configuring Jobs and Profiles. 
