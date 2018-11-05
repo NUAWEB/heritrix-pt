@@ -19,9 +19,9 @@ Atualizações da versão 3.0:
 3. Possibilidade de busca e modificação dos beans configurados por um navegador de uso simples. Olhar Bean Browser.
 4. Extensabilidade aprimorada por meio do framework Spring. Por exemplo, substituições de domínios podem ser definidas em um nível mais refinado. Olhar Sheets.
 5. Controle de uso mais seguro. HTTPS é usada para acessar e manipular o controle de uso do usuário.
-6. Maior escabilidade.  Nas versões anteriores, rastreamentos with large seed values (tens or hundreds of millions) podiam tentar utilizar memória além da alocada no Heritrix. Isso causava o interrompimento do rastreamento. A versão Heritrix 3.0 arrumou esses problemas, permitindo o processamento estável de rastreamentos de grande tamanho.
+6. Maior escabilidade.  Nas versões anteriores, rastreamentos com grandes valores de seed (dezenas ou centenas de milhões) podiam tentar utilizar memória além da alocada no Heritrix. Isso causava o interrompimento do rastreamento. A versão Heritrix 3.0 arrumou esses problemas, permitindo o processamento estável de rastreamentos de grande tamanho.
 7. Flexibilidade maior ao modificar um rastreamento em andamento. Rastreamentos em andamento podem ser modificados pelo navegador Bean ou pelo Action Directory.
-8. Introdução de filas paralelas. Ao rastrear sites específicos que aguentam tráficos altos, a opção das filas paralelas pode ser usada para abrir várias conexões de rastreamento concomitantes em um único site.
+8. Introdução de filas paralelas (parallel queues). Ao rastrear sites específicos que aguentam tráficos altos, a opção das filas paralelas pode ser usada para abrir várias conexões de rastreamento concomitantes em um único site.
 9. Controle de script que aceita input de scripts em vários formatos, como o AppleScript e o ECMAScript. Scripting pode ser usado para acessar e manipular, de forma programada, os componentes do núcleo do Heritrix.
 
 Atualizações da versão 3.1 podem ser encontradas aqui.
@@ -73,7 +73,7 @@ Isso diz ao SSH para abrir um túnel que encaminha conexões para "localhost: 99
 
 Se você precisar da porta de escuta do Heritrix vinculada a um endereço público, o sinalizador de linha de comando '-b' poderá ser usado.  Esse sinalizador usa (como argumento) o nome do host/endereço a ser usado. O caractere '/' pode ser usado para indicar todos os endereços.
 
-Se você usar essa opção, deve escolher um conjunto de credenciais de login ainda mais unique/unguessable/brute-force-search-resistant. Talvez você ainda deva considerar o uso de outras políticas de rede/firewall para bloquear o acesso de origens não autorizadas.
+Se essa opção for usada, um conjunto de credenciais de login ainda mais unique/unguessable/brute-force-search-resistant devem ser escolhidas. Talvez ainda deva ser considerado o uso de outras políticas de rede/firewall para bloquear o acesso de origens não autorizadas.
 
 ### Controle de acesso de autenticação de login 
 
@@ -94,11 +94,11 @@ O nome do arquivo de configuração, crawler-beans.cxml, aparecerá no topo da p
 
 3. CLique em "editar" e os conteúdos do arquivo de configuração aparecerão em uma área de texto editável.
 
-4. Nesse passo você deve inserir várias propriedades para tornar o trabalho executável.
+4. Nesse passo, várias propriedades devem ser inseridas para o trabalho tornar-se executável.
 i. Primeiro, adicione um value válido na propriedade metadata.operatorContactUrl, como http://www.archive.org. 
-ii. Next, populate the <prop> element of the longerOverrides bean with the seed values for the crawl.  A test seed is configured for reference.  When done click "save changes" at the top of the page. For more detailed information on configuring jobs see Configuring Jobs and Profiles. 
+ii. Em seguida, preencha o elemento `<prop>` do bean `longOverrides` com os valores do seed para o rastreamento.  Um seed de teste é configurado para referência. Quando terminar, clique em "salvar mudanças" no topo da página. Para mais informações sobre configuração de trabalhos ver Configurando Trabalhos e Perfis. 
   
-5. Na página do trabalho, clique em "montar". Esse comando montará a infraestrutura necessária para executar o trabalho. A seguinte mensagem  No registro de tarefas, a seguinte mensagem será exibida: "INFO JOB instanciado".
+5. Na página do trabalho, clique em "montar". Esse comando montará a infraestrutura necessária para executar o trabalho. A seguinte mensagem será exibida no registro de tarefas: "INFO JOB instanciado".
 
 6. Em seguida, clique no botão "iniciar". Este comando inicia o trabalho no modo "pausado". Nesse passo, o trabalho está pronto para ser executado.
 
@@ -112,3 +112,27 @@ ii. Next, populate the <prop> element of the longerOverrides bean with the seed 
 Mais informações sobre a avaliação do progresso de um trabalho podem ser encontradas em Análise de Tarefas.
 
 ### Anexos
+
+## Sair do Heritrix
+
+Para sair do Heritrix, envie a combinação de teclas para o controle, o que forçará o processo a sair (como o Control-C). Para sair de um processo em segundo plano no qual o Heritrix está em execução, use o comando kill.
+
+Para sair da versão 3.1, clique no botão "Sair do processo Java" depois de marcar "Tenho certeza".
+
+## Editar um trabalho em andamento
+
+A configuração de um trabalho pode ser editada enquanto ele ainda está em andamento. Isso pode ser feito pelo Bean Browser ou pelo link do Controle de Script na página do trabalho. O Bean Browser permite as propriedades de tempo de execução sejam editadas.
+
+O console de script também pode ser usado para editar programaticamente um trabalho em execução.
+
+Se um valor não atômico for alterado, é recomendável pausar o rastreamento antes de fazer a alteração, pois algumas modificações nas entidades de configuração composta podem não ocorrer de maneira segura. Um exemplo de uma mudança não atômica é a adição de uma nova planilha.
+
+Na versão 3.1, o tratamento de operações de orçamento de fila e de rotação/retirada foi refatorado para garantir que alterações feitas  durante o rastreamento (por meio de novas Sheets sobrepostas ou edição direta com a ferramenta Bean Browser ou controle de script) entrem em vigor imediatamente. O DispositionProcessor possui configuração de sobreposição de Sheets para aplicar essa marcação. Em geral, as alterações de configurações por meio de novas planilhas e associações de planilhas durante um rastreamento (conforme inserido via script) agora entram em vigor em todos os URIs que estão sendo retirados para processamento, em vez de apenas URIs recém-descobertos. Portanto, alterações feitas via bean-browse/scripting /new-sheet-overlays entram em vigor imediatamente.
+
+## FTP
+
+Heritrix suporta rastreamento de sites FTP. Seeds devem ser adicionados no seguinte formato: ftp://ftphostname.org/ftpdirectory.
+
+## Ponto de verificação
+
+
