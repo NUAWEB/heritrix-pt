@@ -1,17 +1,18 @@
 # Guia do usuário Heritrix
-Introdução:
+#Introdução:
 Heritrix é o rastreador de web do Internet Archive com qualidade de arquivamento extensível, escálavel e de código aberto.
 Esse guia explica como instalar , configurar e usar o Heritrix para rastrear a web. Assume-se que o usuário possui um conhecimento geral de conceitos computacionais como HTML e URLs.
 
-Usuários:
+#Usuários:
 Os usuários desse documento constituem-se de administradores do Heritrix e outras equipes técnicas que desejam rastrear a internet usando o Heritrix.
 
-Versões:
+#Versões:
 As informações desse guia referem-se a versão 3.0 do Heritrix, a não ser que o contŕário seja informado. Seções referentes à versão 3.1 estão marcadas com a nota "Na versão 3.1".
 
-Requerimentos do sistema
+#Requerimentos do sistema
 
-Atualizações das versões 3.0 e 3.1
+#Atualizações das versões 3.0 e 3.1
+
 Atualizações da versão 3.0:
 Possibilidade de realizar vários rastreamentos simultaneos. O único limite de número de rastreamentos realizados simultaneamente refere-se a memória alocada no Heritrix.
 Arquivo único XML de configuração baseado no framework Spring. Esse arquivo substitui o order.xml e outros arquivos de configuração do Heritrix 1.x.
@@ -23,17 +24,17 @@ Flexibilidade maior ao modificar um rastreamento em andamento. Rastreamentos em 
 Introdução de filas paralelas. Ao rastrear sites específicos que aguentam tráficos altos, a opção das filas paralelas pode ser usada para abrir várias conexões de rastreamento concomitantes em um único site.
 Controle de script que aceita input de scripts em vários formatos, como o AppleScript e o ECMAScript. Scripting pode ser usado para acessar e manipular, de forma programada, os componentes do núcleo do Heritrix.
 
-Instação do Heritrix
+#Instação do Heritrix
 Uma distribuição binária do Heritrix pode ser baixada pelo link http://builds.archive.org:8080/maven2/org/archive/heritrix/heritrix/3.1.1/heritrix-3.1.1-dist.zip. Depois de baixado, expandir o arquivo. Esse processo funciona em algumas plataformas.
 
-Configuração do Heritrix
+#Configuração do Heritrix
 
-Execução do Heritrix 3.0 e 3.1
+#Execução do Heritrix 3.0 e 3.1
 O Heritrix pode ser usado a partir de diferentes linhas de comando. Insira o seguinte comando para visualizar as opções disponíveis. 
 $HERITRIX_HOME/bin/heritrix --help
 A tabela a seguir lista as opções de linhas de comando.
 
-Interface do usuário baseada na Web (IUW)
+#Interface do usuário baseada na Web (IUW)
 Depois de abrir o Heritrix, a interface do usuário baseada na web torna-se acessível.
 
 A URI de acesso da Web IU normalmente é
@@ -45,7 +46,7 @@ A página inicial de login solicita o nome de usuário e a senha. Depois de feit
 
 O acesso da IUW é por HTTPS. O Heritrix é instalado com uma chave de acesso que contém um certificado auto-assinado. Isso fará com que o Mozila (navegador recomendado) exiba um prompt avisando que um certificaco auto-assinado está sendo usado. Siga as instruções abaixo para realizar o login no Heritrix pela primeira vez.
 
-Questões de segurança
+#Questões de segurança
 
 O Heritrix é um aplicativo ativo e de grande rede que apresenta implicações de segurança tanto na máquina principal, onde ele roda, quanto remotamente, nas máquinas conectadas. 
 
@@ -56,7 +57,7 @@ Um acesso não autorizado da IU da Web pode encerrar ou corromper um rastreament
 
 Outro risco possível é que conteúdos worst-case ou mal-intencionados, em conjunto com os problemas do rastreador, podem interromper o rastreamento ou outros arquivos e operações no sistema local. Por exemplo, no passado, sem má intencão, alguns conteúdos de mídia avançada causaram o uso descontrolado de memória em bibliotecas de terceiros usadas pelo rastreador. Isso causou uma exaustão de memória que interrompeu e corrompeu o rastreamento em andamento. De forma parecida, padrões atípicos de inputs causaram  uso indevido da CPU pelas expressões regulares de extração de links do rastreador, causando rastreamentos extremamente lentos. Operadores de rastreamento devem monitorar seus rastreamentos de perto e usar a lista de discussão do projeto e o banco de dados de problemas para se manter atualizado sobre os problemas do rastreador.
 
-Controle de acesso à rede
+#Controle de acesso à rede
 
 Lançado sem nenhum bind-adress específico ('-b' flag), a IU da Web do rastreador vincula-se apenas ao endereço de localhost/loopback (127.0.0.1),  e, portanto, só é acessível pela rede na mesma máquina em que foi lançado.
 
@@ -70,13 +71,13 @@ Se você precisar da porta de escuta do Heritrix vinculada a um endereço públi
 
 Se você usar essa opção, deve escolher um conjunto de credenciais de login ainda mais unique/unguessable/brute-force-search-resistant. Talvez você ainda deva considerar o uso de outras políticas de rede/firewall para bloquear o acesso de origens não autorizadas.
 
-Controle de acesso de autenticação de login 
+#Controle de acesso de autenticação de login 
 
 O usuário e a senha administrativos proporcionam uma segurança rudimentar contra acessos não autorizados. Para mais segurança, você deve: 
 1. Usar um nome de usuário e senha únicos e difíceis de adivinhar para proteger a IU da Web. O Heritrix usa HTTPS para criptografar comunicações entre os clientes e a IU da Web. Tenha em mente que definir o nome de usuário e senha na linha de comando pode causar que eles fiquem visíveis para outros usuários da máquina de rastreamento - por exemplo, através da saída de uma ferramenta como 'ps' que mostra as linhas de comando usadas para processos de lançamento. Tenha em mente também que essas informações são ecoadas em texto simples no heritrix_out.log para referência do operador. Na versão 3.1, o nome de usuário e senha administrativos não são ecoados no heritrix_out.logl.  Ainda na versão 3.1, se o parâmetro fornecido para a opção de linhas de comando -a -web-admin é uma string começando com "@", o resto da string será interpretada como um arquivo local de nome contendo o login e a senha do operador. Assim, as credenciais não são visíveis para as outras máquinas que usam o comando listar processos (ps).
   2. Inicie a VM Java de hospedagem do Heritrix com uma conta de usuário que tenha os privilégios mínimos necessários para operar o rastreador. Isso limitará os danos no caso de a IU da Web ser acessada de maneira maliciosa.
   
-Um guia rápido para executar seu primeiro rastreamento
+#Um guia rápido para executar seu primeiro rastreamento
 
 A página do Controle Principal aparece depois da instalação do Heritrix e do acesso da IUW.
 
