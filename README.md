@@ -94,6 +94,6 @@ O nome do arquivo de configuração, crawler-beans.cxml, aparecerá no topo da p
 
 3. CLique em "editar" e os conteúdos do arquivo de configuração aparecerão em uma área de texto editável.
 
-Nesse passo você deve inserir várias propriedades para tornar o trabalho executável.
+4.Nesse passo você deve inserir várias propriedades para tornar o trabalho executável.
 i. Primeiro, adicione um value válido na propriedade metadata.operatorContactUrl, como http://www.archive.org. 
 ii. Next, populate the <prop> element of the longerOverrides bean with the seed values for the crawl.  A test seed is configured for reference.  When done click "save changes" at the top of the page. For more detailed information on configuring jobs see Configuring Jobs and Profiles. 
