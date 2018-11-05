@@ -97,3 +97,18 @@ O nome do arquivo de configuração, crawler-beans.cxml, aparecerá no topo da p
 4. Nesse passo você deve inserir várias propriedades para tornar o trabalho executável.
 i. Primeiro, adicione um value válido na propriedade metadata.operatorContactUrl, como http://www.archive.org. 
 ii. Next, populate the <prop> element of the longerOverrides bean with the seed values for the crawl.  A test seed is configured for reference.  When done click "save changes" at the top of the page. For more detailed information on configuring jobs see Configuring Jobs and Profiles. 
+  
+5. Na página do trabalho, clique em "montar". Esse comando montará a infraestrutura necessária para executar o trabalho. A seguinte mensagem  No registro de tarefas, a seguinte mensagem será exibida: "INFO JOB instanciado".
+
+6. Em seguida, clique no botão "iniciar". Este comando inicia o trabalho no modo "pausado". Nesse passo, o trabalho está pronto para ser executado.
+
+7. Para executar o trabalho, clique no botão de despausar. O trabalho, então, começará a enviar solicitações para as sementes do seu rastreamento. O status do trabalho será definido como "Em execução". Atualize a página para acompanhar as atualizações das estatísticas.
+
+### Observação
+
+* Um trabalho não será modificado se o perfil ou o trabalho em que foi baseado for alterado.
+* Trabalhos baseados no perfil padrão não estão prontos para serem executados. O metadata.operatorContactUrl deve ser definido com um valor válido.
+
+Mais informações sobre a avaliação do progresso de um trabalho podem ser encontradas em Análise de Tarefas.
+
+### Anexos
