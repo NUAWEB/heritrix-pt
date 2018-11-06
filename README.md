@@ -133,8 +133,8 @@ Na versão 3.1, o tratamento de operações de orçamento de fila e de rotação
 
 Heritrix suporta rastreamento de sites FTP. Seeds devem ser adicionados no seguinte formato: ftp://ftphostname.org/ftpdirectory.
 
-## Ponto de verificação
+## Ponto de verificação (Checkpoint)
 
-Checkpointing a crawl job writes a representation of the current state of the job to a directory under the checkpointsPath.  The directory is named after the checkpoint.  Checkpointed state includes serialization of the main crawl job objects, copies of the current set of bdbje log files, and other files that represent the state of the crawl.  The checkpoint directory contains all that is required to recover a crawl.  Checkpointing also rotates the crawl logs, including the recover.gz log, if enabled.  Log files are NOT copied to the checkpoint directory.  They are left under the logs directory and are distinguished by a suffix.  The suffix is the checkpoint name.  For example, for checkpoint 000031 the crawl log would be named crawl.log.000031. 
+O ponto de verificação de um trabalho de rastreamento salva uma representação do estado atual do trabalho em um diretório no `checkpointsPath`, que recebe o nome do ponto de verificação. Essa representação inclui a serialização dos principais objetos do trabalho de rastreamento, cópias do conjunto atual de arquivos de log de bdbje e outros arquivos do estado do rastreamento.  O diretório do ponto de verificação contém tudo o que é necessário para recuperar um rastreamento. O ponto de verificação também roda os logs de rastreamento, incluindo o log `recover.gz`, se ativado. Arquivos Log não são copiados para o diretório do ponto de verificação e permanecem no diretógio de `logs`, sendo diferenciados através de sufixos. O sufixo é o nome do ponto de verificação; por exemplo, para o ponto `000031` o log do rastreamento será `crawl.log.000031`.
 
 
