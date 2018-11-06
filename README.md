@@ -135,4 +135,6 @@ Heritrix suporta rastreamento de sites FTP. Seeds devem ser adicionados no segui
 
 ## Ponto de verificação
 
+Checkpointing a crawl job writes a representation of the current state of the job to a directory under the checkpointsPath.  The directory is named after the checkpoint.  Checkpointed state includes serialization of the main crawl job objects, copies of the current set of bdbje log files, and other files that represent the state of the crawl.  The checkpoint directory contains all that is required to recover a crawl.  Checkpointing also rotates the crawl logs, including the recover.gz log, if enabled.  Log files are NOT copied to the checkpoint directory.  They are left under the logs directory and are distinguished by a suffix.  The suffix is the checkpoint name.  For example, for checkpoint 000031 the crawl log would be named crawl.log.000031. 
+
 
