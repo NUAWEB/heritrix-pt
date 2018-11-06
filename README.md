@@ -121,9 +121,9 @@ Para sair da versão 3.1, clique no botão "Sair do processo Java" depois de mar
 
 ## Editar um trabalho em andamento
 
-A configuração de um trabalho pode ser editada enquanto ele ainda está em andamento. Isso pode ser feito pelo Bean Browser ou pelo link do Controle de Script na página do trabalho. O Bean Browser permite as propriedades de tempo de execução sejam editadas.
+A configuração de um trabalho pode ser editada enquanto ele ainda está em andamento. Isso pode ser feito pelo Bean Browser ou pelo link do Controle de Script na página do trabalho. O Bean Browser permite que as propriedades de tempo de execução sejam editadas.
 
-O console de script também pode ser usado para editar programaticamente um trabalho em execução.
+O controle de script também pode ser usado para editar programaticamente trabalhos em execução.
 
 Se um valor não atômico for alterado, é recomendável pausar o rastreamento antes de fazer a alteração, pois algumas modificações nas entidades de configuração composta podem não ocorrer de maneira segura. Um exemplo de uma mudança não atômica é a adição de uma nova planilha.
 
