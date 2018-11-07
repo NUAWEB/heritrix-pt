@@ -206,4 +206,4 @@ Os perfis podem ser usados como modelos ao deixar suas definições de configura
 
 Se um trabalho de rastreamento é um perfil ou um trabalho que pode ser iniciado é determinado por um nome de arquivo do arquivo de configuração principal. Se começar com "profile-", é um perfil. Tenha cuidado ao alterar o nome de um arquivo de configuração principal ao copiar manualmente o perfil para criar um trabalho de rastreamento possível de incialização.
 
-A partir da versã0 3.1, a marca "profile-" foi eliminada. Não há mais restrições em nomes de perfis.
+A partir da versã 3.1, a marca "profile-" foi eliminada. Não há mais restrições em nomes de perfis.
