@@ -170,17 +170,30 @@ A página do controle principal aparece logo após o login. Esse página lista t
 
 ### Elementos e operações de dados do controle principal
 
-rescan reexaminar
+reexaminar
+
 O botão de "reexaminar" faz com que o Heritrix examine o sistema de arquivos procurando qualquer mudança no diretório "trabalhos". A exibição é, então, sincronizada com o sistema de arquivos
 
-create criar
+criar
+
 O botão "criar" permite que um nome seja inserido e um novo trabalho de rastreamento seja criado. O trabalho de rastreamento será baseado nos perfis padrões.
 
-add adicionar
+adicionar
+
 O botão "adicinar" permite que um diretório de trabalho não gerenciado pelo Heritrix seja especificado. Após inserir o caminho para o novo diretório e clicar "adicionar", o Heritrix permitirá que você administre o diretório. Por exemplo, será possível configurar o trabalho usando o arquivo crawler-beans.cxml.
 
-status status
+status
+
 O status dos trabalhos em andamento, o número de vezes que um trabalho foi iniciado e o caminho para o arquivo de configuração dos trabalhos aparecem na página do Controle Principal. Também aparecem as estatísticas de memória do Heritrix e se o trabalho é um perfil ou não.
 
-Exit Java Process Encerrar o Processo Java
+Encerrar o Processo Java
+
 A partir da versão 3.1, existe o botão "Encerrar o Processo Java". Após ser selecionado juntamente com a seleção da opção "Tenho certeza", esse botão fará com que o Heritrix seja encerrado e fechado.
+
+##Beans Browser
+
+A IUW fornece uma maneira de visualizar e editar os beans Spring que formam a configuração de um rastreamento. É importante notar que mudar a configuração de um rastreamento usando o Bean Browser não fará com que o arquivo crawler-beans.cxml seja atualizado. Portanto, mudanças de definições feitas com o Beans Browser não são permanente. O Bean Browser deve ser usado apenas para mudar as definições de um rastreamento em andamento.  Para acessar o navegador, clique no link do Bean Browser na página de trabalhos. A hierarquia dos beans Spring aparecerá.
+
+Os beans individuais podem ser detalhados ao clilcar neles. O exemplo abaixo mostra a exibição depois de clicar nos seeds beans. 
+
+
