@@ -138,3 +138,49 @@ Heritrix suporta rastreamento de sites FTP. Seeds devem ser adicionados no segui
 O ponto de verificação de um trabalho de rastreamento salva uma representação do estado atual do trabalho em um diretório no `checkpointsPath`, que recebe o nome do ponto de verificação. Essa representação inclui a serialização dos principais objetos do trabalho de rastreamento, cópias do conjunto atual de arquivos de log de bdbje e outros arquivos do estado do rastreamento.  O diretório do ponto de verificação contém tudo o que é necessário para recuperar um rastreamento. O ponto de verificação também roda os logs de rastreamento, incluindo o log `recover.gz`, se ativado. Arquivos Log não são copiados para o diretório do ponto de verificação e permanecem no diretógio de `logs`, sendo diferenciados através de sufixos. O sufixo é o nome do ponto de verificação; por exemplo, para o ponto `000031` o log do rastreamento será `crawl.log.000031`.
 
 Para executar um ponto de verificação, clique no botão do ponto de verificação na página de trabalho da IUW ou invoque a funcionalidade do ponto de verificação pelo REST API. O ponto de verificação pode levar mais tempo em rastreamentos maiores (a partir da versão 3.1 esse processo é muito mais rápido). Enquanto o ponto de verificação estiver sendo feito, o status do rastreamento ficará como CHECKPOINTING. Após o término, o rastreador continuará o rastreamento, a não ser que ele estivesse pausado anteriormente. Nesse caso, o rastreamento continuará pausado.
+
+A recuperação de um ponto de verificação é parecida com a recuperação de um rastreamento usando o `frontier.recovery.log`.
+
+Ponto de verificação automático
+
+Para configurar o Heritrix para executar pontos de verificação automaticamente, remova ou adicione a seguinte linha no arquivo `logging.properties`.
+
+`org.archive.crawler.framework.Checkpointer.period=2`
+
+Isso fará com que um Timer Thread seja instalado e executado em intervalos de hora. Veja `heritrix_out.log` para registrar informações sobre o Timer Thread.
+
+Na versão 3.1, 'hard links' (quando disponíveis) serão usados para coletar os arquivos BerkeleyDB-JE necessários para reproduzir o status do rastreamento. O deletamento automático de pontos de verificação antigos (arquivos ".DEL") foi reativado, eliminando a necessidade de excluir manualmente os arquivos desnecessários. Também facilita a movimentação e a limpeza de pontos de verificação antigos.
+
+Recomeçar a partir de um ponto de verificação
+
+A partir da versão 3.1, a IUW fornece a opção de recomeçar um rastreamento a partir de um ponto de verificação. Siga os passos abaixo para recomeçar um rastreamento a partir de um ponto de verificação:
+
+1. Checkpoint o rastreamento em execução clicando no botão "checkpoint".
+2. Quando o checkpoint terminar (uma mensagem aparecerá avisando o operador), encerre o rastreamento clicando no botão "terminar".
+3. Desmonte o trabalho clicando no botão "desmontar". 
+4. Reconstrua o trabalho clicando no botão "construir". Agora, uma caixa suspensa deve aparecer em cima dos botões de comando. A caixa suspensa tem os nomes dos pontos de verificação invocados anteriormente.
+5. Selecione um checkpoint da caixa. O checkpoint selecionado será usado para iniciar o trabalho recém-construído.
+6. Clique em "iniciar".
+7. Clique em "despausar".
+O trabalho iniciará a partir do ponto de verificação escolhido.
+
+## Página do Controle Principal
+
+A página do controle principal aparece logo após o login. Esse página lista todos os trabalhos e perfis.
+
+### Elementos e operações de dados do controle principal
+
+rescan reexaminar
+O botão de "reexaminar" faz com que o Heritrix examine o sistema de arquivos procurando qualquer mudança no diretório "trabalhos". A exibição é então sincronizada com o sistema de arquivos
+
+create criar
+O botão "criar" permite que um nome seja inserido e um novo trabalho de rastreamento seja criado. O trabalho de rastreamento será baseado nos perfis padrões.
+
+add adicionar
+O botão "adicinar" permite que um diretório de trabalho não gerenciado pelo Heritrix seja especificado. Após inserir o caminho para o novo diretório e clicar "adicionar", o Heritrix permitirá que você administre o diretório. Por exemplo, será possível configurar o trabalho usando o arquivo crawler-beans.cxml.
+
+status status
+O status dos trabalhos em andamento, o número de vezes que um trabalho foi iniciado e o caminho para o arquivo de configuração dos trabalhos aparecem na página do Controle Principal. Também aparecem as estatísticas de memória do Heritrix e se o trabalho é um perfil ou não.
+
+Exit Java Process Encerrar o Processo Java
+A partir da versão 3.1 existe o botão "Encerrar o Processo Java". Após ser selecionado juntamente com a seleção da opção "Tenho certeza", esse botão fará com que o Heritrix seja encerrado e fechado.
