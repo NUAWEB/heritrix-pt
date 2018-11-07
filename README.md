@@ -198,7 +198,7 @@ Os beans individuais podem ser detalhados ao clilcar neles. O exemplo abaixo mos
 
 ## Perfis
 
-Perfis são modelos para trabalhos de rastreamento. Contêm todas as configurações de um trabalho de rastreamento, mas não é considerado rastreável. O Heritrix não permite que um perfil seja diretamente rastreado, apenas trabalhos baseados em perfis.
+Perfis são modelos para a criação de trabalhos de rastreamento. Contêm todas as configurações de um trabalho de rastreamento, mas não são considerados rastreáveis. O Heritrix não permite que um perfil seja diretamente rastreado, apenas trabalhos baseados em perfis.
 
 Um exemplo comum de uma configuração de perfil é deixar a propriedade `metadata.operatorContactUrl` indefinida, forçando o operador a inserir um valor válido.
 
