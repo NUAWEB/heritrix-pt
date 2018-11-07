@@ -171,7 +171,7 @@ A página do controle principal aparece logo após o login. Esse página lista t
 ### Elementos e operações de dados do controle principal
 
 rescan reexaminar
-O botão de "reexaminar" faz com que o Heritrix examine o sistema de arquivos procurando qualquer mudança no diretório "trabalhos". A exibição é então sincronizada com o sistema de arquivos
+O botão de "reexaminar" faz com que o Heritrix examine o sistema de arquivos procurando qualquer mudança no diretório "trabalhos". A exibição é, então, sincronizada com o sistema de arquivos
 
 create criar
 O botão "criar" permite que um nome seja inserido e um novo trabalho de rastreamento seja criado. O trabalho de rastreamento será baseado nos perfis padrões.
@@ -183,4 +183,4 @@ status status
 O status dos trabalhos em andamento, o número de vezes que um trabalho foi iniciado e o caminho para o arquivo de configuração dos trabalhos aparecem na página do Controle Principal. Também aparecem as estatísticas de memória do Heritrix e se o trabalho é um perfil ou não.
 
 Exit Java Process Encerrar o Processo Java
-A partir da versão 3.1 existe o botão "Encerrar o Processo Java". Após ser selecionado juntamente com a seleção da opção "Tenho certeza", esse botão fará com que o Heritrix seja encerrado e fechado.
+A partir da versão 3.1, existe o botão "Encerrar o Processo Java". Após ser selecionado juntamente com a seleção da opção "Tenho certeza", esse botão fará com que o Heritrix seja encerrado e fechado.
