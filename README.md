@@ -202,7 +202,7 @@ Perfis são modelos para a criação de trabalhos de rastreamento. Contêm todas
 
 Um exemplo comum de uma configuração de perfil é deixar a propriedade `metadata.operatorContactUrl` indefinida, forçando o operador a inserir um valor válido.
 
-Os perfis podem ser usados como modelos ao deixar suas definições de configuração em um estado inválido. Dessa meneira, o operador é obrigado a escolher suas configurações ao criar um trabalho a partir de um perfil. Isso pode ser vantajoso quando um administrador precisar configurar vários trabalhos de rastreamento diferentes para acomodar sua política de rastreamento.
+Os perfis podem ser usados como modelos ao deixar suas definições de configuração inválidas. Dessa meneira, o operador é obrigado a escolher suas configurações ao criar um trabalho a partir de um perfil. Isso pode ser vantajoso quando um administrador precisar configurar vários trabalhos de rastreamento diferentes para acomodar sua política de rastreamento.
 
 Se um trabalho de rastreamento é um perfil ou um trabalho que pode ser iniciado é determinado por um nome de arquivo do arquivo de configuração principal. Se começar com "profile-", é um perfil. Tenha cuidado ao alterar o nome de um arquivo de configuração principal ao copiar manualmente o perfil para criar um trabalho de rastreamento possível de incialização.
 
