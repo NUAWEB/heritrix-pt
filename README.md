@@ -207,3 +207,53 @@ Os perfis podem ser usados como modelos ao deixar suas definições de configura
 Se um trabalho de rastreamento é um perfil ou um trabalho que pode ser iniciado é determinado por um nome de arquivo do arquivo de configuração principal. Se começar com "profile-", é um perfil. Tenha cuidado ao alterar o nome de um arquivo de configuração principal ao copiar manualmente o perfil para criar um trabalho de rastreamento possível de incialização.
 
 A partir da versã 3.1, a marca "profile-" foi eliminada. Não há mais restrições em nomes de perfis.
+
+## Heritrix Output
+
+Além dos logs, os seguintes arquivos são gerados. Algumas das informações contidas neles também estão presentes na IUW.
+
+* surts.dump
+* negative-surts.dump
+* heritrix_out.log
+* crawl-report.txt
+* hosts-report.txt
+* mimetype-report.txt
+* processors-report.txt
+* responsecode-report.txt
+* seeds-report.txt
+* frontier-summary-report.txt
+* source-report.txt
+* threads-report.txt
+* arquivos WARC
+
+surts.dump
+Esse arquivo contém os formulários ﻿SURTs das URIs seed.
+
+negative-surts.dump
+Esse arquivo contém o formulário SUR de URIs que devem ser excluídos do rastreamento.
+
+heritrix_out.log
+This file captures output to standard out and standard error.  Most of the output consists of low-level exceptions and logging information.
+
+Esse arquivo é criado no mesmo diretório do arquivo jar do Heritrix. Não é associado com nenhum trabalho específico, mas contém outputs de todos os trabalhos executados pelo rastreador.
+
+Exemplo de uma saída desse arquivo:
+
+```
+Darwin internet-archives-macbook-pro.local 10.0.0 Darwin Kernel Version 10.0.0: Fri Jul 31 22:47:34 PDT 2009; root:xnu-1456.1.25~1/RELEASE_I386 i386
+java version "1.6.0_15"
+Java(TM) SE Runtime Environment (build 1.6.0_15-b03-219)
+Java HotSpot(TM) 64-Bit Server VM (build 14.1-b02-90, mixed mode)
+JAVA_OPTS= -Xmx256m
+core file size          (blocks, -c) 0
+data seg size           (kbytes, -d) unlimited
+file size               (blocks, -f) unlimited
+max locked memory       (kbytes, -l) unlimited
+max memory size         (kbytes, -m) unlimited
+open files                      (-n) 256
+pipe size            (512 bytes, -p) 1
+stack size              (kbytes, -s) 8192
+cpu time               (seconds, -t) unlimited
+max user processes              (-u) 266
+virtual memory          (kbytes, -v) unlimited
+```
