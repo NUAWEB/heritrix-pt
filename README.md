@@ -512,9 +512,11 @@ http://www.fizzandpop.com/ dns: 1
 http://www.fizzandpop.com/ www.fizzandpop.com 1
 ```
 
-Note
+Observação
 
-The sourceTagSeeds property of the TextSeedModule bean must be set to true for this report to be generated.
+* A propriedade `sourceTagSeeds` do bean `TextSeedModule` deve ser definida como "true" para gerar esse relatório.
+
+```
 <bean id="seeds" class="org.archive.modules.seeds.TextSeedModule">
 
 <property name="textSource">
@@ -530,28 +532,37 @@ The sourceTagSeeds property of the TextSeedModule bean must be set to true for t
 </property>
 <property name="sourceTagSeeds" value="true"/>
 </bean>
+```
+
 threads-report.txt
-This report contains the list of threads that were active at the end of the crawl.  Detailed information about each thread is also available.
 
-WARC files
-Assuming you are using the WARC writer that comes with Heritrix, a number of WARC files will be generated containing crawled content.
+Contém a lista de encadeamentos ainda ativos no final do rastreamento, com informações detalhadas sobre cada um.
 
-You can specify the storage location of WARC files by setting the directory value of the WARCWriterProcessor bean.
+arquivos WARC 
 
-WARC files are named using the following convention:
+Assuming you are using the WARC writer that comes with Heritrix, vários arquivos WARC contendo conteúdo rastreado serão gerados.
+
+O local de armazenamento de arquivos WARC pode ser especificado definindo o valor do `diretório` do bean `WARCWriterProcessor`.
+
+Arquivos WARC são nomeados conforme a seguinte convenção:
 
 [prefix][12 digit timestamp][series padded to 5 digits][crawler hostname].warc.gz
 
-The WARCWriterProcessor contains the prefix setting.  By default it is IAH.
+O WARCWriterProcessor contém a configuração de prefixo padrão IAH.
 
-WARC files with an .open suffix are in the process of being written to by Heritrix.  There may be multiple open WARCs at any given time.
+Arquivos WARC com o sufixo `.open` estão no processo de serem escritos pelo Heritrix. Pode haver vários WARCs abertos a qualquer momento.
 
-WARC files with an .invalid suffix indicate problems writing to the file.  This may be the result of a bad disk or a fully utilized disk.  On an I/O problem, Heritrix closes the problematic WARC file and gives it an .invalid suffix.  These files should be checked for coherence.
+Arquivos WARC com o sufixo `.invalid` indicam problemas ao gravar no arquivo. Isso pode ser causado por um disco danificado ou um disco sem espaço. Em um problema de I/O, o Heritrix fecha o arquivo WARC problemático e adiciona o sufixo `.invalid`. Esses arquivos devem ser verificados quanto à coerência.
 
-As of Heritrix 3.1, the "LowDiskPauseProcessor" bean has been replaced by the "DiskSpaceMonitor" bean.  When writing WARC files, the DiskSpaceMonitor checks the available space on the configured paths and if free space has dropped below the defined threshold the crawl is paused.  In the example below, the path /warcs is monitored.  If the level of free space drops below 500MB the crawls writing to the /warcs directory are paused.
-
+A partir da versão 3.1, o bean "LowDiskPauseProcessor" foi substituido pelo bean "DiskSpaceMonitor". Ao gravar arquivos WARC, o DiskSpaceMonitor verifica o espaço disponível dos caminhos configurados. Se o espaço livre estiver abaixo do limite definido, o rastreamento será pausado. No exemplo abaixo, o caminho `/warcs` é monitorado. Se o espaço livre for inferior a 500MB, os rastreamentos sendo gravados no diretório `/warcs` serão pausado.
+```
 <bean id="diskSpaceMonitor" class="org.archive.crawler.monitor.DiskSpaceMonitor"> <property name="pauseThresholdMiB" value="500" /> <property name="monitorConfigPaths" value="true" /> <property name="monitorPaths"> <list> <value>/warcs</value> </list> </property> </bean>
-As of Heritrix 3.1, the naming convention for WARC files has changed.  Instead of specifying the formula for ARC/WARC naming in code and using a supplied 'prefix' and 'suffix', a template with variable interpolation may be used.  The configured 'prefix' remains an available variable, as well as other useful local machine, crawl, and writer properties. The default template is:
+```
 
+A partir da versão 3.1, a nomenclatura de arquivos WARC foi alterada. Em vez de especificar a fórmula para a nomenclatura ARC/WARC no código e usar um 'prefixo' e 'sufixo' fornecidos, um modelo com interpolação variável pode ser usado.  O "prefixo" configurado continua disponível como uma variável, assim como outras propriedades úteis de máquina, rastreamento e gravações. O modelo padrão é:
+
+```
 ${prefix}-${timestamp17}-${serialno}-${heritrix.pid}~${heritrix.hostname}~${heritrix.port}
-The template adds the local process ID and the 17 digit timestamp.  The timestamp is provided by a service that ensures each timestamp is at least 1 millisecond after previous millisecond values.  The new default convention also minimizes the likelihood of ARC/WARC name collisions, even when many crawls are launched or running simultaneously on the same local machine, using the same file name prefix.  Although the generated names are long, they are very likley to be unique under normal conditions.  It is not recommended that the template by changed unless the alternate naming system is certain to also generate unique names.  This is important because down stream tools that index ARCs/WARCs often assume file name uniqueness and can benefit from their unique generation.
+```
+
+O modelo adiciona o processo de ID local e a data e hora de 17 digitos. O registro de data e hora é fornecido por um serviço que assegura que cada registro seja pelo menos 1 milissegundo após os valores anteriores em milissegundos. A nova convenção padrão também minimiza as chances de colisões de nomes ARC/WARD, mesmo quando vários rastreamentos estão sendo iniciados ou executados simultaneamente na mesma máquina local, usando o mesmo prexifo de nome de arquivo. Apesar dos nomes gerados serem longos, eles provavelmente serão únicos sob condiçoes normais. Não é recomendado que o modelo seja alterado, a menos que seja certo que a nomenclatura alternativa fornecerá nomes únicos. Isso é importante porque as ferramentas downstream que indexam ARCs/WARCs geralmente pressupõem a exclusividade do nome do arquivo e podem se beneficiar de sua geração exclusiva.
