@@ -577,15 +577,15 @@ Essa seção do guia de usuário Heritrix examina os desafios que arquivistas de
 
 Mídia avançada abrange diferentes tipos de conteúdo da web que proporcionam aos usuários uma experiência superior a de páginas de text/html normais, entre eles: vídeos, animações, imagens e áudios. Tecnologias interativas que vão além da entrada básica de dados FORM também são um tipo de mídia avançada: wikis, como a Wikipedia; tecnologias que fornecem aos usuários controle refinado sobre conteúdo da Web, como AJAX; tecnologia Flash, que expõe uma ampla variedade de widgets de interface de usuário que permitem arranjos espaciais de dados muito além dos recursos da primeira geração de Websites. Além disso, é caracterizada por arquivos de tamanho maior que páginas de `text/html` normais.
 
-### Arquivos de grande tamanho
+* Arquivos de grande tamanho
 
 Conteúdos de mídia avançada, como o Flash e vídeos, normalmente são muito maiores do que páginas `text/html` normais. O rastreamento desse tipo de conteúdo requer grandes investimentos em armazenamento e largura de banda (bandwidht). Para diminuir esses problemas, é recomendada a desduplicação para rastreamentos desse tipo de conteúdo. A desduplicação identifica conteúdos coletados anteriormente que são redundantes e pula seus downloads. Pointers em conteúdos duplicados permitem que eles apareçam em rastreamentos subsequentes. Para mais detalhes ver Configurando o Heritrix para Desduplicação.
 
-### Links incorporados em mídia avançada
+* Links incorporados em mídia avançada
 
 Várias tecnologias de mídia avançada permitem que links sejam incorporados em formatos de arquivos que não são propícios à extração de links. Ao rastrear um site de conteúdo de mídia avançada, é importante identificar se há um site-map no site. Um site-map é uma página HTML que contém links de todas as páginas importantes do site. Ao adicionar a URI do site-map como uma seed para um rastreamento de mídia avançada, links que, caso contrário, não seriam extraídos, serão arquivados.
 
-### Uso excessivo de memória e CPU
+* Uso excessivo de memória e CPU
 
 O download de conteúdo de mídia avançada pode causar uma carga excessiva na memória e na CPU dos computadores de rastreamento. Por exemplo, a extração de links do Flash e de outros recursos de mídia avançada exige análise extensiva de dados, o que exige muito da CPU.
 Padrões de entrada atípicos também podem causar uso excessivo da CPU quando expressões regulares usadas pelo Heritrix são executadas. Portanto, é recomendado que os rastreamentos de mídia avançada recebam mais memória e CPU do que os rastreamentos "normais". A memória alocada ao Heritrix é definida a partir da linha de comando. O exemplo abaixo mostra a opção de linha de comando usada para alocar 1GB de memória ao Heritrix, o que deve ser suficiente para a maioria dos rastreamentos de mídia avançada:
@@ -596,5 +596,58 @@ export JAVA_OPTS=-Xmx1024M
 
 Processadores multi-core também são recomendados para rastreamentos de mídia avançada.
 
-### Mídia de transmissão (streaming media)
+* Mídia de transmissão (streaming media)
 
+Streaming media is media content delivered sequentially over time to a media-consumer from a media-producer.  Examples of streaming media include Internet Radio and TV.  Streaming media is concerned with the delivery mechanism of the media format and not the format itself.   Heritrix can capture media streamed over HTTP or FTP, but does not recognize other streaming protocols such as Real Time Streaming Protocol (RTSP).  This limitation has generated interest in embedding a media player in Heritrix that does recognize most streaming formats.  For more information on embedding a Media Player in Heritrix, see the "Archiving Streaming Media on the Web Proof of Concept and First Results" article in the International Web Archiving Workshop 2006 conference paper at http://iwaw.europarchive.org/06/PDF/iwaw06-proceedings.pdf.
+
+* Redes sociais
+
+Vários sites de redes sociais utilizam mídia avançada para melhorar a experiência dos ususários. Para diretrizes específicas sobre como arquivar sites de redes sociais, ver Archiving Social Networking Sites with Archive-It. Essas instruções se aplicam ao aplicativo Archive-It, criado a partir do Heritrix.
+
+### Como evitar solicitações falsas ao processar certos tipos de conteúdos
+
+A partir da versão 3.1, melhorias foram feitas na capacidade do rastreador de determinar se uma string é um URI válido. Essas melhorias proporcionam uma melhor extração de links de conteúdos como o JavaScript não analisado/não interpretado. No entanto, essa técnica pode ser propensa a erros, causando problemas ou incomodações no website alvo. Na versão 3.1, essa funcionalidade pode ser desativada para rastreamentos completos ou site-por-site. Para desativar, é necessário remover a referência bean "extractorJs" do bean "fetchProcessors" e definir as propriedades "extractJavascript" e "extractValueAttributes" do "extractionHtml" como falsas.
+
+1. Remova a referência do bean "fetchProcessors" para "extractorJs".
+
+```
+<bean id="fetchProcessors" class="org.archive.modules.FetchChain">
+<property name="processors">
+<list>
+<!-- re-check scope, if so enabled... -->
+<ref bean="preselector"/>
+<!--
+...then verify or trigger prerequisite URIs fetched, allow crawling...
+-->
+<ref bean="preconditions"/>
+<!-- ...fetch if DNS URI... -->
+<ref bean="fetchDns"/>
+<!-- <ref bean="fetchWhois"/> -->
+<!-- ...fetch if HTTP URI... -->
+<ref bean="fetchHttp"/>
+<!-- ...extract outlinks from HTTP headers... -->
+<ref bean="extractorHttp"/>
+<!-- ...extract outlinks from HTML content... -->
+<ref bean="extractorHtml"/>
+<!-- ...extract outlinks from CSS content... -->
+<ref bean="extractorCss"/>
+<!-- ...extract outlinks from Javascript content... -->
+<!-- ****** <ref bean="extractorJs"/> ****** -->
+<!-- ...extract outlinks from Flash content... -->
+<ref bean="extractorSwf"/>
+</list>
+</property>
+</bean>
+
+```
+
+2. Defina as configurações "extractJS" e "extractValueAttributes" do bean "extractHtml" como falsas (false).
+
+```
+
+<bean id="extractorHtml" class="org.archive.modules.extractor.ExtractorHTML">
+<property name="extractJavascript" value="false" />
+<property name="extractValueAttributes" value="false" />
+</bean>
+
+```
