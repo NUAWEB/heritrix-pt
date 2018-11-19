@@ -651,3 +651,86 @@ A partir da versão 3.1, melhorias foram feitas na capacidade do rastreador de d
 </bean>
 
 ```
+
+### Como evitar grande números de conteúdos dinâmicos
+
+Suponha que você queira apenas rastrear páginas de um determinado host (http://www.foo.org/) e também evitar o rastreamento de muitas páginas de um calendário gerado dinamicamente. Vamos supor que o calendário é acessado ao fornecer um ano, um mês e um dia para o diretório do calendário. Por exemplo, .
+
+Quando você cria uma tarefa de rastreamento você especifica apenas um seed: http://www.foo.org/.  Por padrão, a nova tarefa de rastreamento usará a DecideRuleSequence, que irá conter um conjunto padrão de DecideRules. Uma das regras padrão é a SurtPrefixedDecideRule, que informa ao Heritrix para aceitar qualquer URI que corresponda ao prefixo SURT do URI de origem: http://(org,foo,www,)/. Se a URI http://foo.org/ for encontrada, será rejeitada, já que seu prefixo SURT http://(org,foo,) não corresponte ao prefixo SURT do seed.  Para permitir que ambos foo.org e www.foo.org sejam capturados, você pode adicionar dois seeds: http://www.foo.org/ and http://foo.org/. Para permitir que todo subdomínio de foo.org seja rastreado, você pode adicionar a semente http://foo.org. Observe a ausência de uma barra à direita.
+
+Apague o TranclusionDecideRule, pois essa regra tem o potencial de levar o Heritrix para outro host. Por exemplo, se um URI retornar um código de resposta 301 (mover permanentemente) ou 302 (encontrado), bem como um URI que contenha um nome de host diferente do que os seeds, o Heritrix aceitaria esse URI usando o TransclusionDecideRule. Remover essa regra fará com que o Heritrix não se afaste do nosso host www.foo.org.
+
+PathologicalPathDecideRule e TooManyPathSegmentsDecideRule permitirão que o Heritrix evite alguns tipos de armadilhas de rastreamento. TooManyHopsDecideRule fará com que o Heritrix não se distancie muito do seed. Dessa forma, o Heritrix não será preso num loop infinito pelo calendário.  Por padrão, o máximo de saltos é definido como 20, mas esse valor pode ser alterado editando o arquivo crawler-beans.cxml.
+
+Como alternativa, você pode adicionar o MatchesFilePatternDecideRule. Defina usePresetPattern como CUSTOM e defina o regexp como: .foo \ .org (?! / Calendar). |. * Foo \ .org / calendar? Year = 200 [56]. *
+
+### Copiar somente arquivos HTML
+
+Suponha que você queira apenas rastrear URIs que correspondam a http://foo.org/bar/\*.html e salvar os arquivos rastreados em um formato de arquivo/diretório em vez de arquivos WARC. Além disso, suponha que o servidor da Web faz distinção entre maiúsculas e minúsculas.  Por exemplo, http://foo.org/bar/abc.html e http://foo.org/bar/ABC.HTML estão apontando para dois recursos diferentes.
+
+Primeiro, crie uma tarefa com apenas um see, http://foo.org/bar/. Configure o bean warcWriter para que sua classe seja org.archive.modules.writer.MirrorWriterProcessor. Esse Processador armazenará arquivos em uma estrutura de diretórios que corresponda aos URIs rastreadas. Os arquivos serão armanezados na cópia do diretório da tarefa de rastreamento.  The files will be stored in the crawl job's mirror directory.
+
+### Armanezar somente páginas HTML bem-sucedidas
+
+Suponha que você queira capturar as primeiras 50 páginas encontradas de um conjunto de seeds e arquivar apenas as páginas que retornam um código de resposta 200 e text/html de tipo mime.  Além disso, você quer procurar links somente em recursos HTML.
+
+Para verificar links apenas em documentos HTML, você precisará remover os seguintes extratores que informam ao Heritrix para procurar links em folhas de estilo, JavaScript e arquivos Flash:
+
+* ExtractorCss
+* ExtractorJs
+* ExtractorSwf
+
+Mantenha o ExtractorHttp, já que é útil para localizar recursos que só podem ser encontrados usando um redirecionamento (código de resposta 301 ou 302).
+
+O número de URIs baixados pode ser limitado definindo a propriedade maxDocumentsDownload no bean crawlLimiter. Configurar o valor para 50 provavelmente não fornecerá os resultados pretendidos. Já que cada resposta DNS e arquivo robots.txt são contados no número, o valor deve ser definido para 50 * o número de seeds * 2.
+
+## Tarefas (jobs)
+
+Uma tarefa (às vezes chamada de tarefa de rastreamento) é uma configuração que define a forma como um rastreamento é executado. Uma tarefa contém informações como os seeds a serem rastreados, o endereço de e-mail do operador e outras informações de configuração que determinam como os dados de seed são acessados e armazenados. Um rastreamento é uma isntância executada de uma tarefa.
+
+No Heritrix, uma tarefa é baseada no Framework Spring. Beans Spring representam os atributos de uma tarefa. O snippet abaixo mostra um bean Spring que faz parte de uma configuração de tarefa (os beans Spring são definidos no formato XML). O bean tem uma propriedade que é configurada para os URIs dos seeds a serem rastreados. 
+
+```
+<bean id="longerOverrides" class="org.springframework.beans.factory.config.PropertyOverrideConfigurer">
+<property name="properties">
+<props>
+      <prop key="seeds.textSource.value"># URLS HERE http://example.example/example</prop>
+</props>
+</property>
+</bean>
+```
+
+## Análise da tarefa
+
+O Heritrix oferece várias facilidades para examinar os detalhes de um rastreamento. Esses relatórios e logs também estão disponíveis durante o tempo de execução.
+
+### Registros (logs)
+
+Cada tarefa de rastreamento tem seu próprio conjunto de arquivos de registro.
+
+Os registros podem sem encontrados no diretório "registros", que existe sob o diretório de uma tarefa específica. A localização dos arquivos de registro específicos é fornecida na seção "Caminhos referenciados à configuração" da página da tarefa.
+
+Propriedades de registro 
+
+As propriedades de registro podem ser configuradas modificando o arquivo logging.properties localizado no diretório ./conf. Para obter informações sobre como usar propriedades de registro, visite http://logging.apache.org/log4j/.
+
+Arquivos de registro (Log files)
+
+alerts.log
+
+Esse registro contém alertas que indicam problemas com os rastreamentos.
+
+crawl.log
+
+Cada URI que o Heritrix tenta buscar fará com que uma linha de registro seja gravada no arquivo crawl.log. Abaixo está um extrato de duas linhas do registro.
+
+```
+2011-06-23T17:12:08.802Z   200       1299 http://content-5.powells.com/robots.txt LREP http://content-5.powells.com/cgi-bin/imageDB.cgi?isbn=9780385518635 text/plain #014 20110623171208574+225 sha1:YI
+UOKDGOLGI5JYHDTXRFFQ5FF4N2EJRV - -
+2011-06-23T17:12:09.591Z   200      15829 http://www.identitytheory.com/etexts/poetics.html L http://www.identitytheory.com/ text/html #025 20110623171208546+922 sha1:7AJUMSDTOMT4FN7MBFGGNJU3Z56MLCMW
+- -
+```
+
+
+
+
