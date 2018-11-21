@@ -737,9 +737,8 @@ UOKDGOLGI5JYHDTXRFFQ5FF4N2EJRV - -
 | Fetch Status Code  | Usually this is the HTTP response code but it can also be a negative number if URI processing was unexpectedly terminated.  |
 | Document size | The size of the downloaded document in bytes.  For HTTP, this is the size of content only.  The size excludes the HTTP response headers.  For DNS, the size field is the total size for the DNS response. |
 | Downloaded URI | The URI of the document downloaded. |
-| Discovery Path | The breadcrumb codes (discovery path) showing the trail of downloads that lead to the downloaded URI.  As of Heritrix 3.1, the length of the discovery path has been limited to the last 50 hop-types.  For example, a 62-hop path might now appear as "12+LLRLLLRELLLLRLLLRELLLLRLLLRELLLLRLLLRELLLLRLLLRELE".  This enhancement decreases the size of the log and limits memory usage.
-
-The breadcrumb codes are as follows. |
+| Discovery Path | The breadcrumb codes (discovery path) showing the trail of downloads that lead to the downloaded URI.  As of Heritrix 3.1, the length of the discovery path has been limited to the last 50 hop-types.  For example, a 62-hop path might now appear as "12+LLRLLLRELLLLRLLLRELLLLRLLLRELLLLRLLLRELLLLRLLLRELE".  This enhancement decreases the size of the log and limits memory usage. The breadcrumb codes are as follows. | `git status` | List all *new or modified* files |
+| `git diff` | Show file differences that **haven't been** staged | |
 
 
 
