@@ -735,11 +735,109 @@ UOKDGOLGI5JYHDTXRFFQ5FF4N2EJRV - -
 | ------------- | ------------- |
 | Timestamp  | The timestamp in ISO8601 format, to millisecond resolution.  The time is the instant of logging.  |
 | Fetch Status Code  | Usually this is the HTTP response code but it can also be a negative number if URI processing was unexpectedly terminated.  |
-| Document size | The size of the downloaded document in bytes.  For HTTP, this is the size of content only.  The size excludes the HTTP response headers.  For DNS, the size field is the total size for the DNS response. |
-| Downloaded URI | The URI of the document downloaded. |
-| Discovery Path | The breadcrumb codes (discovery path) showing the trail of downloads that lead to the downloaded URI.  As of Heritrix 3.1, the length of the discovery path has been limited to the last 50 hop-types.  For example, a 62-hop path might now appear as "12+LLRLLLRELLLLRLLLRELLLLRLLLRELLLLRLLLRELLLLRLLLRELE".  This enhancement decreases the size of the log and limits memory usage. The breadcrumb codes are as follows. | `git status` | List all *new or modified* files |
-| `git diff` | Show file differences that **haven't been** staged | |
+| Tamanho do documento | Tamanho do documento baixado, em bytes. Para HTTP, é apenas o tamanho do conteúdo. O tamanho exclui os cabeçalhos de resposta HTTP. Para DNS, o campo de tamanho é o tamanho total da resposta do DNS. |
+| URI baixado | O URI do documento baixado. |
+| Caminho de Descoberta | Códigos de navegação (caminho de descoberta) que mostram a trilha de downloads que levam ao URI baixado. A partir da versão 3.1, o comprimento do caminho de descoberta foi limitado aos últimos 50 hop-types.  Por exemplo, um caminho de 62-hop pode aparecer, a partir de agora, como "12+LLRLLLRELLLLRLLLRELLLLRLLLRELLLLRLLLRELLLLRLLLRELE".  Esse aprimoramento diminui o tamanho do registro e limita o uso de memória. Os códigos de navegação são os seguintes. |
+| Referenciador | O URI que precedeu imediatamente o URI baixado. Este é o referenciador. O caminho de descoberta e o referenciador estarão vazios para URIs de seeds. |
+| Mime Type | The downloaded document mime type. |
+| Worker Thread ID | The id of the worker thread that downloaded the document. |
+| Fetch timestamp | The timestamp in RFC2550/ARC condensed digits-only format indicating when the network fetch was started.  If appropriate the millisecond duration of the fetch is appended to the timestamp with a "+" character as separator. |
+| SHA1 Digest | The SHA1 digest of the content only (headers are not digested). |
+| Source Tag | The source tag inherited by the URI, if source tagging is enabled. |
+| Annotations | If an annotation has been set, it will be displayed.  Possible annotations include: the number of times the URI was tried, the literal "lenTrunc" if the download was truncanted due to exceeding configured size limits, the literal "timeTrunc" if the download was truncated due to exceeding configured time limits or "midFetchTrunc" if a midfetch filter determined the download should be truncated. |
+| warc | Nome do arquivo WARC/ARC em que o conteúdo rastreado foi salvo. Esse valor só será salvo se a propriedade logExtraInfo do bean loggerModule está definida como verdadeira. Essa informação registrada será salva no formato JSON. |
 
+progress-statistics.log
 
+Esse registro é salvo pelo bean StatisticsTracker.  Em intervalos configuráveis, uma linha de registro detalhando o progresso do rastreamento é gravada nesse arquivo.
 
+| Nome do campo  | Descrição |
+| ------------- | ------------- |
+| timestamp  | Timestamp in ISO8601 format indicating when the log line was written.  |
+| discovered  | Número de URIs descobertos até o momento. |
+| queued | Número de URIs enfileirados. |
+| downloaded | Número de URIs baixados até o momento. |
+| doc/s(avg) | Número de documentos baixados por segundo desde a última snapshot. O valor entre parênteses é medido desde o início do rastreamento. |
+| KB/s(avg) | Quantidade em kilobytes baixados por segundo desde a última snapshot. O valor entre parênteses é medido desde o início do rastreamento. |
+| dl-failures | Número de URIs que o Heritrix não conseguiu baixar. |
+| busy-thread | Number of toe threads busy processing a URI. |
+| mem-use-KB | Quantidade de memória sendo usada pelo Java Virtual Machine. |
+| heap-size-KB| The current heap size of the Java Virtual Machine. |
+|congestion | The congestion ratio is a rough estimate of how much initial capacity, as a multiple of current capacity, would be necessary to crawl the current workload at the maximum rate available given politeness settings.  This value is calculated by comparing the number of internal queues that are progressing against those that are waiting for a thread to become available. |
+| max-depth | O tamanho da fila Frontier com o maior número de URIs enfileirados.  |
+| avg-depth | O tamanho habitual de todas as filas do Frontier. |
 
+runtime-errors.log
+
+Esse registro captura exceções e erros inesperados que ocorrem durante o rastreamento, que podem ser resultantes de limitações do hardware (sem memória, embora esse erro possa ocorrer sem ser gravado neste registro). No entanto, a maioria ocorre por causa de bugs do software, talvez no núcleo do Heritrix, mas provavelmente em uma de suas classes conectáveis.
+
+uri-errors.log
+
+Esse registro armazena erros de tentativas de busca de URI, normalmente causados por URIs não existentes. Esse registro normalmente é de interesse apenas para usuários avançados que tentam explicar comportamentos inesperados de rastreamento.
+
+frontier.recover.gz
+
+O arquivo frontier.recover.gz é um registro gzipado de eventos Frontier que pode ser usado para restaurar o Frontier após uma falha.
+
+## Configuração de Tarefas e Perfis
+
+A criação de tarefas (Creating a Job) e perfis (Creating a Profile) é o primeiro passo no processo de usar o Heritrix para rastrear a web. Configurar tarefas e perfis é um trabalho um pouco mais complicado. A seção a seguir se aplica para a configuração tanto de tarefas quanto de perfis.
+
+### Note
+
+* Para editar um rastreamento em andamento, ver Editing a Running Job para mais informações.
+
+Configurar uma tarefa ou um perfil involve a edição do arquivo `crawler-beans.cxml`. Esse arquivo é um arquivo de configuração Spring. O Framework Spring é usado para definir as propriedades de tarefas e perfis. Cada tarefa é definida por "beans" Spring que contêm dados de configuração para a tarefa. Essa seção aborda como configurar propriedades comuns de uma tarefa de rastreamento ou perfil e descreve as várias seções do arquivo `crawler-beans-cxml`.
+
+A primeira seção do arquivo `crawler-beans-cxml` permite que o operador altere qualquer propriedade simples do bean, como a `metadata.operatorContactUrl`. Por exemplo, o Heritrix pode ser configurado para ignorar cookies com a seguinte substituição de configuração: 
+
+### Alterar propriedade para ignorar cookies
+
+```
+<!-- overrides from a text property list -->
+<bean id="simpleOverrides" class="org.springframework.beans.factory.config.PropertyOverrideConfigurer">
+<property name="properties">
+<value>
+
+# This Properties map is specified in the Java 'property list' text format
+# http://java.sun.com/javase/6/docs/api/java/util/Properties.html#load%28java.io.Reader%29
+
+metadata.operatorContactUrl=http://www.archive.org
+metadata.jobName=basic
+metadata.description=Basic crawl starting with useful defaults
+ignoreCookies=true
+
+##..more?..##
+
+</value>
+</property>
+</bean>
+```
+
+O bean "longerOverrides" está disponível para substituições mais longas ou complicadas. É usado para substituir propriedades que contêm múltiplos valores ou que podem ser alteradas com um bean. Por exemplo, vários seeds podem ser configurados com a seguinte configuração:
+
+### Substituição dos valores dos seeds
+
+```
+<bean id="longerOverrides" class="org.springframework.beans.factory.config.PropertyOverrideConfigurer">
+
+<property name="properties">
+
+<props>
+<prop key="seeds.textSource.value">
+
+# URLS HERE
+http://www.myhost1.net
+http://www.myhost2.net
+http://www.myhost3.net/pictures
+
+    </prop>
+</props>
+</property>
+```
+
+## Cadeias de processamento
+
+No nível de tarefa, uma tarefa de rastreamento do Heritrix possui três pipelines principais conhecidas como Cadeias de Processadores (aplicação sequencial de módulos de Processador trocáveis -- ver Configurações de Processador), com o Frontier atuando como um buffer entre as duas primeiras:
+
+* 
