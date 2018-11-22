@@ -78,7 +78,7 @@ Se essa opção for usada, um conjunto de credenciais de login ainda mais unique
 ### Controle de acesso de autenticação de login 
 
 O usuário e a senha administrativos proporcionam uma segurança rudimentar contra acessos não autorizados. Para mais segurança, você deve: 
-1. Usar um nome de usuário e senha únicos e difíceis de adivinhar para proteger a IU da Web. O Heritrix usa HTTPS para criptografar comunicações entre os clientes e a IU da Web. Tenha em mente que definir o nome de usuário e senha na linha de comando pode causar que eles fiquem visíveis para outros usuários da máquina de rastreamento - por exemplo, através da saída de uma ferramenta como 'ps' que mostra as linhas de comando usadas para processos de lançamento. Tenha em mente também que essas informações são ecoadas em texto simples no heritrix_out.log para referência do operador. A partir da versão 3.1, o nome de usuário e senha administrativos não são ecoados no heritrix_out.logl.  Ainda a partir da versão 3.1, se o parâmetro fornecido para a opção de linhas de comando -a -web-admin é uma string começando com "@", o resto da string será interpretada como um arquivo local de nome contendo o login e a senha do operador. Assim, as credenciais não são visíveis para as outras máquinas que usam o comando listar processos (ps).
+1. Usar um nome de usuário e senha únicos e difíceis de adivinhar para proteger a IU da Web. O Heritrix usa HTTPS para criptografar comunicações entre os clientes e a IU da Web. Tenha em mente que definir o nome de usuário e senha na linha de comando pode causar que eles fiquem visíveis para outros usuários da máquina de rastreamento - por exemplo, através do output de uma ferramenta como 'ps' que mostra as linhas de comando usadas para processos de lançamento. Tenha em mente também que essas informações são ecoadas em texto simples no heritrix_out.log para referência do operador. A partir da versão 3.1, o nome de usuário e senha administrativos não são ecoados no heritrix_out.logl.  Ainda a partir da versão 3.1, se o parâmetro fornecido para a opção de linhas de comando -a -web-admin é uma string começando com "@", o resto da string será interpretada como um arquivo local de nome contendo o login e a senha do operador. Assim, as credenciais não são visíveis para as outras máquinas que usam o comando listar processos (ps).
   2. Inicie a VM Java de hospedagem do Heritrix com uma conta de usuário que tenha os privilégios mínimos necessários para operar o rastreador. Isso limitará os danos no caso de a IU da Web ser acessada de maneira maliciosa.
   
 ## Um guia rápido para executar seu primeiro rastreamento
@@ -239,7 +239,7 @@ This file captures output to standard out and standard error.  Most of the outpu
 
 Esse arquivo é criado no mesmo diretório do arquivo jar do Heritrix. Não é associado com nenhuma tarefa específica, mas contém outputs de todos as tarefas executadas pelo rastreador.
 
-Exemplo de uma saída desse arquivo:
+Exemplo de um output desse arquivo:
 
 ```
 Darwin internet-archives-macbook-pro.local 10.0.0 Darwin Kernel Version 10.0.0: Fri Jul 31 22:47:34 PDT 2009; root:xnu-1456.1.25~1/RELEASE_I386 i386
@@ -264,7 +264,7 @@ crawl-report.txt
 
 Contém métricas úteis sobre tarefas terminadas. O relatório é criado pelo bean StatisticsTracker e é escrito no fim do rastreamento.  
 
-Exemplo de uma saída desse arquivo:
+Exemplo de um output desse arquivo:
 
 ```
 Crawl Name: basic
@@ -289,7 +289,7 @@ Contém uma visão geral dos hosts que foram rastreadas. Também mostra o númer
 
 O arquivo é criado pelo bean StatisticsTracker e é escrito no fim do rastreamento. 
 
-Exemplo de uma saída desse arquivo:
+Exemplo de um output desse arquivo:
 
 ```
 1337 23877316 www.smokebox.net 0 0
@@ -303,7 +303,7 @@ Contém um relatório mostrando o número de documentos e dados baixados per mim
 
 O arquivo é criado pelo bean StatisticsTracker e é escrito no fim do rastreamento. 
 
-Exemplo de uma saída desse arquivo:
+Exemplo de um output desse arquivo:
 
 ```
 624 13248443 image/jpeg
@@ -317,7 +317,7 @@ processors-report.txt
 
 Contém o relatório dos processadores, que mostra a atividade de cada processador do Heritrix. Para mais informações, ver Processing Chains.  É escrito no fim do rastreamento. 
 
-Exemplo de uma saída desse arquivo:
+Exemplo de um output desse arquivo:
 
 ```
 CandidateChain - Processors report - 200910300032
@@ -383,7 +383,7 @@ Contém um relatório que exibe o número de documentos baixados per successful 
 
 O arquivo é criado pelo bean StatisticsTracker e é escrito no fim do rastreamento. 
 
-Exemplo de uma saída desse relatório:
+Exemplo de um output desse relatório:
 
 ```
 [#urls] [rescode]
@@ -398,7 +398,7 @@ Contém o status de rastreamento de cada seed.
 
 O arquivo é criado pelo bean StatisticsTracker e é escrito no fim do rastreamento. 
 
-Exemplo de uma saída desse relatório:
+Exemplo de um output desse relatório:
 
 ```
 [code] [status] [seed] [redirect]
@@ -409,7 +409,7 @@ frontier-summary-report.txt
 
 Este relatório contém um detalhamento da atividade de fronteira por thread. Para cada encadeamento em execução, o status da fila de fronteira pode ser examinado.
 
-Exemplo de uma saída desse relatório:
+Exemplo de um output desse relatório:
 
 ```
 -----===== RETIRED QUEUES =====-----
@@ -504,7 +504,8 @@ source-report.txt
 
 Contém uma linha de item para cada host, que inclui o seed por qual o host foi alcançado.
 
-Exemplo de uma saída desse relatório:
+Exemplo de uma 
+desse relatório:
 
 ```
 [source] [host] [#urls]
@@ -664,13 +665,13 @@ PathologicalPathDecideRule e TooManyPathSegmentsDecideRule permitirão que o Her
 
 Como alternativa, você pode adicionar o MatchesFilePatternDecideRule. Defina usePresetPattern como CUSTOM e defina o regexp como: .foo \ .org (?! / Calendar). |. * Foo \ .org / calendar? Year = 200 [56]. *
 
-### Copiar somente arquivos HTML
+### Espelhamento de arquivos HTML
 
 Suponha que você queira apenas rastrear URIs que correspondam a http://foo.org/bar/\*.html e salvar os arquivos rastreados em um formato de arquivo/diretório em vez de arquivos WARC. Além disso, suponha que o servidor da Web faz distinção entre maiúsculas e minúsculas.  Por exemplo, http://foo.org/bar/abc.html e http://foo.org/bar/ABC.HTML estão apontando para dois recursos diferentes.
 
 Primeiro, crie uma tarefa com apenas um see, http://foo.org/bar/. Configure o bean warcWriter para que sua classe seja org.archive.modules.writer.MirrorWriterProcessor. Esse Processador armazenará arquivos em uma estrutura de diretórios que corresponda aos URIs rastreadas. Os arquivos serão armanezados na cópia do diretório da tarefa de rastreamento.  The files will be stored in the crawl job's mirror directory.
 
-### Armanezar somente páginas HTML bem-sucedidas
+### Armazenamento de páginas HTML bem-sucedidas
 
 Suponha que você queira capturar as primeiras 50 páginas encontradas de um conjunto de seeds e arquivar apenas as páginas que retornam um código de resposta 200 e text/html de tipo mime.  Além disso, você quer procurar links somente em recursos HTML.
 
@@ -704,25 +705,25 @@ No Heritrix, uma tarefa é baseada no Framework Spring. Beans Spring representam
 
 O Heritrix oferece várias facilidades para examinar os detalhes de um rastreamento. Esses relatórios e logs também estão disponíveis durante o tempo de execução.
 
-### Registros (logs)
+### Logs
 
-Cada tarefa de rastreamento tem seu próprio conjunto de arquivos de registro.
+Cada tarefa de rastreamento tem seu próprio conjunto de arquivos de logs.
 
-Os registros podem sem encontrados no diretório "registros", que existe sob o diretório de uma tarefa específica. A localização dos arquivos de registro específicos é fornecida na seção "Caminhos referenciados à configuração" da página da tarefa.
+Os logs podem sem encontrados no diretório "logs", que existe sob o diretório de uma tarefa específica. A localização de arquivos logs específicos é fornecida na seção "Caminhos referenciados à configuração" da página da tarefa.
 
-Propriedades de registro 
+Propriedades logs
 
-As propriedades de registro podem ser configuradas modificando o arquivo logging.properties localizado no diretório ./conf. Para obter informações sobre como usar propriedades de registro, visite http://logging.apache.org/log4j/.
+As propriedades de log podem ser configuradas modificando o arquivo logging.properties localizado no diretório ./conf. Para obter informações sobre como usar propriedades de log, visite http://logging.apache.org/log4j/.
 
-Arquivos de registro (Log files)
+Arquivos log
 
 alerts.log
 
-Esse registro contém alertas que indicam problemas com os rastreamentos.
+Esse log contém alertas que indicam problemas com os rastreamentos.
 
 crawl.log
 
-Cada URI que o Heritrix tenta buscar fará com que uma linha de registro seja gravada no arquivo crawl.log. Abaixo está um extrato de duas linhas do registro.
+Cada URI que o Heritrix tenta buscar fará com que uma linha de log seja gravada no arquivo crawl.log. Abaixo está um extrato de duas linhas do log.
 
 ```
 2011-06-23T17:12:08.802Z   200       1299 http://content-5.powells.com/robots.txt LREP http://content-5.powells.com/cgi-bin/imageDB.cgi?isbn=9780385518635 text/plain #014 20110623171208574+225 sha1:YI
@@ -737,7 +738,7 @@ UOKDGOLGI5JYHDTXRFFQ5FF4N2EJRV - -
 | Fetch Status Code  | Usually this is the HTTP response code but it can also be a negative number if URI processing was unexpectedly terminated.  |
 | Tamanho do documento | Tamanho do documento baixado, em bytes. Para HTTP, é apenas o tamanho do conteúdo. O tamanho exclui os cabeçalhos de resposta HTTP. Para DNS, o campo de tamanho é o tamanho total da resposta do DNS. |
 | URI baixado | O URI do documento baixado. |
-| Caminho de Descoberta | Códigos de navegação (caminho de descoberta) que mostram a trilha de downloads que levam ao URI baixado. A partir da versão 3.1, o comprimento do caminho de descoberta foi limitado aos últimos 50 hop-types.  Por exemplo, um caminho de 62-hop pode aparecer, a partir de agora, como "12+LLRLLLRELLLLRLLLRELLLLRLLLRELLLLRLLLRELLLLRLLLRELE".  Esse aprimoramento diminui o tamanho do registro e limita o uso de memória. Os códigos de navegação são os seguintes. |
+| Caminho de Descoberta | Códigos de navegação (caminho de descoberta) que mostram a trilha de downloads que levam ao URI baixado. A partir da versão 3.1, o comprimento do caminho de descoberta foi limitado aos últimos 50 hop-types.  Por exemplo, um caminho de 62-hop pode aparecer, a partir de agora, como "12+LLRLLLRELLLLRLLLRELLLLRLLLRELLLLRLLLRELLLLRLLLRELE".  Esse aprimoramento diminui o tamanho do log e limita o uso de memória. Os códigos de navegação são os seguintes. |
 | Referenciador | O URI que precedeu imediatamente o URI baixado. Este é o referenciador. O caminho de descoberta e o referenciador estarão vazios para URIs de seeds. |
 | Mime Type | The downloaded document mime type. |
 | Worker Thread ID | The id of the worker thread that downloaded the document. |
@@ -745,11 +746,11 @@ UOKDGOLGI5JYHDTXRFFQ5FF4N2EJRV - -
 | SHA1 Digest | The SHA1 digest of the content only (headers are not digested). |
 | Source Tag | The source tag inherited by the URI, if source tagging is enabled. |
 | Annotations | If an annotation has been set, it will be displayed.  Possible annotations include: the number of times the URI was tried, the literal "lenTrunc" if the download was truncanted due to exceeding configured size limits, the literal "timeTrunc" if the download was truncated due to exceeding configured time limits or "midFetchTrunc" if a midfetch filter determined the download should be truncated. |
-| warc | Nome do arquivo WARC/ARC em que o conteúdo rastreado foi salvo. Esse valor só será salvo se a propriedade logExtraInfo do bean loggerModule está definida como verdadeira. Essa informação registrada será salva no formato JSON. |
+| warc | Nome do arquivo WARC/ARC em que o conteúdo rastreado foi salvo. Esse valor só será salvo se a propriedade logExtraInfo do bean loggerModule está definida como true. Essa informação registrada será salva no formato JSON. |
 
 progress-statistics.log
 
-Esse registro é salvo pelo bean StatisticsTracker.  Em intervalos configuráveis, uma linha de registro detalhando o progresso do rastreamento é gravada nesse arquivo.
+Esse log é salvo pelo bean StatisticsTracker.  Em intervalos configuráveis, uma linha de log detalhando o progresso do rastreamento é gravada nesse arquivo.
 
 | Nome do campo  | Descrição |
 | ------------- | ------------- |
@@ -769,15 +770,15 @@ Esse registro é salvo pelo bean StatisticsTracker.  Em intervalos configurávei
 
 runtime-errors.log
 
-Esse registro captura exceções e erros inesperados que ocorrem durante o rastreamento, que podem ser resultantes de limitações do hardware (sem memória, embora esse erro possa ocorrer sem ser gravado neste registro). No entanto, a maioria ocorre por causa de bugs do software, talvez no núcleo do Heritrix, mas provavelmente em uma de suas classes conectáveis.
+Esse log captura exceções e erros inesperados que ocorrem durante o rastreamento, que podem ser resultantes de limitações do hardware (sem memória, embora esse erro possa ocorrer sem ser gravado neste log). No entanto, a maioria ocorre por causa de bugs do software, talvez no núcleo do Heritrix, mas provavelmente em uma de suas classes conectáveis.
 
 uri-errors.log
 
-Esse registro armazena erros de tentativas de busca de URI, normalmente causados por URIs não existentes. Esse registro normalmente é de interesse apenas para usuários avançados que tentam explicar comportamentos inesperados de rastreamento.
+Esse log armazena erros de tentativas de busca de URI, normalmente causados por URIs não existentes. Esse log normalmente é de interesse apenas para usuários avançados que tentam explicar comportamentos inesperados de rastreamento.
 
 frontier.recover.gz
 
-O arquivo frontier.recover.gz é um registro gzipado de eventos Frontier que pode ser usado para restaurar o Frontier após uma falha.
+O arquivo frontier.recover.gz é um log gzipado de eventos Frontier que pode ser usado para restaurar o Frontier após uma falha.
 
 ## Configuração de Tarefas e Perfis
 
@@ -840,4 +841,63 @@ http://www.myhost3.net/pictures
 
 No nível de tarefa, uma tarefa de rastreamento do Heritrix possui três pipelines principais conhecidas como Cadeias de Processadores (aplicação sequencial de módulos de Processador trocáveis -- ver Configurações de Processador), com o Frontier atuando como um buffer entre as duas primeiras:
 
-* 
+* Cadeia de candidatos (Chain Candidates):
+
+- Processa os URIs de rastreamento de entrada, decidindo se deve mantê-los (de acordo com o escopo) e se eles serão depositados no Frontier.
+
+- Ver Candidate Chain Processors
+
+* Frontier:
+
+- Os URIs de rastreamento aceitos nesse rastreamento são armazenados aqui em ordem de prioridade, em um conjunto de filas distintas.
+
+- Normalmente, há uma fila por "autoridade" (por exemplo, `exemplo.com:80`) e o gerenciamento de filas garante que o atraso de rastreamento desejado seja respeitado para cada fila.
+
+- Ver Frontier
+
+* Cadeia de busca (Fetch Chain):
+
+- Como os URIs de rastreamento são emitidos pelo Frontier, a cadeia de busca processa cada um deles e decide o que fazer, como baixar etc.
+
+- Também realiza operações como extração de links.
+
+- Ver Fetch Chain Processors
+
+* Cadeia de disposição (Disposition Chain):
+
+- Trata de pós-processamentos necessários após o termino da cadeia de busca.
+
+- Por exemplo, é aqui que os recursos baixados são salvos no formato WARC.
+
+- Ver Disposition Chain Processors
+
+Todo URI retirado da fila Frontier é executado pelas cadeias de processamento. Os URIs são sempre processados na ordem mostrada no diagrama abaixo, a menos que um processador em particular exiba um erro fatal ou decida interromper o processamento do URI atual.
+
+
+Cada cadeia de processamento é composta de zero ou mais processadores individuais. Por exemplo, o FetchChain pode incluir os processadores extractorCss e extractorJs. Em uma etapa de processamento, a ordem em que os processadores são executados é a ordem em que eles são listados no arquivo crawler-beans.cxml.
+
+### Processadores da cadeia de candidatos (Candidate Chain Processors)
+
+| Nome do processador  | Descrição |
+| ------------- | ------------- |
+| candidateScoper | Este processador aplica regras de escopo a cada URI candidato. |
+| preparer | Esse processador prepara os URIs aceitos para enfileirar no Frontier.  |
+
+### Processadores da cadeia de busca (Fetch Chain Processors)
+
+| Nome do processador  | Descrição | Nome da classe |
+| ------------- | ------------- | ------------- |
+| preparer | Esse processador prepara os URIs aceitos para enfileirar no Frontier.  | |
+| preconditions | Esse processador prepara os URIs aceitos para enfileirar na Frontier.  | |
+| fetchDns | Esse processador prepara os URIs aceitos para enfileirar na Frontier.  | |
+| fetchHttp | Esse processador prepara os URIs aceitos para enfileirar na Frontier.  | |
+| extractorHttp | Esse processador prepara os URIs aceitos para enfileirar na Frontier.  | org.archive.modules.extractor.ExtractorHTTP |
+| extractorHtml | Esse processador prepara os URIs aceitos para enfileirar na Frontier.  | org.archive.modules.extractor.ExtractorHTML |
+| extractorCss | Esse processador prepara os URIs aceitos para enfileirar na Frontier.  | org.archive.modules.extractor.ExtractorCSS |
+| extractorJs | Esse processador prepara os URIs aceitos para enfileirar na Frontier.  | org.archive.modules.extractor.ExtractorJs |
+| extractorSwf | Esse processador prepara os URIs aceitos para enfileirar na Frontier.  | org.archive.modules.extractor.ExtractorSWF |
+| extractorPdf | Esse processador prepara os URIs aceitos para enfileirar na Frontier.  | org.archive.modules.extractor.ExtractorPDF |
+| fetchXml | Esse processador prepara os URIs aceitos para enfileirar na Frontier.  | org.archive.modules.extractor.ExtractorXML |
+
+
+
