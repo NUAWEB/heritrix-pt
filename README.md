@@ -965,13 +965,12 @@ preparer
 
 * uriPrecedencePolicy - Sets an integer precedence value on individual URIs when they are first submitted to a frontier for scheduling.  A URI's precedence directly affects which URI queue it is placed in, but does not affect a queue's precedence relative to other queues unless a queue-precedence-policy that consults URI precedence values is chosen.
 
-* costAssignmentPolicy - Calculates an integer 'cost' value for the given CrawlURI.
-
+* costAssignmentPolicy - Calcula um valor de 'custo' total para o CrawlURI fornecido.
 preselector
 
 * recheckScope - Recheck if URI is in scope. This is meaningful if the scope is altered during a crawl.  When URIs are added to queues they are checked against the scope.  Setting this value to true forces the URI to be checked against the scope when it comes out of the queue, possibly after the scope is altered.
 
-* blockAll- Block all URIs from being processed. This is most likely to be used in overrides to easily reject certain hosts from being processed.
+* blockAll- Bloqueia todos os URIs de serem processados. É mais provável que seja usado em sobreposições para rejeitar facilmente determinados hosts de serem processados.
 
 * blockByRegex - Block all URIs matching the regular expression from being processed.
 
@@ -996,9 +995,9 @@ fetchDns
 
 fetchHttp
 
-* timeoutSeconds - This setting determines how long an HTTP request will wait for a resource to respond.  This setting should be set to a high value.
+* timeoutSeconds - Determina por quanto tempo uma solicitação HTTP aguardará um recurso responder. Essa configuração deve ser configurada para um valor alto.
 
-* maxLengthBytes - This setting determines the maximum number of bytes to download per document.  When the limit is reached the document will be truncated.  By default this setting is a very large value (in the exabyte range) that will theoretically never be reached.
+* maxLengthBytes - Determina o número máximo de bytes para download por documento. Quando o limite é atingido, o documento será truncado. Por padrão, essa configuração é um valor muito grande (no intervalo exabyte), que teoricamente nunca será atingido.
 
 * maxFetchKBSec - The maximum rate in KB/sec to use when fetching data from a server. The default of 0 means no maximum.
 defaultEncoding - The character encoding to use for files that do not have one specified in the HTTP response headers. The default is ISO-8859 -1.
@@ -1015,7 +1014,7 @@ sendIfNoneMatch - Send If-None-Match header, if previous Etag fetch history info
 
 * sendRange- Send the Range header when there is a limit on the retrieved document size.  This is for politeness purposes.  The Range header states that only the first n bytes are of interest.  It is only pertinent if maxLengthBytes is greater than zero.  Sending the Range header results in a 206 Partial Content status response, which is better than cutting the response mid-download. On rare occasion, sending the Range header will generate 416 Request Range Not Satisfiable response.
 
-* ignoreCookies - Disable cookie handling.
+* ignoreCookies - Desativa o manuseio de cookies.
 
 * sslTrustLevel- The SSL certificate trust level. The range is from the default open (trust all certs including expired, selfsigned, and those for which we do not have a CA) through loose (trust all valid certificates including selfsigned), normal (all valid certificates not including selfsigned) and strict (Cert is valid and DN must match servername).
 
@@ -1023,9 +1022,9 @@ sendIfNoneMatch - Send If-None-Match header, if previous Etag fetch history info
 
 * httpBindAddress- Local IP address or hostname to use when making connections (binding sockets). When not specified, uses default local address(es).
 
-* httpProxyHost - The proxy host ip address.
+* httpProxyHost - O endereço IP do host proxy.
 
-* httpProxyPort - The proxy port.
+* httpProxyPort - A porta do proxy.
 
 * digestContent - Whether or not to perform an on-the-fly digest hash of retrieved content-bodies.
 
@@ -1036,62 +1035,64 @@ extractorHtml
 * extractJavascript - If true, in-page Javascript is scanned for strings that appear to be URIs. This typically finds both valid and invalid URIs.  Attempts to fetch the invalid URIs can generate webmaster concern over odd crawler behavior. Default is true.
 extractValueAttributes- If true, strings that look like URIs found in unusual places (such as form VALUE attributes) will be extracted. This typically finds both valid and invalid URIs.  Attempts to fetch the invalid URIs may generate webmaster concerns over odd crawler behavior. Default is true.
 
-* ignoreFormActionUrls - If true, URIs appearing as the ACTION attribute in HTML FORMs are ignored. Default is false.
+* ignoreFormActionUrls - Se definido como "true", os URIs que aparecem como o atributo ACTION nos FORMULÁRIOS HTML são ignorados. A definição padrão é "false"
 
-* extractOnlyFormGets - If true, only ACTION URIs with a METHOD of GET (explicit or implied) are extracted. Default is true. 
+* extractOnlyFormGets - Se definido como "true", somente URIs de AÇÃO com um MÉTODO GET (explícito ou implícito) serão extraídos. A definição padrão é "true".
 
-* treatFramesAsEmbedLinks- If true, FRAME/IFRAME SRC-links are treated as embedded resources (like IMG, 'E' hop-type).  Otherwise they are treated as navigational links.  Default is true.
+* treatFramesAsEmbedLinks- Se definido como "true", os links SRF do FRAME/IFRAME são tratados como recursos incorporados (como IMG, 'E' hop-type). Caso contrário, eles são tratados como links de navegação.  A definição padrão é "true".
 
-* ignoreUnexpectedHtml - If true, URIs which end in typical non-HTML extensions (such as .gif) will not be scanned as if it were HTML.  Default is true.
+* ignoreUnexpectedHtml - Se definido como "true", os URIs que terminam em extensões não HTML comuns (como .gif) não serão verificados como se fossem HTML. A definição padrão é "true".
 
-* maxElementLength - The maximum length of an HTML element.
+* maxElementLength - Comprimento máximo de um elemento HTML.
 
-* maxAttributeNameLength - The maximum length of an HTML attribute name.
+* maxAttributeNameLength - Comprimento máximo de um nome de atributo HTML.
 
-* maxAttributeValueLength - The maximum length of an HTML attribute value.
+* maxAttributeValueLength - Comprimento máximo de um valor de atributo HTML.
 
 warcWriter
 
-* compress - If this setting is true, WARC file content will be compressed.  Note that compression applies to each content item stored in the WARC.
+* compress - Se essa configuração for definida como "true", conteúdo do arquivo WARC será compactado. Observe que a compactação se aplica a cada item de conteúdo armazenado no WARC.
 
-* prefix - The prefix of the WARC filename.
+* prefix - Prefixo do nome do arquivo WARC.
 
-* maxFileSizeBytes- This setting determines the maximum size in bytes for each WARC file.  Once the WARC file reaches this size, no URIs will be written to it and another WARC file will be created to handle the remaining URIs.  This setting is not a hard limit.  If exceptionally large URIs are being downloaded, the WARC file may greatly exceed this limit.  Content items stored in WARC files are never split between WARCs.
+* maxFileSizeBytes- Essa configuração determina o tamanho máximo em bytes para cada arquivo WARC. Quando o arquivo WARC atingir esse tamanho, URIs não serão mais gravados nele e outro arquivo WARC será criado para manipular os URIs restantes. Esta configuração não é estritamente rígida: se URIs extremamente grandes estiverem sendo baixados, o arquivo WARC poderá exceder esse limite. Os itens de conteúdo armazenados nos arquivos WARC nunca são divididos entre os WARCs.
 
-* storePaths- This setting is a list of paths into which WARC files will be written.  If more than one path is specified, a round-robin approach will be used to choose the path.  This setting is safe to change during a crawl.
+* storePaths- Essa configuração é uma lista de caminhos nos quais os arquivos WARC serão gravados. Se mais de um caminho for especificado, uma abordagem round-robin será usada para escolher o caminho. Essa configuração é segura para ser alterarada durante um rastreamento.
 
-* poolMaxActive- Heritrix maintains a pool of WARC files that are each ready to accept downloaded documents.  This approach is used to prevent WARC writing from being a bottleneck in a multithreaded environment. This setting establishes the maximum number of such files to keep ready. The default value is five. For small crawls that you want to limit to a single WARC file, this setting should be set to one.
+* poolMaxActive- O Heritrix mantém vários arquivos WARC prontos para receberem documentos baixados. Essa abordagem é usada para evitar que o WARC seja uma restrição em um ambiente multithread. Essa configuração estabelece o número máximo desses arquivos para manter-se pronto. O valor padrão é cinco. Para pequenos rastreamentos que você deseja limitar a um único arquivo WARC, essa configuração deve ser definida como um.
 
-* maxWaitForIdleMs - controls how long a thread waits for an reusable writer before considering creating a new one. If creation isn't allowed, threads will wait indefinitely for a writer to become available.
+* maxWaitForIdleMs - Controla quanto tempo um thread espera por um gravador reutilizável antes de considerar a criação de um novo. Se a criação não for permitida, os threads aguardarão indefinidamente a disponibilização de um gravador.
 
 * skipIdenticalDigests- Whether to skip the writing of a record when URI history information is available and indicates the prior fetch had an identical content digest.  Default is false.
 
 * maxTotalBytesToWrite - Total file bytes to write to disk. Once the size of all files on disk has exceeded this limit, this processor will stop the crawler. A value of zero means no upper limit.
 
-* directory - The directory in which the storePaths will be configured.
+* directory - O diretório no qual os storePaths serão configurados.
 
-* writeRequests -  Whether to write request type records. Default is true.
+* writeRequests -  Decide se deve gravar registros do tipo de solicitação. A definição padrão é "true".
 
-* writeMetadata - Whether to write metadata type records. Default is true.
+* writeMetadata - Decide se deve gravar registros do tipo de metadados. A definição padrão é "true".
 
-* writeRevisitForIdenticalDigests- Whether to write revisit type records when a URI's history indicates the previous fetch had an identical content digest. Default is true.
+* writeRevisitForIdenticalDigests- Decide se deve gravar registros do tipo revisit quando o histórico de um URI indica que a busca anterior tinha um resumo de conteúdo idêntico. A definição padrão é "true".
 
-* writeRevisitForNotModified - Whether to write revisit type records when a 304-Not Modified response is received. Default is true.
+* writeRevisitForNotModified - Decide se deve gravar registros do tipo revisit quando uma resposta 304-Not Modified é recebida. A definição padrão é "true".
+
+
 candidates
 
 * seedsRedirectNewSeeds - If enabled, any URI found because a seed redirected to it (original seed returned 301 or 302), will also be treated as a seed.
 
 disposition
 
-* delayFactor - How many multiples of the last fetch elapsed time to wait before recontacting the same server.
+* delayFactor - Quantos múltiplos do último tempo transcorrido para aguardar antes de entrar em contato com o mesmo servidor.
 
-* minDelayMs- The minimum time to wait after a request has been completed before recontacting the same server.  This value overrides the delayFactor.
+* minDelayMs- O tempo mínimo para aguardar após uma solicitação ser concluída antes de entrar em contato novamente com o mesmo servidor. Este valor sobrepõe o delayFactor.
 
 * respectCrawlDelayUpToSeconds - Whether to respect a Crawl-Delay (in seconds) provided by the site's robots.txt.
 
-* maxDelayMs- The maximum amount of time to wait after a request has been completed before recontacting the same server.  This value overrides the delayFactor.
+* maxDelayMs- A quantidade máxima de tempo para esperar após uma solicitação ser concluída antes de entrar em contato novamente com o mesmo servidor. Este valor substitui o delayFactor.
 
-* maxPerHostBandwidthUsageKbSec - The maximum per-host bandwidth usage.
+* maxPerHostBandwidthUsageKbSec - O uso máximo de largura de banda por host.
 
 ### Rastreamento de estatíticas 
 
