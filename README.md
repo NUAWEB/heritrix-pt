@@ -880,24 +880,424 @@ Cada cadeia de processamento é composta de zero ou mais processadores individua
 
 | Nome do processador  | Descrição |
 | ------------- | ------------- |
-| candidateScoper | Este processador aplica regras de escopo a cada URI candidato. |
-| preparer | Esse processador prepara os URIs aceitos para enfileirar no Frontier.  |
+| candidateScoper | Aplica regras de escopo a cada URI candidato. |
+| preparer | Prepara os URIs aceitos para enfileirar no Frontier.  |
 
 ### Processadores da cadeia de busca (Fetch Chain Processors)
 
 | Nome do processador  | Descrição | Nome da classe |
 | ------------- | ------------- | ------------- |
-| preparer | Esse processador prepara os URIs aceitos para enfileirar no Frontier.  | |
-| preconditions | Esse processador prepara os URIs aceitos para enfileirar na Frontier.  | |
-| fetchDns | Esse processador prepara os URIs aceitos para enfileirar na Frontier.  | |
-| fetchHttp | Esse processador prepara os URIs aceitos para enfileirar na Frontier.  | |
-| extractorHttp | Esse processador prepara os URIs aceitos para enfileirar na Frontier.  | org.archive.modules.extractor.ExtractorHTTP |
-| extractorHtml | Esse processador prepara os URIs aceitos para enfileirar na Frontier.  | org.archive.modules.extractor.ExtractorHTML |
-| extractorCss | Esse processador prepara os URIs aceitos para enfileirar na Frontier.  | org.archive.modules.extractor.ExtractorCSS |
-| extractorJs | Esse processador prepara os URIs aceitos para enfileirar na Frontier.  | org.archive.modules.extractor.ExtractorJs |
-| extractorSwf | Esse processador prepara os URIs aceitos para enfileirar na Frontier.  | org.archive.modules.extractor.ExtractorSWF |
-| extractorPdf | Esse processador prepara os URIs aceitos para enfileirar na Frontier.  | org.archive.modules.extractor.ExtractorPDF |
-| fetchXml | Esse processador prepara os URIs aceitos para enfileirar na Frontier.  | org.archive.modules.extractor.ExtractorXML |
+| preparer | Prepara os URIs aceitos para enfileirar no Frontier.  | |
+| preconditions | E  | |
+| fetchDns | Busca DNS URIs.  | |
+| fetchHttp |   | |
+| extractorHttp |   | org.archive.modules.extractor.ExtractorHTTP |
+| extractorHtml | Extrai links de conteúdos HTML.  | org.archive.modules.extractor.ExtractorHTML |
+| extractorCss | Extrai links de conteúdos CSS.  | org.archive.modules.extractor.ExtractorCSS |
+| extractorJs | Extrai links de conteúdos JavaScript. | org.archive.modules.extractor.ExtractorJs |
+| extractorSwf | Extrai links de conteúdos Flash.  | org.archive.modules.extractor.ExtractorSWF |
+| extractorPdf | Extrai links de conteúdos PDF.  | org.archive.modules.extractor.ExtractorPDF |
+| fetchXml | Extrai links de conteúdos XML.  | org.archive.modules.extractor.ExtractorXML |
+
+A maioria dos processadores de extração é pré-configurada no arquivo de configuração `crawler-beans.cxml` da tarefa sob o bean "fetchProcessors". Para adicionar um novo extrator, como um extrator XML/RSS, defina o bean e, em seguida, vincule-o ao bean "fetchProcessors". Exemplo de um bean extractorXml:
+
+1. Defina o bean para o extrator XML/RSS:
+
+``` 
+<bean id="extractorXml" class="org.archive.modules.extractor.ExtractorXML"></bean>
+```
+
+2. Vincule o bean "extractorXml" com o bean "fetchProcessor":
+
+```
+<bean id="fetchProcessors" class="org.archive.modules.FetchChain">
+<property name="processors">
+<list>
+<!-- re-check scope, if so enabled... -->
+<ref bean="preselector"/>
+<!--
+...then verify or trigger prerequisite URIs fetched, allow crawling...
+-->
+<ref bean="preconditions"/>
+<!-- ...fetch if DNS URI... -->
+<ref bean="fetchDns"/>
+<!-- <ref bean="fetchWhois"/> -->
+<!-- ...fetch if HTTP URI... -->
+<ref bean="fetchHttp"/>
+<!-- ...extract outlinks from HTTP headers... -->
+<ref bean="extractorHttp"/>
+<!-- ...extract outlinks from HTML content... -->
+<ref bean="extractorHtml"/>
+<!-- ************ ...extract outlinks from XML/RSS content.. ********** -->
+<ref bean="extractorXml"/>
+<!-- ...extract outlinks from CSS content... -->
+<ref bean="extractorCss"/>
+<!-- ...extract outlinks from Javascript content... -->
+<ref bean="extractorJs"/>
+<!-- ...extract outlinks from Flash content... -->
+<ref bean="extractorSwf"/>
+</list>
+</property>
+</bean>
+```
+
+### Processadores da cadeia de disposição (Disposition Chain Processors)
+
+| Nome do processador  | Descrição |
+| ------------- | ------------- | 
+| warcWriter| Grava os arquivos WARC de arquivamento. |
+| preconditions | Envia os links de saída do URI buscado para a cadeia de candidatos para processamento.  |
+| fetchDns | Atualiza estatísticas de rastreamento, estruturas de dados e decisões do Frontier.  |
+
+### Configurações de processador
+
+Os processadores têm configurações que efetuam rastreamentos. Cada processador pode ser ativado ou desativado. Se desativado, o Processador não será aplicado a nenhum URI. Os seguintes processadores possuem configurações padrão configuradas pelo Heritrix.
+
+preparer
+
+* preferenceDepthHops -  Number of hops (of any sort) from a seed up to which a URI has higher priority scheduling than any remaining seed. For example, if set to one, items one hop (link, embed, redirect, etc.) away from a seed will be scheduled with HIGH priority. If set to -1, no preferencing will occur, and a breadth-first search with seeds processed before discovered links will proceed. If set to zero, a purely depth-first search will proceed, with all discovered links processed before remaining seeds. Seed redirects are treated as one hop from a seed.
+
+* preferenceEmbedHops - Number of embed hops (ERX) to bump to front of host queue.
+
+* canonicalizationPolicy - Ordered list of URI canonicalization rules.  Rules are applied in the order listed from top to bottom.
+
+* queueAssignmentPolicy - Define como atribuir URIs a filas. Pode atribuir por host, por IP, pela autoridade ordenada por SURT, pela autoridade ordenada por SURT truncada em um domínio atribuível mais alto e em um de um conjunto fixo de buckets (1k).
+
+* uriPrecedencePolicy - Sets an integer precedence value on individual URIs when they are first submitted to a frontier for scheduling.  A URI's precedence directly affects which URI queue it is placed in, but does not affect a queue's precedence relative to other queues unless a queue-precedence-policy that consults URI precedence values is chosen.
+
+* costAssignmentPolicy - Calculates an integer 'cost' value for the given CrawlURI.
+
+preselector
+
+* recheckScope - Recheck if URI is in scope. This is meaningful if the scope is altered during a crawl.  When URIs are added to queues they are checked against the scope.  Setting this value to true forces the URI to be checked against the scope when it comes out of the queue, possibly after the scope is altered.
+
+* blockAll- Block all URIs from being processed. This is most likely to be used in overrides to easily reject certain hosts from being processed.
+
+* blockByRegex - Block all URIs matching the regular expression from being processed.
+
+* allowByRegex - Allow only URIs matching the regular expression to be processed.
+
+preconditions
+
+* ipValidityDurationSeconds - The minimum interval for which a dns-record will be considered valid (in seconds). If the record's DNS TTL is larger, that will be used instead.
+
+* robotsValidityDurationSeconds- The time in seconds that fetched robots.txt information is considered valid. If the value is set to '0', then the robots.txt information will never expire.
+
+* calculateRobotsOnly - Whether to calculate the robot's status of a URI, without actually applying any exclusions found. If true, excluded URIs will only be annotated in the crawl.log, but still fetched.
+
+fetchDns
+
+* acceptNonDnsResolves - Whether or not to fall-back to InetAddress resolution if a DNS lookup fails.  InetAddress resolution may use local 'hosts' files or other mechanisms.
+
+* digestContent - Whether or not to perform an on-the-fly digest hash of retrieved content-bodies.
+
+* digestAlgorithm - The algorithm (for example MD5 or SHA-1) used to perform an on-the-fly digest hash of retrieved content-bodies.
 
 
+fetchHttp
 
+* timeoutSeconds - This setting determines how long an HTTP request will wait for a resource to respond.  This setting should be set to a high value.
+
+* maxLengthBytes - This setting determines the maximum number of bytes to download per document.  When the limit is reached the document will be truncated.  By default this setting is a very large value (in the exabyte range) that will theoretically never be reached.
+
+* maxFetchKBSec - The maximum rate in KB/sec to use when fetching data from a server. The default of 0 means no maximum.
+defaultEncoding - The character encoding to use for files that do not have one specified in the HTTP response headers. The default is ISO-8859 -1.
+
+* shouldFetchBodyRule- DecideRules applied after receipt of HTTP response headers but before download of the HTTP body. If any rule returns FALSE, the fetch is aborted. Prerequisites such as robots.txt are excluded from filtering, i.e. they cannot be midfetch aborted.
+
+* soTimeoutMs - If the socket is unresponsive for this number of milliseconds, the request is cancelled.  Setting the value to zero (no timeout) is not recommended as it could hang a thread on an unresponsive server. This timeout is used to time out socket opens and socket reads. Make sure this value is less than timeoutSeconds for optimal configuration.  This ensures at least one retry read.
+sendIfModifiedSince - Send If-Modified-Since header, if previous Last-Modified fetch history information is available in URI history.
+sendIfNoneMatch - Send If-None-Match header, if previous Etag fetch history information is available in URI history.
+
+* sendConnectionClose - Send Connection: close header with every request. - w3.org connection header documentation
+
+* sendReferer- The Referer header contains the location the crawler came from.  This is the page the current URI was discovered in. The Referer is usually logged on the remote server and can be of assistance to webmasters trying to figure out how a crawler got to a particular area on a site.
+
+* sendRange- Send the Range header when there is a limit on the retrieved document size.  This is for politeness purposes.  The Range header states that only the first n bytes are of interest.  It is only pertinent if maxLengthBytes is greater than zero.  Sending the Range header results in a 206 Partial Content status response, which is better than cutting the response mid-download. On rare occasion, sending the Range header will generate 416 Request Range Not Satisfiable response.
+
+* ignoreCookies - Disable cookie handling.
+
+* sslTrustLevel- The SSL certificate trust level. The range is from the default open (trust all certs including expired, selfsigned, and those for which we do not have a CA) through loose (trust all valid certificates including selfsigned), normal (all valid certificates not including selfsigned) and strict (Cert is valid and DN must match servername).
+
+* acceptHeaders - Accept Headers to include in each request. Each must be the complete header, e.g., Accept-Language: en.
+
+* httpBindAddress- Local IP address or hostname to use when making connections (binding sockets). When not specified, uses default local address(es).
+
+* httpProxyHost - The proxy host ip address.
+
+* httpProxyPort - The proxy port.
+
+* digestContent - Whether or not to perform an on-the-fly digest hash of retrieved content-bodies.
+
+* digestAlgorithm - Specifies which algorithm (for example MD5 or SHA-1) is used to perform an on-the-fly digest hash of retrieved content-bodies.
+
+extractorHtml
+
+* extractJavascript - If true, in-page Javascript is scanned for strings that appear to be URIs. This typically finds both valid and invalid URIs.  Attempts to fetch the invalid URIs can generate webmaster concern over odd crawler behavior. Default is true.
+extractValueAttributes- If true, strings that look like URIs found in unusual places (such as form VALUE attributes) will be extracted. This typically finds both valid and invalid URIs.  Attempts to fetch the invalid URIs may generate webmaster concerns over odd crawler behavior. Default is true.
+
+* ignoreFormActionUrls - If true, URIs appearing as the ACTION attribute in HTML FORMs are ignored. Default is false.
+
+* extractOnlyFormGets - If true, only ACTION URIs with a METHOD of GET (explicit or implied) are extracted. Default is true. 
+
+* treatFramesAsEmbedLinks- If true, FRAME/IFRAME SRC-links are treated as embedded resources (like IMG, 'E' hop-type).  Otherwise they are treated as navigational links.  Default is true.
+
+* ignoreUnexpectedHtml - If true, URIs which end in typical non-HTML extensions (such as .gif) will not be scanned as if it were HTML.  Default is true.
+
+* maxElementLength - The maximum length of an HTML element.
+
+* maxAttributeNameLength - The maximum length of an HTML attribute name.
+
+* maxAttributeValueLength - The maximum length of an HTML attribute value.
+
+warcWriter
+
+* compress - If this setting is true, WARC file content will be compressed.  Note that compression applies to each content item stored in the WARC.
+
+* prefix - The prefix of the WARC filename.
+
+* maxFileSizeBytes- This setting determines the maximum size in bytes for each WARC file.  Once the WARC file reaches this size, no URIs will be written to it and another WARC file will be created to handle the remaining URIs.  This setting is not a hard limit.  If exceptionally large URIs are being downloaded, the WARC file may greatly exceed this limit.  Content items stored in WARC files are never split between WARCs.
+
+* storePaths- This setting is a list of paths into which WARC files will be written.  If more than one path is specified, a round-robin approach will be used to choose the path.  This setting is safe to change during a crawl.
+
+* poolMaxActive- Heritrix maintains a pool of WARC files that are each ready to accept downloaded documents.  This approach is used to prevent WARC writing from being a bottleneck in a multithreaded environment. This setting establishes the maximum number of such files to keep ready. The default value is five. For small crawls that you want to limit to a single WARC file, this setting should be set to one.
+
+* maxWaitForIdleMs - controls how long a thread waits for an reusable writer before considering creating a new one. If creation isn't allowed, threads will wait indefinitely for a writer to become available.
+
+* skipIdenticalDigests- Whether to skip the writing of a record when URI history information is available and indicates the prior fetch had an identical content digest.  Default is false.
+
+* maxTotalBytesToWrite - Total file bytes to write to disk. Once the size of all files on disk has exceeded this limit, this processor will stop the crawler. A value of zero means no upper limit.
+
+* directory - The directory in which the storePaths will be configured.
+
+* writeRequests -  Whether to write request type records. Default is true.
+
+* writeMetadata - Whether to write metadata type records. Default is true.
+
+* writeRevisitForIdenticalDigests- Whether to write revisit type records when a URI's history indicates the previous fetch had an identical content digest. Default is true.
+
+* writeRevisitForNotModified - Whether to write revisit type records when a 304-Not Modified response is received. Default is true.
+candidates
+
+* seedsRedirectNewSeeds - If enabled, any URI found because a seed redirected to it (original seed returned 301 or 302), will also be treated as a seed.
+
+disposition
+
+* delayFactor - How many multiples of the last fetch elapsed time to wait before recontacting the same server.
+
+* minDelayMs- The minimum time to wait after a request has been completed before recontacting the same server.  This value overrides the delayFactor.
+
+* respectCrawlDelayUpToSeconds - Whether to respect a Crawl-Delay (in seconds) provided by the site's robots.txt.
+
+* maxDelayMs- The maximum amount of time to wait after a request has been completed before recontacting the same server.  This value overrides the delayFactor.
+
+* maxPerHostBandwidthUsageKbSec - The maximum per-host bandwidth usage.
+
+### Rastreamento de estatíticas 
+
+Há vários módulos de rastreamento de estatísticas que podem ser anexado a um rastreamento. Atualmente, apenas um é fornecido pelo Heritrix. O Spring bean `statisticsTracker` que vem com o Heritrix cria o arquivo `progress-statistics.log` e fornece a IUW com dados para exibir informações de progresso sobre o rastreamento. É altamente recomendável que qualquer rastreamento executado pela IUW use esse bean.
+
+### Regras de canonização da URI
+
+O Heritrix controla os URIs duplicados para não rastrear conteúdo redundante. No entanto, os URIs podem ser compostos de várias maneiras, mesmo que a página apontada pelos URIs seja idêntica. Por exemplo, a página http://www.archive.org/index.html é a mesma página que http://WWW.ARCHIVE.ORG. Para resolver esse problema, o Heritrix canoniza os URIs antes de serem comparados quanto à desduplicação. A canonização envolve a aplicação de uma série de regras. Por exemplo, uma regra de canonização transforma todos os URIs em minúsculas. Outra regra retira o prefixo 'www' dos domínios.
+
+O bean `canonicalizationPolicy` permite especificar regras de canonização e a ordem em que elas são executadas.
+
+Para registrar o processo de canonização, adicione a linha:
+
+`org.archive.modules.canonicalize.RulesCanonicalizationPolicy.level = FINER`
+
+para o `conf/logging.properties`.
+
+As regras de canonização NÃO são executadas se o URI que está sendo verificado for o resultado de um redirecionamento. Isso é feito pelo seguinte motivo: suponha que uma regra de canonização que equalize o http://www.archive.org para http://archive.org esteja em vigor. Se o rastreador encontrar o http://archive.org, mas o servidor no archive.org direcionar para o http://www.archive.org/, o Heritrix vai pensar que o http://www.archive.org já foi rastreado. Esse problema é evitado, ignorando as regras de canonização para redirecionamentos.
+
+Alterar a canonização de URI também afeta a Wayback
+
+Observe que, se as regras de Canonicalização de URI forem modificadas, isso também poderá afetar a experiência de reprodução. Deve-se garantir que as configurações da Wayback e do Heritrix sejam consistentes, caso contrário, o mecanismo Wayback pode não conseguir resolver os URLs nas páginas da Web para o recurso canonicalizado correspondente.
+
+Caso de uso de regra de canonização URI: remoção de IDs de sessão específicos do site
+
+Neste caso de uso, assumimos que um site está retornando URIs com uma chave de ID de sessão de cid. Por exemplo, . Suponha que o ID da sessão tenha sempre 32 caracteres. Além disso, suponha que o cid aparece sempre no final do URI. Isso apresenta um problema porque o mesmo URI será capturado repetidamento devido aos IDs de sessão diferentes.
+
+A solução é adicionar uma segunda política de canonização de URI derivada da padrão. A nova política incluirá uma regra de expressão regular que filtra o ID da sessão e que é anexada a uma sobreposição de sheet. Uma sobreposição de sheet é uma maneira de substituir propriedades de beans com base em diferentes conjuntos de valores. A sobreposição de sheet criada será configurada de forma a aplicar-se apenas a URIs com um domínio específico. O exemplo abaixo mostra a configuração do Spring usada para obter esse efeito.
+
+Isso já está no cxml padrão:
+
+```
+ <!-- SHEETOVERLAYMANAGER: manager of sheets of contextual overlays
+      Autowired to include any SheetForSurtPrefix or
+      SheetForDecideRuled beans -->
+ <bean id="sheetOverlaysManager" autowire="byType"
+  class="org.archive.crawler.spring.SheetOverlaysManager">
+ </bean>
+ ```
+ 
+ Isso é comentado no cxml padrão e precisa ser descomentado:
+ 
+ ``` <!-- CANONICALIZATION POLICY -->
+ <bean id="canonicalizationPolicy"
+  class="org.archive.modules.canonicalize.RulesCanonicalizationPolicy">
+  <property name="rules">
+   <list>
+    <bean class="org.archive.modules.canonicalize.LowercaseRule" />
+    <bean class="org.archive.modules.canonicalize.StripUserinfoRule" />
+    <bean class="org.archive.modules.canonicalize.StripWWWNRule" />
+    <bean class="org.archive.modules.canonicalize.StripSessionIDs" />
+    <bean class="org.archive.modules.canonicalize.StripSessionCFIDs" />
+    <bean class="org.archive.modules.canonicalize.FixupQueryString" />
+   </list>
+  </property>
+ </bean>
+ ```
+ 
+ E algo do tipo precisa ser adicionado:
+ 
+ ```
+  <bean id="altCanonicalizationPolicy"
+  class="org.archive.modules.canonicalize.RulesCanonicalizationPolicy"
+  parent="canonicalizationPolicy" autowire-candidate="false">
+  <property name="rules">
+   <list merge="true">
+    <bean class="org.archive.modules.canonicalize.RegexRule">
+     <property name="regex" value="^(.+)(?:cid=0-9a-zA-Z{32})?$"/>
+    </bean>
+   </list>
+  </property>
+ </bean>
+
+ <bean class='org.archive.crawler.spring.SurtPrefixesSheetAssociation'>
+  <property name='surtPrefixes'>
+   <list>
+    <value>http://(z,y,</value>
+   </list>
+  </property>
+  <property name='targetSheetNames'>
+   <list>
+    <value>canonicalizationPolicySheet</value>
+   </list>
+  </property>
+ </bean>
+ 
+ <bean id='canonicalizationPolicySheet' class='org.archive.spring.Sheet'>
+  <property name='map'>
+   <map>
+    <entry key='preparer.canonicalizationPolicy'>
+     <ref bean='altCanonicalizationPolicy'/>
+    </entry>
+   </map>
+  </property>
+ </bean>
+ ```
+ 
+Para ver a regra em operação, defina o nível de logging para `org.archive.crawler.url.Canonicalizer` em `logging.properties`. Estude o output e ajuste seu regex de acordo.
+
+## Credenciais 
+
+Credenciais podem ser adicionadas para que o Heritrix consiga obter acesso a áreas de sites que exigem autenticação. As credenciais são configuradas no arquivo de configuração do Spring, `crawler-beans.cxml`. O exemplo a seguir mostra uma credencial configurada.
+
+```
+<bean id="credential"
+   class="org.archive.modules.credential.HttpAuthenticationCredential">
+
+    <property name="domain">
+        <value>
+            domain
+        </value>
+    </property>
+
+    <property name="realm">
+        <value>
+            myrealm
+        </value>
+    </property>
+
+    <property name="login">
+        <value>
+            mylogin
+        </value>
+    </property>
+
+    <property name="password">
+        <value>
+            mypassword
+        </value>
+    </property>
+
+ </bean>
+ ```
+ 
+Uma das configurações de uma credencial é seu domínio. Portanto, é possível criar todas as credenciais em nível global. No entanto, como isso pode causar um excesso de verificações desnecessárias de credenciais, recomenda-se que as credenciais sejam adicionadas a uma substituição de domínio. Dessa forma, a credencial só é verificada quando o domínio relevante está sendo rastreado.
+
+O Heritrix oferece dois tipos de autenticação: RFC2617 (Autenticação BASIC e DIGEST) e POST e GET de um formulário HTML.
+
+### Armazenamento de credenciais
+
+O Armazenamento de Credenciais contém o http ou informações de login de formulário. Deve ser configurado no arquivo `crawler-beans.cxml`.
+
+Este é um exemplo de uma CredentialStore vazia:
+
+```
+<bean id="credentialStore"
+      class="org.archive.modules.credential.CredentialStore">
+</bean>
+```
+
+No entanto, para que funcione, sua propriedade de mapa de 'credenciais' deve ser preenchida com instâncias de credenciais adequadas. Por exemplo, se você tiver um bean HtmlFormCredential definido em outro lugar com o id 'formCredential', o seguinte resultará em uma CredentialStore incluindo essa Credencial:
+
+```
+<bean id="credentialStore"
+       class="org.archive.modules.credential.CredentialStore">
+ <property key="credentials">
+  <map>
+   <entry key="formCredential" value-ref="formCredential" />
+  </map>
+ </property>
+</bean>
+```
+
+
+### Formulário HTML GET ou POST
+
+Para usar a credencial `GET` ou `POST` do Formulário HTML, forneça um `domínio`, um `método http`, um `login-uri` e `itens de formulárioP`.
+
+Antes de um URI ser agendado para rastreamento, o Heritrix procura por pré-condições. Exemplos de pré-condições incluem a captura do registro DNS do servidor que hospeda o URI e a busca do arquivo robots.txt. As credenciais do formulário HTML também são processadas como pré-condição. Se houver credenciais de formulário HTML para um determinado CrawlServer no repositório de credenciais, o URI especificado no campo de login de credencial do formulário HTML será agendado como uma pré-condição para o site, após as condições prévias do DNS e do robots.txt.
+
+domain
+
+Ver o domínio (BASIC AND DIGEST Auth).
+
+login-uri
+
+O login-uri é um URI relativo ou absoluto ao qual o Formulário HTML é enviado. Não é necessariamente a página que contém o formulário HTML; mas sim o ACTION URI ao qual o formulário é submetido.
+
+form-items
+
+Itens de formulário (form-items) são uma listagem de pares de chave/valor de formulário HTML. O botão de envio geralmente deve ser incluído nos itens de formulário.
+
+Uma configuração de formulário HTML `GET` ou `POST` é ilustrada abaixo. (Observe que esse bean deve aparecer no mapa 'credentials' da CredentialStore, seja por meio de uma referência de bean ou por estar definido como inline.)
+
+```
+<bean id="credential"
+   class="org.archive.modules.credential.HtmlFormCredential">
+
+    <property name="domain" value="example.com" />
+
+    <property name="login-uri" value="http://example.com/login"/>
+
+    <property name="form-items">
+        <map>
+            <entry key="login" value="mylogin"/>
+            <entry key="password" value="mypassword"/>
+            <entry key="submit" value="submit"/>
+        </map>
+    </property>
+</bean>
+```
+
+Observação
+
+* Para um site com uma credencial de Formulário em HTML, um login é realizado em relação a todas as credenciais de login do formulário HTML listado após as condições prévias do DNS e do robots.txt serem atendidas. O rastreador só visualizará sites que tenham credenciais de formulário HTML de uma perspectiva conectada. Não há, atualmente, uma maneira de um único trabalho do Heritrix rastrear um site em um estado não autenticado e, em seguida, rastrear novamente o site em um estado autenticado. (Isso teria que ser feito em dois lançamentos de tarefa configurados separadamente.) 
+
+* O login do formulário é executado apenas uma vez. O Heritrix continua rastreando, independentemente de o login ser bem-sucedido. Não há como dizer ao Heritrix para repetir a autenticação se a primeira tentativa não for bem-sucedida. Também não existe um meio para o rastreador reportar autenticações com sucesso ou falhas. O operador de rastreamento deve examinar os logs para determinar se a autenticação foi bem-sucedida.
+ 
+* Os formulários de login de alguns sites podem ter itens de formulário com nomes dinâmicos ou campos ocultos extras necessários, cujo valor requerido é alterado para cada visitante. Este mecanismo HtmlFormCredential não tem suporte para enviar esses formulários com êxito.
