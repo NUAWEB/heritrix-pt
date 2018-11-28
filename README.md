@@ -1302,3 +1302,133 @@ Observação
 * O login do formulário é executado apenas uma vez. O Heritrix continua rastreando, independentemente de o login ser bem-sucedido. Não há como dizer ao Heritrix para repetir a autenticação se a primeira tentativa não for bem-sucedida. Também não existe um meio para o rastreador reportar autenticações com sucesso ou falhas. O operador de rastreamento deve examinar os logs para determinar se a autenticação foi bem-sucedida.
  
 * Os formulários de login de alguns sites podem ter itens de formulário com nomes dinâmicos ou campos ocultos extras necessários, cujo valor requerido é alterado para cada visitante. Este mecanismo HtmlFormCredential não tem suporte para enviar esses formulários com êxito.
+
+### Logging
+
+Para habilitar o log do console de texto de interações de autenticação, defina os níveis de log `FetchHTTP` e `PreconditionEnforcer` para "fine".
+
+```
+org.archive.crawler.fetcher.FetchHTTP.level = FINE
+org.archive.crawler.prefetch.PreconditionEnforcer.level = FINE
+```
+
+Isso é feito editando o arquivo `logging.properties` do diretório conf.
+
+### RFC2617 (autenticação BASIC e DIGEST)
+
+Para usar a credencial RFC2617, forneça um domínio, realm, nome de usuário e senha.
+
+A maneira como a autenticação RFC2617 funciona no Heritrix é que, em resposta a um código de resposta 401 (não autorizado), o Heritrix usará uma chave composta do domínio e do realm para fazer uma pesquisa em seu Repositório de Credenciais. Se uma correspondência for encontrada, a credencial será carregada no CrawlURI, que será marcado para uma nova tentativa imediata. 
+
+Quando a nova tentativa é feita, as credenciais encontradas são adicionadas à solicitação.  Se a solicitação for bem-sucedida com um código de resposta 200, as credenciais serão promovidas para o servidor CrawlServer e todas as solicitações subsequentes, feitas no CrawlServer, fornecerão a credencial de forma preventiva. Se a credencial falhar com um código de resposta 401, não haverão novas tentivas com o CrawlURI.
+
+domain
+
+Domain (domínio) é o URI de raiz canônico do RFC2617; é o nome ou a autoridade do URI do CrawlServer (domínio mais porta se diferente da porta 80). Exemplos de domínios são: 'www.archive.org' ou 'www.archive.org:8080'.
+
+realm
+
+O realm (território) é definido na FAQ RFC2617. A cadeia do realm deve corresponder exatamente ao nome do realm apresentado no desafio de autenticação atendido pelo servidor da web.
+
+Uma configuração de credencial RFC2617 é mostrada abaixado:
+
+```
+<bean id="credential"
+class="org.archive.modules.credential.HttpAuthenticationCredential">
+
+
+<property name="domain">
+<value>
+domain
+</value>
+</property>
+
+
+<property name="realm">
+<value>
+myrealm
+</value>
+</property>
+
+
+<property name="login">
+<value>
+mylogin
+</value>
+</property>
+
+
+<property name="password">
+<value>
+mypassword
+</value>
+</property>
+
+
+</bean>
+```
+
+Observação
+
+Apenas um realm por domain de credencial é permitido. Consulte Logon (HTTP POST, Basic Auth, etc.) para mais informações.
+
+## Criação de Tarefas e Perfis
+
+Esta seção fornece detalhes sobre a criação de tarefas e perfis.
+
+### Criando uma tarefa
+
+Uma tarefa pode ser criada a partir de três maneiras:
+
+1. Com base em uma tarefa existente
+
+Essa opção permite que uma nova tarefa seja criada com base em uma tarefa existente, independentemente de a tarefa ter sido rastreada ou não. Essa opção pode ser útil para repetir rastreamentos ou recuperar rastreamentos que tiveram problemas. Veja Recovery of Frontier State e frontier.recover.gz. Para criar uma tarefa baseada em um trabalho existente, use o botão "copy" na página do trabalho original.
+
+2. Com base em um perfil.
+
+Essa opção permite que uma nova tarefa seja criada com base em um perfil existente. Para criar uma tarefa baseada em um perfil, use o botão "copy" na página do perfil.
+
+3. Com base no perfil padrão.
+
+Essa opção cria uma tarefa de rastreamento com base no perfil padrão. Para criar uma tarefa a partir do perfil padrão, insira um nome de trabalho na tela do controle principal e clique no botão "create".
+
+Observação
+
+* Mudanças feitas em tarefas ou perfis não afetam tarefas derivadas.
+
+* Tarefas baseadas no perfil padrão fornecido pelo Heritrix não estão prontos para serem executados como estão. O `metadata.operatorContactUrl` precisa ser configurado com um valor válido.
+
+### Criando um perfil
+
+Perfis podem ser criados a partir de tarefas existentes ou outros perfis. Na página de tarefa ou perfil, insira o nome do novo perfil e marque a caixa "as profile". Em seguida, clique no botão "copy".
+
+Para modificar o comportamento do novo perfil, consulte Configurando Tarefas e Perfis.
+
+Observação
+
+As alterações feitas no perfil ou na tarefa não afetam perfis derivados.
+
+## Além da Interface de Usuário
+
+Embora seja possível fazer muitas coisas com a IUW do Heritrix, há muitos recursos disponíveis fora dela.
+
+### Recuperação de rastreamento
+
+Durante a operação normal, o Heritrix Frontier mantém um diário. O diário é mantido no diretório de log e é nomeado `frontier.recovery.gz`. Se ocorrer uma falha durante um rastreamento, o diário `frontier.recover.gz` poderá ser usado para recriar o status aproximado do rastreador no momento da falha. Em alguns casos, a recuperação pode demorar, mas normalmente é muito mais rápida do que repetir o rastreamento travado.
+
+A utilização desse processo inicia um rastreamento totalmente novo, com a mesma configuração (ou modificada). No entanto, esse novo rastreamento fará um desvio maior no início, no qual é usado as saídas frontier-recover.gz do rastreamento anterior para simular o status da fronteira (URIs descobertos, URIs enfileirados) do rastreamento anterior. Todos os ARC/WARCs, logs e pontos de verificação do rastreamento anterior seriam deixados de lado, retendo apenas os logs e ARC/WARCs como um registro do rastreamento até o momento.
+
+Quaisquer arquivos ARC/WARC que existam com o sufixo `.open` não foram fechados corretamente pela execução anterior e podem incluir dados corrompidos/truncados no último registro parcial. Os arquivos com sufixo `.warc.gz.open` podem ser renomeados para `.warc.gz`, mas considere a possibilidade de validar tais ARC/WARCs (zcat'ando o arquivo para/dev/null para verificar a validade do gzip ou outras ferramentas ARC/WARC para registro completo) antes de remover o sufixo ".open".
+
+### Recuperação completa
+
+Para executar o processo de recuperação, reinicie o rastreador com falha e copie o arquivo `frontier.recover.gz` no Action Directory. Em seguida, reinicie o rastreamento. O Heritrix carregará automaticamente o arquivo de recuperação e começará a colocar seus URIs no Frontier para rastreamento.
+
+Se um arquivo `.recover.gz` estiver sendo usado, apenas um arquivo completo deve ser usado. (Isso é para que o diretório de ação processando um arquivo de cada vez possa fazer a primeira passagem completa de 'includes', em seguida, a passagem completa de 'horários', de um arquivo. O fornecimento de vários arquivos `.recover.gz` em série resultará em um ciclo includes/schedule, includes/schedule, etc., que não produzirá o efeito desejado no frontier.)
+
+
+ 
+
+
+
+
