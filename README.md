@@ -1425,3 +1425,34 @@ Quaisquer arquivos ARC/WARC que existam com o sufixo `.open` não foram fechados
 Para executar o processo de recuperação, reinicie o rastreador com falha e copie o arquivo `frontier.recover.gz` no Action Directory. Em seguida, reinicie o rastreamento. O Heritrix carregará automaticamente o arquivo de recuperação e começará a colocar seus URIs no Frontier para rastreamento.
 
 Se um arquivo `.recover.gz` estiver sendo usado, apenas um arquivo completo deve ser usado. (Isso é para que o diretório de ação processando um arquivo de cada vez possa fazer a primeira passagem completa de 'includes', em seguida, a passagem completa de 'schedules', de um arquivo. O fornecimento de vários arquivos `.recover.gz` em série resultará em um ciclo includes/schedule, includes/schedule, etc., que não produzirá o efeito desejado no frontier.)
+
+Enquanto o arquivo estiver sendo processado, qualquer ponto de verificação (manual ou automático) não será um snapshot válido do estado do rastreador. (O processo de log de recuperação do frontier ocorre por meio de um thread/caminho separado, fora do sistema de verificação mais recente.). Somente quando o processamento do arquivo for concluído (arquivo movido para 'concluído') o rastreador estará em um estado de verificação confiável.
+
+Depois que os URIs começarem a aparecer nas filas (quando a recuperação entrar na passagem de 'agendamentos'), o rastreador poderá ser despausado para começar a buscar URIs enquanto o restante da passagem de recuperação 'agendamentos' continuar. 
+
+No entanto, a nota acima sobre pontos de verificação ainda se aplica: um ponto de verificação preciso só ocorrerá quando o processamento de arquivos de recuperação do frontier for concluído.
+
+Além disso, despausar o rastreamento dessa maneira pode resultar na redescoberta de alguns URIs por meio de novos caminhos antes que a descoberta original seja reproduzida por meio do processo de recuperação. (Muitos rastreamentos podem não se importar com esse pequeno desvio do estado de rastreamento recuperado, mas se o escopo for muito dependente do caminho ou do hop, isso pode causar diferenças no que é incluído no escopo).
+
+possibilidade de criação de Avisos
+
+Observação: feeding the entire frontier back to the crawler is likely to produce many "Problem line" warnings in the job log. Some operators find it useful to allow the entire recovery file to be ingested by the crawler before attempting to resume (unpause), to help isolate this chatter, and to minimize generating duplicate crawldata during recovery.
+
+### split recover
+
+Uma maneira alternativa de executar o processo de recuperação é ilustrada abaixo. Eliminar linhas irrelevantes logo no início (fora do processo de recuperação) pode permitir que o processo de recuperação seja concluído mais rápido do que o processo padrão. Também permite que o processo proceda de vários arquivos, em vez de um só, portanto, pode fornecer uma indicação de progresso melhor em andamento e chances de checkpoint a recuperação.
+
+Para executar o processo de recuperação alternativo:
+
+1. move aside prior logs and ARCs/WARCs as above
+2. Abrir novamente o rastreamento com falha
+3. Dividir qualquer arquivo de origem `frontier.recover.gz` usando comandos como os seguintes:
+
+```
+zcat frontier.recover.gz | grep '^Fs' | gzip > frontier.include.gz
+zcat frontier.recover.gz | grep '^F+' | gzip > frontier.schedule.gz
+```
+
+1. Construa e inicie a tarefa que havia falhado (com a mesma configuração). A tarefa estará pausada.
+2. Mova o(s) arquivo(s) `frontier.include.gz` para o diretório "action". O diretório está localizado no mesmo nível na hierarquia da estrutura de arquivos que o diretório bin. (Se houver muitos arquivos, é possível movê-los todos juntos de uma só vez, ou em pequenos lotes para monitorar melhor o progresso. No momento em que todos os arquivos previamente apresentados forem processados - ou seja, movidos para o diretório 'done', é possível fazer um checkpoint válido.
+3.
