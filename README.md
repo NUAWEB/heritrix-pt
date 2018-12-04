@@ -1455,4 +1455,184 @@ zcat frontier.recover.gz | grep '^F+' | gzip > frontier.schedule.gz
 
 1. Construa e inicie a tarefa que havia falhado (com a mesma configuração). A tarefa estará pausada.
 2. Mova o(s) arquivo(s) `frontier.include.gz` para o diretório "action". O diretório está localizado no mesmo nível na hierarquia da estrutura de arquivos que o diretório bin. (Se houver muitos arquivos, é possível movê-los todos juntos de uma só vez, ou em pequenos lotes para monitorar melhor o progresso. No momento em que todos os arquivos previamente apresentados forem processados - ou seja, movidos para o diretório 'done', é possível fazer um checkpoint válido.
-3.
+3. O progesso dessa fase 'includes' pode ser acompanhando visualizando a interface do usuário da web ou pelo contador `discovered` pelo `progress-statistics.log` 
+4. Quando todos `.includes` terminarem de carregar, o processo pode ser repetido com todos os logs `.schedule`.
+5. Se houver um número muito grande de URIs na contagem da fila (vários milhares), o rastreamento pode ser despausado para permitir que o novo rastreamento continue paralelamente ao enfileiramento de URIs mais antigos.
+
+Você pode mover todos os arquivos `.include` e `.schedule` para o diretório "action" antes de iniciar, se tiver certeza de que a ordenação lexicográfica de seus nomes funcionará corretamente (mostrar todos os {{.include}}s primeiro e o {{. schedule}}s na mesma ordem que o rastreamento original). No entanto, isso deixa pouca oportunidade para ajustar/checkpoint o processo: o diretório "action" irá descobri-los e processá-los todos em um loop fechado.
+
+Observação: Para ter certeza do sucesso e do atual status do rastreamento contra qualquer tipo de possível erros IO/format, em grandes recuperações de milhões de registros, é melhor aguardar a conclusão de cada etapa antes de mover um arquivo ou despausar a tarefa. Em vez de analisar as estatísticas de progresso, aguarde até que o arquivo seja movido de "action" para "action/done". Em seguida, adicione o segundo arquivo. Espere novamente. Finalmente, despause o rastreador.
+
+Uma recuperação de 100M URIs pode levar dias, então, por favor, seja paciente.
+
+## Processadores de Redução de Duplicação
+
+### Redução de duplicação de URL-Agnostic 
+
+Para configurar a deduplicação independente de URL de conteúdo idêntico, adicione esses beans de nível superior ao seu crawler-beans.cxml:
+
+```
+  <!-- optional, will use the main bdb module if omitted, just like old dedup -->
+  <bean id="historyBdb" class="org.archive.bdb.BdbModule" autowire-candidate="false">
+   <property name="dir" value="history" />
+  </bean>
+
+  <bean id="contentDigestHistory" class="org.archive.modules.recrawl.BdbContentDigestHistory">
+   <property name="bdbModule">
+    <ref bean="historyBdb" />
+   </property>
+  </bean>
+  ```
+  
+  And then insert these beans into your disposition chain, sandwiching the warcWriter:
+  
+  ```
+   <bean id="dispositionProcessors" class="org.archive.modules.DispositionChain">
+   <property name="processors">
+    <list>
+==>    <bean class="org.archive.modules.recrawl.ContentDigestHistoryLoader" />
+     <!-- write to aggregate archival files... -->
+     <ref bean="warcWriter"/>
+==>    <bean class="org.archive.modules.recrawl.ContentDigestHistoryStorer" />
+     <!-- ...send each outlink candidate URI to CandidateChain,
+          and enqueue those ACCEPTed to the frontier... -->
+     <ref bean="candidates"/>
+     <!-- ...then update stats, shared-structures, frontier decisions -->
+     <ref bean="disposition"/>
+     <!-- <ref bean="rescheduler" /> -->
+    </list>
+   </property>
+  </bean> 
+  ```
+  
+  ```
+  Legacy Duplication Reduction Configuration
+  ```
+  
+A partir da versão 1.12.0, vários Processadores podem cooperar para transportar o histórico de conteúdo do URI entre os rastreamentos (consulte JavaDocs do pacote `org.archive.crawler.processor.recrawl`). Isso reduz a quantidade de material duplicado baixado ou armazenado em rastreamentos posteriores. Consulte Deduplicação (Redução de Duplicação) para detalhes de configuração de desduplicação do H1. No H3, use o arquivo `crawler-beans.cxml` para configurar a deduplicação e adicione os seguintes processadores, conforme descrito abaixo.
+
+## Configurar armazenamento de histórico de URI persistente
+
+Essas configurações devem ser adicionadas a qualquer rastreamento que forneça informações de busca de histórico para futuras deduplicações (como o primeiro de dois rastreamentos ou todos os rastreamentos de uma série em andamento).
+
+(1) Defina um bean nomeado para `FetchHistoryProcessor`:
+
+```
+<bean id="fetchHistoryProcessor" class="org.archive.modules.recrawl.FetchHistoryProcessor">
+ <!-- <property name="historyLength" value="2" /> -->
+</bean>
+```
+
+(2) Defina um bean nomeado para `PersistStoreProcessor`:
+
+```
+<bean id="persistStoreProcessor" class="org.archive.modules.recrawl.PersistStoreProcessor">
+</bean>
+```
+
+(3) Adicione esses beans de processador às cadeias de processamento relevantes.
+
+O *fetchHistoryProcessor* deve ser adicionado ao *FetchChain* depois dos outros processadores de busca. O persistStoreProcessor deve ser adicionado depois de qualquer gravador no DispositionChain. A melhor forma de fazer isso é usando marcadores "ref" para se referir aos beans processadores acima nas definições do bean *FetchChain* e *DispositionChain*.
+
+Exemplo em um FetchChain comum:
+
+```
+<bean id="fetchProcessors" class="org.archive.modules.FetchChain">
+  <property name="processors">
+   <list>
+    <!-- recheck scope, if so enabled... -->
+    <ref bean="preselector"/>
+    <!-- ...then verify or trigger prerequisite URIs fetched, allow crawling... -->
+    <ref bean="preconditions"/>
+    <!-- ...fetch if DNS URI... -->
+    <ref bean="fetchDns"/>
+    <!-- ...fetch if HTTP URI... -->
+    <ref bean="fetchHttp"/>
+=>    <ref bean="fetchHistoryProcessor" />
+    <!-- ...extract oulinks from HTTP headers... -->
+    <ref bean="extractorHttp"/>
+    <!-- ...extract oulinks from HTML content... -->
+    <ref bean="extractorHtml"/>
+    <!-- ...extract oulinks from CSS content... -->
+    <ref bean="extractorCss"/>
+    <!-- ...extract oulinks from Javascript content... -->
+    <ref bean="extractorJs"/>
+    <!-- ...extract oulinks from Flash content... -->
+    <ref bean="extractorSwf"/>
+   </list>
+  </property>
+</bean>
+```
+
+Exemplo em um DispositionChain comum:
+
+```
+<bean id="dispositionProcessors" class="org.archive.modules.DispositionChain">
+  <property name="processors">
+   <list>
+    <!-- write to aggregate archival files... -->
+    <ref bean="warcWriter"/>
+=>  <ref bean="persistStoreProcessor" />
+    <!-- ...send each outlink candidate URI to CandidatesChain,
+         and enqueue those ACCEPTed to the frontier... -->
+    <ref bean="candidates"/>
+    <!-- ...then update stats, shared-structures, frontier decisions -->
+    <ref bean="disposition"/>
+   </list>
+  </property>
+</bean>
+```
+
+Feito isso, as informações do histórico URI de interesse para os rastreamentos posteriores são mantidas pelo ambiente BDB padrão do rastreamento (conforme gerenciado pelo BdbModule, residindo no disco no diretório 'state').
+
+### Configurar o carregamento de histórico de URI persistente para rastreamentos subsequentes
+
+Siga as etapas abaixo para qualquer tipo de rastreamento que tire proveito da deduplicação, como o segundo de dois rastreamentos, ou todos os rastreamentos de uma série (menos o primeiro).
+
+(1) Defina um bean nomeado para `PersistLoadProcessor`:
+
+```
+<bean id="persistLoadProcessor" class="org.archive.modules.recrawl.PersistLoadProcessor">
+</bean>
+```
+
+Conforme configurado aqui, as informações do histórico de URI serão carregadas a partir do ambiente BDB padrão do rastreamento (conforme gerenciado pelo BdbModule, residindo no disco no diretório 'state').
+
+(2) Se ainda não existir, defina um bean nomeado para o `FetchHistoryProcessor`:
+
+```
+<bean id="fetchHistoryProcessor" class="org.archive.modules.recrawl.FetchHistoryProcessor">
+ <property name="historyLength" value="10" />
+</bean>
+```
+
+Assegure-se de que esses beans de processador estejam nas cadeias de processamento apropriadas, nos locais certos. Adicione as tags `ref` dos processadores acima ao bean *FetchChain*. Adicione o processador *persistLoadProcessor* após o bean das pré-condições. Adicione o *fetchHistoryProcessor* após outros beans de busca.
+
+```
+<bean id="fetchProcessors" class="org.archive.modules.FetchChain">
+  <property name="processors">
+   <list>
+    <!-- recheck scope, if so enabled... -->
+    <ref bean="preselector"/>
+    <!-- ...then verify or trigger prerequisite URIs fetched, allow crawling... -->
+    <ref bean="preconditions"/>
+=>    <ref bean="persistLoadProcessor"/>
+    <!-- ...fetch if DNS URI... -->
+    <ref bean="fetchDns"/>
+    <!-- ...fetch if HTTP URI... -->
+    <ref bean="fetchHttp"/>
+=>    <ref bean="fetchHistoryProcessor"/>
+    <!-- ...extract oulinks from HTTP headers... -->
+    <ref bean="extractorHttp"/>
+    <!-- ...extract oulinks from HTML content... -->
+    <ref bean="extractorHtml"/>
+    <!-- ...extract oulinks from CSS content... -->
+    <ref bean="extractorCss"/>
+    <!-- ...extract oulinks from Javascript content... -->
+    <ref bean="extractorJs"/>
+    <!-- ...extract oulinks from Flash content... -->
+    <ref bean="extractorSwf"/>
+   </list>
+  </property>
+</bean>
+```
