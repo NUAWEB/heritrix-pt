@@ -1796,7 +1796,7 @@ Observação
 
 * Mudanças feitas na tarefa ou perfil base não modificam o novo perfil criado.
 
-## Página de tarefa
+## Página de tarefa (Job Page)
 
 O Heritrix 3.0/3.1 introduz a capacidade de executar várias tarefas simultaneamente na mesma instância do rastreador. No Heritrix 1.x, apenas uma tarefa poderia ser executado por vez, enquanto as outras tarefas eram enfileirados atrás da tarefa em execução. O único limite que afeta o número de tarefas que podem ser executadas simultaneamente no Heritrix 3.0/3.1 é a quantidade de memória alocada para o heap Java. Se muitos rastreamentos forem executados, o heap Java poderá, em algum momento, estar esgotado. Isso resultará em um erro OutOfMemory que cancelará os rastreamentos em execução.
 
@@ -1804,53 +1804,89 @@ Depois que uma tarefa de rastreamento tiver sido criada e configurada corretamen
 
 ### Elementos de dados da página de tarefa
 
-Nome da tarefa
+Job name
 O nome da tarefa e o número de vezes que foi executada.
 
-Pontos de verificação disponíveis para recuperar
+Avaible checkpoints to recover
 A partir da versão 3.1, se um rastreamento tiver sido verificado, uma caixa suspensa será exibida mostrando todos os pontos de verificação que foram executados.
 
-Registro de tarefa
+Job Log
 O log da tarefa contém um registro dos comandos emitidos na página da tarefa, incluindo respostas de comando.
 
-Status da tarefa
+Job Status
 Exibe o status da tarefa.
 
-Totais
+Totals
 Exibe estatísticas que fornecem informações sobre o número de documentos rastreados e baixados.
 
-Alertas
+Alerts
 Lista os alertas gerados pelo rastreamento. Os alertas podem ser avisos ou problemas que abortam o rastreamento mas que não prejudicam o rastreamento, mas podem prejudicar o resultado do rastreamento.
 
-Taxas de download
+Rates
 Exibe estatísticas que fornecem as taxas nas quais os documentos e bytes de dados estão sendo baixados. O número de URIs processados por segundo, com sucesso, é mostrado. Para esta estatística, é mostrada a taxa do último intervalo de amostragem e a taxa média (entre parênteses). O intervalo de amostragem é geralmente de cerca de 20 segundos e pode ser controlado pela propriedade intervalSeconds do bean Spring do StatisticsTracker. A taxa mais recente de progresso pode flutuar consideravelmente, à medida que a carga de trabalho do rastreador varia e ocorrem a memória de manutenção e as operações de arquivo. Isso é principalmente verdadeiro se o intervalo de amostragem tiver sido definido com um valor baixo. A taxa de coleta de conteúdo bem-sucedida em KB /segundo para o intervalo de amostragem mais recente e (entre parênteses) a média desde o início do rastreamento também são exibidas.
 
-Carga
+Load
 Exibe estatísticas que fornecem informações de carga. O número de encadeamentos ativos, comparado ao total de encadeamentos disponíveis, é mostrado. Normalmente, se apenas um pequeno número de threads estiver ativo, é porque ativar mais threads excederia as configurações de cortesia configuradas. Por exemplo, se todos os URIs restantes estiverem em um único host, apenas um encadeamento estará ativo, a menos que as filas paralelas estejam ativadas. Às vezes, nenhum tópico estará ativo devido a pausas para considerações de cortesia.
 
-Taxa de Congestionamento
+Congestion Ratio
 O índice de congestionamento é uma estimativa aproximada de quanta capacidade inicial, como um múltiplo da capacidade atual, seria necessária para rastrear a carga de tarefa atual na taxa máxima disponível em determinadas configurações de cortesia. Esse valor é calculado comparando o número de filas internas que estão progredindo em relação àquelas que estão aguardando a disponibilização de um encadeamento.
 
-Fila Mais Profunda
+Deepest Queue
 A estatística de fila mais profunda é a cadeia mais longa de URIs que deve ser processada sequencialmente. Essa estatística é um indicador superior do trabalho restante do que o número total de URIs pendentes. Por exemplo, 1000 URIs em 1000 filas podem ser concluídos rapidamente, mas 1000 URIs em uma única fila levarão muito mais tempo para serem concluídos. A profundidade média é a profundidade média do último URI em todas as filas seqüenciais ativas.
 
-Transcorrido
+Elapsed
 Exibe o tempo decorrido, em milissegundos, que uma tarefa foi executada, excluindo o tempo no estado "pausado".
 
-Encadeamentos
+Threads
 Esta área da página do trabalho exibe o número de encadeamentos sendo usados. Clicar em "threads" para ver um relatório de detalhado.
 
 Frontier
 Exibe estatísticas do Frontier, como o número de URIs enfileirados. Clicar em "frontier" para ver um relatório de detalhado.
 
-Memória
+Memory
 Exibe a quantidade de memória alocada para o heap Java, a quantidade de memória em uso e o tamanho máximo do heap Java.
 
-Log de rastreamento
+Crawl Log
 Exibe a saída do log de rastreamento. O log de rastreamento contém informações detalhadas sobre um rastreamento em execução, como os URIs que foram buscados.
 
-Avançado
+Advanced
 Fornece acesso a recursos avançados que podem ser usados para controlar uma tarefa.
 
-Caminhos referenciados à configuração
+Configuration-referenced Paths
 Exibe os caminhos relevantes para a configuração e registro de tarefa. Por exemplo, o caminho para o arquivo `crawl.log` é exibido.
+
+### Operações da página de trabalho
+
+Edit
+Permite editar o arquivo `crawler-beans.cxml`. O arquivo `crawler-beans.cxml` contém a configuração Spring da tarefa de rastreamento. A edição desse arquivo é a maneira padrão de configurar uma tarefa ou perfil.
+
+Build
+Cria as classes Java Spring configuradas por meio do arquivo `crawler-beans.cxml`. Antes de uma tarefa ser executada, ela deve ser construída.
+
+Launch
+Inicia uma tarefa de rastreamento. Antes de ser lançada, a tarefa deve ser construída. Uma vez que a tarefa é lançada, ela estará pausada ou em execução. Se estiver pausada, o botão "unpause" deve ser clicado para iniciar o rastreamento. A partir da versão 3.1, se um ponto de verificação ou vários pontos de verificação foi/foram executados, um ponto de verificação pode ser selecionado na caixa suspensa do ponto de verificação. A tarefa pode ser reiniciada no ponto de verificação clicando em "launch".
+
+Pause
+Pausa o rastramento em andamento.
+
+Unpause
+Despausa o rastreamento.
+
+Checkpoint
+Salva o estado atual do rastreamento no armazenamento. Durante o tempo em que o rastreamento está sendo verificado, ele é pausado e nenhum URI será rastreado. O ponto de verificação (checkpoint) é útil se um rastreamento deve ser interrompido e, em seguida, reiniciado.
+
+Terminate
+Encerra um rastreamento.
+
+Teardown
+Descarta as classes Spring Java atuais da tarefa e permite que uma nova configuração Spring seja construída. Qualquer alteração no arquivo `crawler-beans.cxml` após o botão "Build" ter sido chamado requer uma desmontagem (teardown) e outra montagem a ser executada.
+
+Copy
+Permite a cópia da configuração da tarefa atual para uma nova tarefa ou perfil.
+
+Scripting Console
+Exibe um formulário de entrada que pode ser usado para inserir e executar comandos de script. Os comandos de script podem ser usados para controlar o comportamento de uma tarefa de rastreamento. Várias linguagens de script estão disponíveis, como AppleScript e ECMAScript. Exemplos de scripts podem ser encontrados aqui.
+
+
+Browse Beans
+Exibe a hierarquia dos beans Spring que formam uma tarefa de rastreamento. As propriedades e associações de cada bean podem ser visualizadas ou editadas clicando no bean.
