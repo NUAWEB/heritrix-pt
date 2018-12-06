@@ -1890,3 +1890,229 @@ Exibe um formulário de entrada que pode ser usado para inserir e executar coman
 
 Browse Beans
 Exibe a hierarquia dos beans Spring que formam uma tarefa de rastreamento. As propriedades e associações de cada bean podem ser visualizadas ou editadas clicando no bean.
+
+## Frontier
+
+O Frontier é um bean Spring que mantém o estado interno do rastreamento. O estado do rastreamento contém informações como URIs rastreadas ou descobertas anteriormente, bem como outras informações relevantes para o status do rastreamento.
+
+Há apenas um bean Frontier por tarefa de rastreamento.
+
+Crucialmente, a frontier do Heritrix3, além de armazenar várias filas de URLs para rastreamento em ordem de prioridade, também controla as configurações de cortesia de atraso de rastreamento por filas. Ou seja, controla, também, quando CrawlURIs devem ser rastreados, não somente a prioridade de rastreamento.
+
+O Heritrix BdbFrontier também implementa a rotação de filas, para garantir que todas as filas sejam vistas, mesmo quando houver um número maior de filas do que de threads disponíveis para executar o rastreamento. Isso significa que as filas de rastreamento do Heritrix têm "orçamentos de sessão" (para manipular a rotação), além de cotas de rastreamento gerais (que são aplicadas a todo o rastreamento).
+
+Nas versões 3.0 e 3.1, existe apenas um tipo de Frontier, o Heritrix BdbFrontier. Outros frontiers que foram incluídos no Heritrix 1.x não são mais suportados.
+
+Para mais detalhes, ver:
+
+* Configurações do Frontier 
+* Frontier queue budgets
+* Heritrix BdbFrontier (detalhes técnicos)
+
+### Configurações do Frontier
+
+Politeness
+
+Uma combinação de várias configurações controla a politeness do Frontier. É importante observar que, a qualquer momento, apenas um URI de qualquer host é processado. As regras de cortesia a seguir impõem um tempo de espera adicional entre o final do processamento de um URI e o início do próximo.
+
+* delayFactor - Essa configuração impõe um atraso entre a obtenção de URIs do mesmo host. O atraso é um múltiplo do tempo necessário para buscar o último URI baixado do host. Por exemplo, se foram necessários 800 milissegundos para buscar o último URI de um host e o delayFactor for 5 (um valor muito alto), o Frontier aguardará 4000 milissegundos (4 segundos) antes de permitir que outro URI desse host seja processado.
+
+* maxDelayMs- Essa configuração impõe um limite máximo no tempo de espera criado pelo delayFactor. Se definido como 1000 milissegundos, o atraso máximo entre as buscas de URI do mesmo host nunca excederá esse valor.
+
+* minDelayMs- Essa configuração impõe um limite mínimo de politeness. Tem precedência sobre o valor calculado pelo delayFactor. Por exemplo, o valor de minDelayMs pode ser definido como 100 milissegundos. Se o delayFactor gerar uma espera de apenas 20 milissegundos, o valor de minDelayMs irá substituí-lo e a busca de URI será atrasada por 100 milissegundos.
+
+```
+<bean id="disposition" class="org.archive.crawler.postprocessor.DispositionProcessor">
+<property name="delayFactor" value="5.0" />
+<property name="maxDelayMs" value="30000" />
+<property name="minDelayMs" value="3000" /></bean>
+```
+
+Política de tentativas
+
+O Frontier pode ser usado para limitar o número de tentativas de busca para um URI. O Heritrix tentará recuperar um URI porque o erro de busca inicial pode ser uma condição transitória.
+
+* maxRetries - Essa configuração limita o número de novas tentativas de busca em um URI devido a erros transitórios.
+
+* retryDelaySeconds - Essa configuração determina o tempo do período de espera entre novas tentativas.
+
+```
+<bean id="frontier"
+   class="org.archive.crawler.frontier.BdbFrontier">
+
+  <property name="retryDelaySeconds" value="900" />
+  <property name="maxRetries" value="30" />
+
+ </bean>
+ ```
+ 
+ Limites de Largura de Banda
+ 
+O Frontier permite ao usuário limitar o uso de largura de banda, retendo URIs quando o uso da largura de banda excedeu certos limites. Como as limitações de uso da largura de banda são calculadas ao longo de um período de tempo, ainda pode haver picos de uso que excedam os limites.
+
+* maxPerHostBandwidthUsageKbSec - Essa configuração limita a largura de banda máxima a ser usada por qualquer host. Essa configuração limita a carga colocada pelo Heritrix no host. É, portanto, uma configuração de politeness.
+
+```
+<bean id="disposition" class="org.archive.crawler.postprocessor.DispositionProcessor">
+<property name="maxPerHostBandwidthUsageKbSec" value="500" />
+</bean>
+```
+
+Parâmetros de extração
+
+A partir da versão 3.1, o comportamento do Frontier em relação à extração de links pode ser controlado pelos seguintes parâmetros.
+
+* extract404s - Essa configuração permite que o operador evite a extração de links de páginas 404 (Not Found). O configuração padrão é "true", o que mantém o comportamento pré-3.1 de extração links de páginas 404.
+
+```
+<bean id="frontier" class="org.archive.crawler.frontier.BdbFrontier">
+<property name="extract404s" value="true" />
+</bean>
+```
+
+* extractIndependently - Essa configuração incentiva os processadores de extração a sempre executar a extração da melhor forma possível, mesmo que um extrator anterior tenha marcado um URI como já manipulado. Defina o valor como "true" para ativar essa configuração. O definição padrão é "false", o que mantém o comportamento pré-3.1.
+
+### Heritrix BdbFrontier
+
+O BdbFrontier visita URIs e descobre sites de uma maneira geralmente ampla. Oferece opções de configuração para controlar como ele controla a atividade em determinados hosts. Algumas configurações permitem que haja uma tendência a finalizar os hosts em andamento (rastreamento "site-first") ou que haja alternações entre todos os hosts com URIs pendentes.
+
+Os URIs descobertos são rastreados apenas uma vez, com exceção às informações do robots.txt e DNS, que podem ser configuradas para serem atualizadas em intervalos específicos para cada host.
+
+A partir da versão 3.1, há duas novas propriedades.
+
+| Propriedade  | Padrão | Descrição |
+| ------------- | ------------- | | ------------- | 
+| largestQueuesCount| 20 | Controla quantas, das filas maiores, são rastreadas e relatadas no "relatório frontier". |
+| maxQueuesPerReportCategory | 2000  | Controla o número máximo de filas por categoria listadas no "relatório frontier". |
+
+Quando as filas diminium do top-N ou o valor é alterado no meio do rastreamento, as informações sobre as filas maiores pode não ser exata. A lista é atualizada apenas quando uma fila passa para o grupo maior.
+
+### Detalhes da implementação
+
+O armazenamento da fila é gerenciado por meio de um banco de dados BDB JE incorporado. É um armazenamento simples de valor-chave, portanto, a multiplicidade de filas é implementada como prefixos-chave. Cada CrawlURI é armazenado no banco de dados BDB como um binary blob serializado usando Kryo, sob uma chave que combina o prefixo de fila (classKey) e a prioridade de rastreamento do CrawlURI.
+
+A lista de ativo/dormindo/etc são mantidas na memória e gravadas no disco durante o checkpoint no formato JSON. Se você continuar a partir do checkpoint, o BdbFrontier será reutilizado, mas as informações necessárias da fila serão fornecidas pelos arquivos JSON. Se o banco de dados do frontier *não* for reutilizado a partir de um ponto de verificação, o banco de dados será 'truncado' e todos os dados no BdbFrontier serão descartados.
+
+A atualização do conteúdo do frontier a partir de vários encadeamentos exige cuidado, pois é necessário fazer alterações e confirmá-las no disco sem que ocorram conflitos. Uma vez que qualquer alteração tenha sido feita, por exemplo, um WorkQueue, a chamada `wq.makeDirty ()` é usada para iniciar um processo no qual o WorkQueue é serializado para o disco e lido novamente (para assegurar a consistência, mas descartando todos os campos temporários). Isso significa que as atualizações para cada WorkQueue devem ser sincronizadas nos encadeamentos para que não haja duas atualizações ao mesmo tempo. Por exemplo:
+
+```
+ synchronized (wq) {
+      ...do updates...
+      wq.makeDirty();
+    }
+```
+
+Tudo isso é feito usando um ObjectIdentityBdbManualCache, que torna possível interagir com o banco de dados como uma coleção simples, enquanto mantém na memória apenas o que for necessário.
+
+## Framework Spring
+
+O software Heritrix é baseado no framework Spring para Java. O framework Spring define uma construção chamada bean. Um bean é um componente configurável que consiste em propriedades (como o endereço de email do operador do Heritrix) e referências a outros beans. A configuração do Heritrix é realizada configurando beans. Um bean é representado como um elemento XML nos arquivos de configuração do Spring. Um exemplo de um bean é mostrado abaixo.
+
+**fetchProcessors Spring Bean
+
+```
+<bean id="fetchProcessors" class="org.archive.modules.FetchChain">
+<property name="processors">
+<list>
+<!-- re-check scope, if so enabled... -->
+<ref bean="preselector"/>
+<!--
+...then verify or trigger prerequisite URIs fetched, allow crawling...
+-->
+<ref bean="preconditions"/>
+<!-- ...fetch if DNS URI... -->
+<ref bean="fetchDns"/>
+<!-- <ref bean="fetchWhois"/> -->
+<!-- ...fetch if HTTP URI... -->
+<ref bean="fetchHttp"/>
+<!-- ...extract outlinks from HTTP headers... -->
+<ref bean="extractorHttp"/>
+<!-- ...extract outlinks from HTML content... -->
+<ref bean="extractorHtml"/>
+<!-- ...extract outlinks from CSS content... -->
+<ref bean="extractorCss"/>
+<!-- ...extract outlinks from Javascript content... -->
+<ref bean="extractorJs"/>
+<!-- ...extract outlinks from Flash content... -->
+<ref bean="extractorSwf"/>
+</list>
+</property>
+</bean>
+```
+
+Esse bean consiste em um identificador exclusivo (fetchProcessors) e uma lista de propriedades que são referências a outros beans. Um exemplo de alteração de configuração seria colocar o bean extrator XML à frente do bean extrator HTTP para que o conteúdo, como feeds RSS, possa ser rastreado. O bean fetchProcessors após essa alteração de configuração é mostrado abaixo.
+
+**fetchProcessors Bean com extractorXML
+
+```
+<bean id="fetchProcessors" class="org.archive.modules.FetchChain">
+<property name="processors">
+<list>
+<!-- re-check scope, if so enabled... -->
+<ref bean="preselector"/>
+<!--
+...then verify or trigger prerequisite URIs fetched, allow crawling...
+-->
+<ref bean="preconditions"/>
+<!-- ...fetch if DNS URI... -->
+<ref bean="fetchDns"/>
+<!-- <ref bean="fetchWhois"/> -->
+<!-- ...fetch if HTTP URI... -->
+<ref bean="fetchHttp"/>
+<!-- ...extract outlinks from HTTP headers... -->
+<ref bean="extractorHttp"/>
+<!-- ...extract outlinks from XML... -->
+<ref bean="extractorXML"/>
+<!-- ...extract outlinks from HTML content... -->
+<ref bean="extractorHtml"/>
+<!-- ...extract outlinks from CSS content... -->
+<ref bean="extractorCss"/>
+<!-- ...extract outlinks from Javascript content... -->
+<ref bean="extractorJs"/>
+<!-- ...extract outlinks from Flash content... -->
+<ref bean="extractorSwf"/>
+</list>
+</property>
+</bean>
+```
+
+## Diretório "action"
+
+Cada diretório de tarefa contém um diretório "action". Colocando arquivos nesse diretório, você pode acionar ações em uma tarefa de rastreamento em andamento, como a adição de novos URIs ao rastreamento.
+
+Em intervalos regulares (por padrão, menos de um minuto), o rastreamento observará novos arquivos nesse diretório e executará ações com base no sufixo do nome do arquivo e no conteúdo. Quando a ação for concluída, o arquivo será movido para o diretório 'done' mais próximo. (Por esse motivo, os arquivos devem ser compostos fora do diretório "action" e movidos para lá como um todo atômico. Caso contrário, um arquivo pode ser processado e movido enquanto ainda está sendo composto.)
+
+Os seguintes sufixos de arquivos são suportados:
+
+| Sufixo  | Descrição |  
+| ------------- | ------------- |  
+| `.seeds`| Um arquivo `.seeds` deve conter seeds que o operador do Heritrix deseja incluir no rastreamento. Colocar um arquivo `.seeds` no diretório "action" adicionará os seeds ao rastreamento em andamento. As mesmas diretivas que podem ser usadas em listas de seeds durante a configuração inicial de rastreamento podem ser usadas aqui.
+Se os seeds introduzidos no rastreameno dessa maneira já estiverem no frontier (talvez já um seed), esse método não as força. |
+| `.recover` | Um arquivo `.recover` será usado como um diário de recuperação tradicional. (O diário de recuperação pode reproduzir aproximadamente o estado das filas de um rastreamento e o conjunto já incluído, repetindo todos os eventos de conclusão de URI e de descoberta de URI. Um diário de recuperação reproduz menos estados do que um ponto de verificação adequado.) Em uma primeira passagem, todas as linhas que começarem com `Fs` no diário de recuperação serão consideradas incluídas, para que não possam ser enfileiradas novamente. Em seguida, em uma segunda passagem, as linhas que começarem com `F+` serão enfileiradas novamente para rastreamento (se não forem impedidas pela primeira passagem).  | 
+| `.include` | Um arquivo `.include` será usado como um diário de recuperação, mas todos os URIs, independentemente do prefixo de linha, serão marcados como já incluídos, evitando que eles sejam enfileirados novamente a partir desse ponto. (Os URIs já enfileirados ainda estarão qualificados para rastreamento quando surgirem.) O uso de um arquivo `.include` é uma maneira de suprimir o novo rastreamento de URIs. |
+| `.schedule` | Um arquivo `.schedule` será usado como um diário de recuperação, mas todos os URIs, independentemente do prefixo de linha, serão oferecidos para enfileiramento. (No entanto, se eles forem reconhecidos como já incluídos, eles não serão enfileirados.) O uso de um arquivo `.schedule` é uma maneira de incluir URIs em um rastreamento em andamento, inserindo-os nas filas de rastreamento do Heritrix. |
+| `.force` | Um arquivo `.force` será usado como um diário de recuperação com todos os URIs marcados para agendamento forçado. O uso de um arquivo `.force` é uma maneira de garantir que os URIs já incluídos sejam reenquadrados (e, portanto, sejam rastreados novamente).
+
+Qualquer um desses arquivos pode ser gzipado. Qualquer um dos arquivos no formato de diário de recuperação (`.recover`, `.include`, `.schedule`, `.force`) pode ter um `.s` inserido antes do sufixo funcional (por exemplo, `frontier.s.recover.gz`), o que fará com que os URIs sejam testados no escopo antes que qualquer outra inserção ocorra.
+
+Por exemplo, o seguinte arquivo pode ser movido para o diretório "action" para agendar um URL:
+
+**example.schedule
+
+```
+F+ http://example.com
+```
+
+Para usar o diretório action, o bean `ActionDirectory` deve ser configurado no arquivo `crawler-beans.cxml`, conforme ilustrado abaixo.
+
+```
+<bean id="actionDirectory" class="org.archive.crawler.framework.ActionDirectory">
+<property name="actionDir" value="action" />
+<property name="initialDelaySeconds" value="10" />
+<property name="delaySeconds" value="30" />
+</bean>
+```
+
+A classe org.archive.crawler.frontier.FrontierJournal contém as constantes reconhecidas como diretivas possíveis em um diário de recuperação.
+
+Observe que as linhas 'F +' do formato de diário de recuperação podem incluir um 'hops-path' e 'via URI', que são preservadas quando um URI é enfileirado pelos mecanismos acima, mas isso pode não ser uma representação completa de todo o estado de URI a partir de sua descoberta em um rastreamento normal.
