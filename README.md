@@ -1991,7 +1991,7 @@ Quando as filas diminium do top-N ou o valor é alterado no meio do rastreamento
 
 O armazenamento da fila é gerenciado por meio de um banco de dados BDB JE incorporado. É um armazenamento simples de valor-chave, portanto, a multiplicidade de filas é implementada como prefixos-chave. Cada CrawlURI é armazenado no banco de dados BDB como um binary blob serializado usando Kryo, sob uma chave que combina o prefixo de fila (classKey) e a prioridade de rastreamento do CrawlURI.
 
-A lista de ativo/dormindo/etc são mantidas na memória e gravadas no disco durante o checkpoint no formato JSON. Se você continuar a partir do checkpoint, o BdbFrontier será reutilizado, mas as informações necessárias da fila serão fornecidas pelos arquivos JSON. Se o banco de dados do frontier *não* for reutilizado a partir de um ponto de verificação, o banco de dados será 'truncado' e todos os dados no BdbFrontier serão descartados.
+A lista de active/snoozed/etc são mantidas na memória e gravadas no disco durante o checkpoint no formato JSON. Se você continuar a partir do checkpoint, o BdbFrontier será reutilizado, mas as informações necessárias da fila serão fornecidas pelos arquivos JSON. Se o banco de dados do frontier *não* for reutilizado a partir de um ponto de verificação, o banco de dados será 'truncado' e todos os dados no BdbFrontier serão descartados.
 
 A atualização do conteúdo do frontier a partir de vários encadeamentos exige cuidado, pois é necessário fazer alterações e confirmá-las no disco sem que ocorram conflitos. Uma vez que qualquer alteração tenha sido feita, por exemplo, um WorkQueue, a chamada `wq.makeDirty ()` é usada para iniciar um processo no qual o WorkQueue é serializado para o disco e lido novamente (para assegurar a consistência, mas descartando todos os campos temporários). Isso significa que as atualizações para cada WorkQueue devem ser sincronizadas nos encadeamentos para que não haja duas atualizações ao mesmo tempo. Por exemplo:
 
@@ -2275,6 +2275,424 @@ Toe Threads
 
 Ao rastrear, o Heritrix emprega um número configurável de Toe Threads para processar URIs. Cada um desses encadeamentos solicitará um URI do Frontier, aplicará o conjunto de Processadores a ele e, finalmente, o reportará como concluído para o Frontier.
 
+## Configurando o escopo do rastreamento usando DecideRules
+
+O escopo de rastreamento define o conjunto de possíveis URIs que podem ser capturados por um rastreamento. Esses URIs são determinados pelos DecideRules, que trabalham em conjunto para limitar ou expandir o conjunto de URIs rastreados. Cada DecideRule, quando apresentado com um objeto (na maioria das vezes um URI de alguma forma), responde com uma das três decisões:
+
+* ACCEPT: O objeto é aceito
+* REJECTED: O objeto é rejeitado
+* PASS: Nenhuma decisão foi feita, mantém-se a anterior
+
+Um URI sob consideração começa sem status definido. Cada rule é aplicada por vez ao URI candidato. Se o rule decidir ACCEPT ou REJECT, o status do URI será definido de acordo. Depois que todas os rules forem aplicados, o URI será determinado como "no escopo" se seu status for ACCEPT. Se seu status for REJECT, ele será descartado.
+
+Sugerimos começar os rules com nossas configurações padrões recomendadas e realizar pequenos rastreamentos de teste. Com esses testes, tente entender porque certos URIs são determinados ou descartados sob essas configurações. Em seguida, faça pequenas alterações individuais no escopo para obter efeitos desejados que não sejam padrão. Criar um novo conjunto de rules a partir do zero pode ser difícil e pode facilmente resultar em rastreamentos que não podem fazer o progresso mínimo que outras partes do rastreador esperam. Da mesma forma, fazer muitas mudanças de uma só vez pode obscurecer a importância da interação e ordenação dos rules.
+
+### DecideRules
+
+A tabela a seguir lista os DecideRules disponíveis:
+
+| Decide Rule  | Descrição |  
+| ------------- | ------------- |
+| AcceptDecideRule | Aceita qualquer URI. |
+| ContentLengthDecideRule | Aceita URIs se o comprimento do conteúdo for menor que o limite. O limite padrão é 2^63, significando que qualquer documento será aceito. |
+| PathologicalPathDecideRule | Rejeita qualquer URI que contenha um número excessivo de segmentos de caminho idênticos e consecutivos. Por exemplo, http://example.com/a/a/a/a/a/foo.html |
+| PredicatedDecideRule | Aplica uma decisão configurada somente se um teste for avaliado como "true". |
+| ExternalGeoLocationDecideRule | Aceita URIs localizados em um determinado país. |
+| FetchStatusDecideRule | Aplica a decisão configurada a qualquer URI que tenha um status de busca igual à configuração "target-status". |
+| HasViaDecideRule | Aplica a decisão configurada a qualquer URI que tenha uma "via". Uma via é qualquer URI que seja um sed ou algum tipo de adição feita no meio do rastreamento. |
+| HopCrossesAssignmentLevelDomainDecideRule | Aplica a decisão configurada a qualquer URI que seja diferente na parte de seu nome de host/domínio que é atribuído/vendido por registradores. A parte é referida como o "assignment-level-domain" (ALD). |
+| IdenticalDigestDecideRule | This DecideRule applies the configured decision to any URI whose prior-history content-digest matches the latest fetch. |
+| MatchesListRegexDecideRule | Aplica a decisão configurada a qualquer URI que corresponda às expressões regulares fornecidas. |
+| NotMatchesListRegexDecideRule | Aplica a decisão configurada a qualquer URI que não corresponda às expressões regulares fornecidas. |
+| MatchesRegexDecideRule | Aplica a decisão configurada a qualquer URI que corresponda à expressão regular fornecida. |
+| ClassKeyMatchesRegexDecideRule | Aplica a decisão configurada a qualquer chave de classe URI que corresponda à expressão regular fornecida. Uma chave de classe URI é uma cadeia que especifica o nome da fila Frontier na qual uma URI deve ser colocada. |
+| ContentTypeMatchesRegexDecideRule | Aplica a decisão configurada a qualquer URI cujo tipo de conteúdo esteja presente e corresponda à expressão regular fornecida. |
+| ContentTypeNotMatchesRegexDecideRule |Aplica a decisão configurada a qualquer URI cujo tipo de conteúdo não corresponda à expressão regular fornecida. |
+| FetchStatusMatchesRegexDecideRule | Aplica a decisão configurada a qualquer URI que tenha um status de busca que corresponda à expressão regular fornecida. |
+| FetchStatusNotMatchesRegexDecideRule | Aplica a decisão configurada a qualquer URI que tenha um status de busca que não corresponda à expressão regular suprida. |
+| HopsPathMatchesRegexDecideRule | Aplica a decisão configurada a qualquer URI cujo "hops-path" corresponda à expressão regular fornecida. O hops-path é uma string que consiste em caracteres que representam o caminho que foi usado para acessar o URI. Um exemplo de um hops-path é "LLXE". |
+| MatchesFilePatternDecideRule | Aplica a decisão configurada a qualquer URI cujo sufixo corresponda à expressão regular fornecida. |
+| NotMatchesFilePatternDecideRule | Aplica a decisão configurada a qualquer URI cujo sufixo não corresponda à expressão regular fornecida. |
+| NotMatchesRegexDecideRule | Aplica a decisão configurada a qualquer URI que não corresponda à expressão regular fornecida. |
+| NotExceedsDocumentLengthThresholdDecideRule | Aplica a decisão configurada a qualquer URI cujo comprimento de conteúdo não exceda o limite configurado. O tamanho do conteúdo vem do header HTTP ou do tamanho real do conteúdo baixado do URI. A partir da versão 3.1, essa regra foi renomeada para ResourceNoLongerThanDecideRule. |
+| ExceedsDocumentLengthThresholdDecideRule | Aplica a decisão configurada a qualquer URI cujo tamanho do conteúdo exceda o limite configurado. O tamanho do conteúdo vem do header HTTP ou do tamanho real do conteúdo baixado do URI. A partir da versão 3.1, essa regra foi renomeada para ResourceLongerThanDecideRule. |
+| SurtPrefixedDecideRule | aplica a decisão configurada a qualquer URI (expresso na forma SURT) que começa com um dos prefixos no conjunto configurado. Esse DecideRule retorna true quando o prefixo de um determinado URI corresponde a qualquer um dos SURTs listados. A lista de SURTs pode ser configurada de diferentes maneiras: o parâmetro surtsSourceFile especifica um arquivo para ler a lista de SURTs. Se o parâmetro seedsAsSurtPrefixes estiver definido como true, SurtPrefixedDecideRule adicionará todos os seeds à lista SURTs. Se a propriedade alsoCheckVia estiver configurada como true (padrão false), SurtPrefixedDecideRule também considerará Via URIs na correspondência. A partir da versão 3.1, o parâmetro "surtsSource" pode ser qualquer ReadSource, como um ConfigFile ou um ConfigString. Isso dá ao SurtPrefixedDecideRule a flexibilidade da propriedade "textSource" do bean TextSeedModule. |
+| NotSurtPrefixedDecideRule | Aplica a decisão configurada a qualquer URI (expresso na forma SURT) que não comece com um dos prefixos no conjunto configurado. | 
+| OnDomainsDecideRule | Aplica a decisão configurada a qualquer URI que esteja em um dos domínios do conjunto configurado. |
+| NotOnDomainsDecideRule | Aplica a decisão configurada a qualquer URI que não esteja em um dos domínios do conjunto configurado. |
+| OnHostsDecideRule | Aplica a decisão configurada a qualquer URI que esteja em um dos hosts do conjunto configurado. |
+| NotOnHostsDecideRule | Aplica a decisão configurada a qualquer URI que não esteja em um dos hosts do conjunto configurado. |
+| ScopePlusOneDecideRule | Aplica a decisão configurada a qualquer URI que seja um nível além do escopo configurado. |
+| TooManyHopsDecideRule | Rejeita qualquer URI cujo número total de saltos esteja acima do limite configurado. |
+| TooManyPathSegmentsDecideRule | Rejeita qualquer URI cujo número total de segmentos de caminho esteja acima do limite configurado. Um segmento de caminho é uma cadeia no URI separado por um caractere "/", sem incluir o primeiro "//". |
+| TransclusionDecideRule | aceita qualquer URI cujo path-from-seed termine em pelo menos um salto que não seja navlink. Um salto de navlink é representado por um "L". Além disso, o número de saltos não-navlink no path-from-seed não pode exceder o valor configurado. |
+| PrerequisiteAcceptsDecideRule | aceita todos os URIs de "pré-requisito". Os URIs de pré-requisito são aqueles cujo caminho de salto tem um "P" na última posição. |
+| RejectDecideRule | Rejeita qualquer URI. |
+| ScriptedDecideRule | Aplica a decisão configurada a qualquer URI que passe no teste de rules de um script JSR-223. A fonte do script deve ser uma função de um argumento chamada decisionFor. A função retorna o DecideResult apropriado. Variáveis disponíveis para o script incluem o objeto (o objeto a ser avaliado, como um URI), "self " (a ocorrência ScriptDecideRule), e contexto (ApplicationContext do rastreamento, do qual todos os beans de rastreamento nomeados são alcançáveis). |
+| SeedAcceptDecideRule | aceita todos os URIs "seeds" (aqueles para os quais isSeed é "true"). |
+
+DecideRules são configurados pelo bean com o id "scope" sob a propriedade denominada "rules".
+
+### DecideRuleSequence Logging
+
+Ative o log `FINEST` na classe `org.archive.crawler.deciderules.DecideRuleSequence` para observar cada avaliação de URI do DecideRule. Isso pode ser feito no arquivo `logging.properties`.
+
+**logging.properties 
+
+```
+org.archive.modules.deciderules.DecideRuleSequence.level = FINEST
+```
+
+em conjunto com o argumento da VM -Dsysprop,
+
+```
+-Djava.util.logging.config.file=/path/to/heritrix3/dist/src/main/conf/logging.properties
+```
+
+### escopo crawler-bean
+
+A seção do bean de escopo do arquivo `crawler-beans.cxml` é reproduzida abaixo.
+
+```
+<bean id="scope" class="org.archive.modules.deciderules.DecideRuleSequence">
+
+<property name="rules">
+
+<list>
+<!-- Begin by REJECTing all... -->
+<bean class="org.archive.modules.deciderules.RejectDecideRule">
+    </bean>
+
+<!--
+ ...then ACCEPT those within configured/seed-implied SURT prefixes...
+-->
+
+<bean class="org.archive.modules.deciderules.surt.SurtPrefixedDecideRule">
+
+<!--
+ <property name="seedsAsSurtPrefixes" value="true" />
+-->
+<!-- <property name="alsoCheckVia" value="true" /> -->
+<!-- <property name="surtsSourceFile" value="" /> -->
+
+<!--
+ <property name="surtsDumpFile" value="surts.dump" />
+-->
+</bean>
+
+<!--
+ ...but REJECT those more than a configured link-hop-count from start...
+-->
+
+<bean class="org.archive.modules.deciderules.TooManyHopsDecideRule">
+<!-- <property name="maxHops" value="20" /> -->
+</bean>
+
+<!--
+ ...but ACCEPT those more than a configured link-hop-count from start...
+-->
+
+<bean class="org.archive.modules.deciderules.TransclusionDecideRule">
+<!-- <property name="maxTransHops" value="2" /> -->
+<!-- <property name="maxSpeculativeHops" value="1" /> -->
+</bean>
+
+<!--
+ ...but REJECT those from a configurable (initially empty) set of REJECT SURTs...
+-->
+
+<bean class="org.archive.modules.deciderules.surt.SurtPrefixedDecideRule">
+<property name="decision" value="REJECT"/>
+<property name="seedsAsSurtPrefixes" value="false"/>
+<property name="surtsDumpFile" value="negative-surts.dump"/>
+<!-- <property name="surtsSourceFile" value="" /> -->
+</bean>
+
+<!--
+ ...and REJECT those from a configurable (initially empty) set of URI regexes...
+-->
+
+<bean class="org.archive.modules.deciderules.MatchesListRegexDecideRule">
+<!-- <property name="listLogicalOr" value="true" /> -->
+
+<!--
+ <property name="regexList">
+           <list>
+           </list>
+          </property>
+-->
+</bean>
+
+<!--
+ ...and REJECT those with suspicious repeating path-segments...
+-->
+
+<bean class="org.archive.modules.deciderules.PathologicalPathDecideRule">
+<!-- <property name="maxRepetitions" value="2" /> -->
+</bean>
+
+<!--
+ ...and REJECT those with more than threshold number of path-segments...
+-->
+
+<bean class="org.archive.modules.deciderules.TooManyPathSegmentsDecideRule">
+<!-- <property name="maxPathDepth" value="20" /> -->
+</bean>
+
+<!--
+ ...but always ACCEPT those marked as prerequisitee for another URI...
+-->
+<bean class="org.archive.modules.deciderules.PrerequisiteAcceptDecideRule">
+    </bean>
+</list>
+</property>
+</bean>
+```
+
+## Suporte Whois
+
+A partir da versão 3.1, é fornecido um fetcher opcional para dados do domínio 'whois'. Um pequeno conjunto de servidores 'whois' bem estabelecidos é pré-configurado. O fetcher usa uma interpretação ad-hoc/intuitive de um URI de esquema 'whois:'.
+
+```
+<bean id="fetchWhois" class="org.archive.modules.fetcher.FetchWhois">
+<property name="specialQueryTemplates">
+<map>
+<entry key="whois.verisign-grs.com" value="domain %s" />
+<entry key="whois.arin.net" value="z + %s" />
+<entry key="whois.denic.de" value="-T dn %s" />
+</map>
+</property>
+</bean>
+```
+
+Para configurar um seed whois, insira o seed no seguinte formato: whois://hostname/path (por exemplo,  whois://archive.org.) O whois fetcher tentará resolver cada host que o rastreamento encontra usando o domínio atribuído mais acima e o endereço IP do URL rastreado. Portanto, se você rastrear http://www.archive.org/details/texts, o whois fetcher tentará resolver whois:archive.org  e whois:207.241.224.2.
+
+No momento, a funcionalidade whois é experimental. O bean fetchWhois é comentado no perfil padrão.
+
+## Configurações básicas de tarefa de rastreamento
+
+As configurações de rastreamento são configuradas editando o arquivo `crawler-beans.cxml` de uma tarefa. Cada trabalho tem um `crawler-beans.cxml` que contém a configuração Spring para a tarefa.
+
+### Limites de rastreamento
+
+Além dos limites impostos ao escopo do rastreamento, é possível impor limites arbitrários à duração e à extensão do rastreamento com as seguintes configurações:
+
+* maxBytesDownload - Para o rastreamento depois que um número fixo de bytes tiver sido baixado. Zero significa ilimitado
+* maxDocumentDownload - Para o rastreamento depois de baixar um número fixo de documentos. Zero significa ilimitado.
+* maxTimeSeconds- Para o rastreamento após um determinado número de segundos. Zero significa ilimitado. Para referência, há 3600 segundos em uma hora e 86400 segundos em um dia.
+
+Para definir esses valores, modifique o bean CrawlLimitEnforcer.
+
+```
+<bean id="crawlLimitEnforcer" class="org.archive.crawler.framework.CrawlLimitEnforcer">
+<property name="maxBytesDownload" value="100000000" />
+<property name="maxDocumentsDownload" value="100" />
+<property name="maxTimeSeconds" value="10000" />
+</bean>
+```
+
+**Observação
+
+* Estes não são limites rígidos. Quando um desses limites for atingido, uma finalização completa da tarefa de rastreamento será acionada. Os URIs já sendo rastreados serão concluídos. Consequentemente, o limite definido será excedido por algum outro valor.
+
+### maxToeThreads
+
+O número máximo de toe threads para executar.
+
+Se estiver executando um rastreamento de domínio menor que 100 hosts, um valor que seja aproximadamente duas vezes o número de hosts deve ser suficiente. Valores maiores que 150-200 raramente valem a pena, a menos que sejam executados em máquinas com recursos excepcionais.
+
+```
+<bean id="crawlController" class="org.archive.crawler.framework.CrawlController">
+<property name="maxToeThreads" value="50" />
+</bean>
+```
+
+### metadata.operatorContactUrl
+
+O URI do iniciador de rastreamento. Essa configuração fornece ao administrador de um host rastreado um URI para referência em caso de problemas.
+
+```
+<bean id="simpleOverrides" class="org.springframework.beans.factory.config.PropertyOverrideConfigurer">
 
 
+<property name="properties">
 
+
+<value>
+
+
+   1. This Properties map is specified in the Java 'property list' text format
+   2. http://java.sun.com/javase/6/docs/api/java/util/Properties.html#load%28java.io.Reader%29
+
+
+metadata.operatorContactUrl=http://www.archive.org
+metadata.jobName=basic
+metadata.description=Basic crawl starting with useful defaults
+
+
+##..more?..##
+
+
+</value>
+</property>
+</bean>
+```
+
+### Política Robots Honoring 
+
+1. CLASSIC - Obedece todas as regras robots.txt para o user-agent configurado.
+2. IGNORE - Ignora todas as regras robots.txt.
+3. CUSTOM - Defer to a custom-robots setting.
+4. MOST_FAVORED - Crawl URIs if robots.txt allows any user-agent to crawl it. Rastreia URIs se o robots.txt permitir que qualquer agente do usuário o rastreie.
+5. MOST_FAVORED_SET- Requer que um conjunto de user-agent alternativos seja fornecido. Para cada página, se algum agente no conjunto for permitido, a página será rastreada.
+
+```
+<bean id="robotsHonoringPolicy" class="org.archive.modules.net.RobotsHonoringPolicy">
+  <property name="type" value="CLASSIC"/>
+</bean>
+```
+
+A escolha de opções 3-5 requer informações adicionais sobre configurações.
+
+A partir da versão 3.1, a política de robots honoring pode ser definida no bean "metadata" usando a propriedade "robotsPolicyName".
+
+```
+<bean id="metadata" class="org.archive.modules.CrawlMetadata" autowire="byName">
+...
+    <property name="robotsPolicyName" value="obey"/>
+...
+</bean>
+```
+
+Valores válidos para "robotsPolicyName":
+
+obey - Obey robots.txt directives
+classic - Same as "obey"
+ignore - Ignore robots.txt directives
+The robots honoring policy can also be set by creating a bean that uses one of the following classes.  The bean must be linked to the "metadata" bean.
+
+O exemplo abaixo mostra o uso da política org.archive.modules.net.IgnoreRobotsPolicy.
+
+``` 
+<bean id="ignorePolicy" class="org.archive.modules.net.IgnoreRobotsPolicy">
+</bean>
+
+
+<bean id="metadata" class="org.archive.modules.CrawlMetadata" autowire="byName">
+
+        <property name="robotsPolicyName"> <ref bean="ignorePolicy"/> </property>
+
+</bean>
+```
+
+Além disso, a partir da versão 3.1, a análise do robots.txt agora tolera curingas finais nas diretivas Disallow, que é um desvio comum do padrão original. O curinga é equivalente ao mesmo prefixo de caminho sem o caractere curinga final. Além disso, o tratamento das diretivas "Allow" e "Disallow" sobrepostas corresponde ao provável entendimento intuitivo dos webmasters e de outros rastreadores. As diretivas mais específicas/mais longas têm precedência.
+
+## Códigos de status
+
+Códigos de status
+
+Cada URI rastreado recebe um código de status. Este código (ou número) indica o resultado de uma busca de URI no Heritrix.
+
+Códigos que variam de 200 a 599 são códigos de resposta HTTP padrão e informações sobre seus significados estão disponíveis na página da Web do consórcio World Wide Web.
+
+Outros códigos de status do Heritrix estão listados abaixo.
+
+| Código | Significado |  
+| ------------- | ------------- |
+| 1 | Pesquisa de DNS bem-sucedida |
+| 0 | Busca nunca iniciada (talvez protocolo não suportado ou URI ilegal) |
+| -1 | Falha na pesquisa de DNS |
+| -2 | Conexão HTTP falhou |
+| -3 | Conexão HTTP quebrada |
+| -4 | Tempo limite de HTTP |
+| -5 | Exceção de tempo de execução inesperada. Veja runtime-errors.log. |
+| -6 | A pesquisa de domínio de pré-requisito falhou, impedindo a tentativa de busca. (O pré-requisito principal é a pesquisa WHOIS. Se você ver isso, é provável que o domínio não exista mais.) |
+| -7 | URI reconhecida como não suportada ou ilegal. |
+| -8 | Várias tentativas falharam, limite de novas tentativas foi atingido.
+| -50 | Status temporário atribuído a URIs aguardando condições prévias. Aparência em logs pode ser um bug. |
+| -60 | Status de falha atribuído a URIs. Eles não puderam ser enfileirados pelo Frontier e podem ser inacessíveis. |
+| -61 | A obtenção do pré-requisito robots.txt falhou, impedindo uma tentativa de busca. |
+| -62 | Algum outro pré-requisito falhou, impedindo uma tentativa de busca. |
+| -63 | Um pré-requisito (de qualquer tipo) não pôde ser agendado, impedindo uma tentativa de busca. |
+| -404 | Resposta HTTP vazia, interpretada como um 404. |
+| -3000 | Ocorrência uma condição de erro Java grave, como OutOfMemoryError ou StackOverflowError, durante o processamento de URI. |
+| -4000 | Detecção "chaff" de armadilhas/conteúdo com valor insignificante aplicado. |
+| -4001 | O URI encontra-se muitos link-hops longe da seed.
+| -4002 | The URI is too many embed/transitive hops away from the last URI in scope.
+| -5000 | O URI está fora do escopo no reexame. Isso só acontece se o escopo mudar durante o rastreamento. |
+| -5001 | Bloqueado de buscas por configuração do usuário.
+| -5002 | Bloqueado por um processador personalizado, que poderia incluir o mapeador de hash (para rastreamento de vários nós), se ativado. |
+| -5002 | Bloqueado por exceder uma cota estabelecida. |
+| -5004 | Bloqueado devido a exceder um tempo de execução estabelecido. |
+| -6000 | Excluído do Frontier pelo usuário.
+| -7000 | Thread de processamento foi morto pelo operador. Isso pode acontecer se um encadeamento for uma condição não responsiva. |
+| -9998 | As regras do Robots.txt impediram a busca. |
+
+**Observação:
+
+* Códigos e explicações também estão disponíveis no link "Help" na interface do usuário da web.
+* Os códigos de status estão sujeitos a alterações entre as versões do Heritrix. Novos códigos podem ser adicionados para abordar novas áreas de problemas.
+
+Os códigos de status do Heritrix também estão documentados no código-fonte (ou no FishEye para H1 e H3) e no glossário.
+
+## Sheets
+
+Sheets fornecem a capacidade de substituir as configurações padrão por domínio. Sheets são coleções de substituições. Contêm valores alternativos para propriedades de objetos que devem ser aplicados em determinados contextos. O destino é especificado como um caminho de propriedade arbitrariamente longo, que é uma string descrevendo como acessar a propriedade a partir de um beanName em um BeanFactory.
+
+Sheets permitem que as configurações sejam sobrepostas com novos valores aplicados por domínios de nível superior (com, net, org, etc), por domínios de segundo nível (yahoo.com, archive.org, etc.), por subdomínios (crawler.archive. org, tech.groups.yahoo.com, etc.) e caminhos principais do URI (directory.google.com/Top/Computers/, etc.). Não há limite de tamanho do prefixo de domínio/caminho que especifica; a sintaxe de prefixos SURT é usada.
+
+A criação de uma sheet envolve a configuração do arquivo `crawler-beans.cxml`, que contém a configuração Spring de uma tarefa.
+
+Por exemplo, se você tiver permissão explícita para rastrear determinados domínios sem o limite habitual de polite rate-limiting, uma Sheet poderá ser usada para criar uma política de rastreamento less polite associada a alguns desses domínios de destino. A configuração dessa sheet para os domínios example.com e example1.com é mostrada abaixo. Este exemplo permite até 5 solicitações pendentes paralelas de cada vez (em vez do padrão 1) e elimina as pausas comuns entre as solicitações
+
+**Observação importante**: A menos que um site alvo forneça permissão explícita para rastreamento extra-agressivo, os padrões típicos do Heritrix, que limitam o rastreador a não mais de um pedido pendente por vez, com esperas de vários segundos entre solicitações e esperas mais longas quando o site está respondendo mais devagar, é o caminho mais seguro. O rastreamento menos educado pode fazer com que o rastreador seja totalmente bloqueado pelos webmasters. Por fim, mesmo com permissão, certifique-se de que a string do User-Agent de seu rastreador inclui um link para informações válidas de contato do operador de rastreamento, para que você possa ser alertado e corrigir qualquer efeito colateral indesejado. 
+
+```
+<!-- SHEETOVERLAYMANAGER: manager of sheets of contextual overlays
+Autowired to include any SheetForSurtPrefix or
+SheetForDecideRuled beans -->
+<bean id="sheetOverlaysManager" autowire="byType"
+class="org.archive.crawler.spring.SheetOverlaysManager">
+</bean>
+
+
+<bean class='org.archive.crawler.spring.SurtPrefixesSheetAssociation'>
+<property name='surtPrefixes'>
+<list>
+<value>
+http://(com,example,www,)/
+</value>
+<value>
+http://(com,example1,www,)/
+</value>
+</list>
+</property>
+<property name='targetSheetNames'>
+<list>
+<value>lessPolite</value>
+</list>
+</property>
+</bean>
+
+
+<bean id='lessPolite' class='org.archive.spring.Sheet'>
+<property name='map'>
+<map>
+<entry key='disposition.delayFactor' value='0.0'/>
+<entry key='disposition.maxDelayMs' value='0'/>
+<entry key='disposition.minDelayMs' value='0'/>
+<entry key='queueAssignmentPolicy.parallelQueues' value='5'/>
+</map>
+</property>
+</bean>
+```
+
+A sheet nomeada `lessPolite`, no exemplo, define sobreposições para várias propriedades de cortesia. A sheet é associada a domínios adicionando um bean `org.archive.crawler.spring.SurtPrefixesSheetAssociation`. Este bean contém os domínios para os quais as sobreposições serão aplicadas.
+
+A penalidade de desempenho no uso de sobreposições é pequena, uma vez que etapas extras no início do processamento do URI decoram o URI com todas as sobreposições aplicáveis de uma vez só.
+
+### Precedência
+
+* `DecideRuledSheetAssociations` tem precedência sobre `SurtPrefixesSheetAssociations`
+* As `DecideRuledSheetAssociations` que aparecem posteriormente em `crawler-beans.cxml` têm precedência sobre as que aparecem mais cedo
+* No caso de `SurtPrefixesSheetAssociations` concorrentes, SURTs mais específicos têm precedência sobre os menos específicos
