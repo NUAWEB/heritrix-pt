@@ -2569,7 +2569,18 @@ Valores válidos para "robotsPolicyName":
 obey - Obey robots.txt directives
 classic - Same as "obey"
 ignore - Ignore robots.txt directives
+
 The robots honoring policy can also be set by creating a bean that uses one of the following classes.  The bean must be linked to the "metadata" bean.
+
+
+| Nome da classe | Desrição |  
+| ------------- | ------------- |
+| org.archive.modules.net.FirstNamedRobotsPolicy | Use an ordered list of User-Agents.  The first User-Agent in the list is the regularly configured User-Agent.  The other User-Agents in the list are those configured in the candidateUserAgents list.  As soon as a matching set of directives is found, these directives are followed.  If none are found, the wildcard directives are used if they exist. |
+| org.archive.modules.net.IgnoreRobotsPolicy | Ignora as diretivas do robots.txt |
+| org.archive.modules.net.ObeyRobotsPolicy |Obedece as diretivas do robots.txt |
+| org.archive.modules.net.CustomRobotsPolicy | Segue uma política de robots personalizada, em vez das próprias declarações do site |
+| org.archive.modules.net.MostFavoredRobotsPolicy | Follow a most-favored robots policy that allows a URI to be crawled if either the conventionally-configured User-Agent, or any number of alternate User-Agents, are allowed. |
+
 
 O exemplo abaixo mostra o uso da política org.archive.modules.net.IgnoreRobotsPolicy.
 
