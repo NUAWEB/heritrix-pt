@@ -2707,3 +2707,95 @@ A penalidade de desempenho no uso de sobreposições é pequena, uma vez que eta
 * `DecideRuledSheetAssociations` tem precedência sobre `SurtPrefixesSheetAssociations`
 * As `DecideRuledSheetAssociations` que aparecem posteriormente em `crawler-beans.cxml` têm precedência sobre as que aparecem mais cedo
 * No caso de `SurtPrefixesSheetAssociations` concorrentes, SURTs mais específicos têm precedência sobre os menos específicos
+
+### Rastreamento com várias máquinas
+
+Rastreamentos feitos com várias máquinas podem ser executados usando o hashCrawlMapper para atribuir URIs a máquinas diferentes com base em seus nomes de host.
+
+Primeiro adicione o seguinte bean:
+
+```
+<bean id="hashCrawlMapper">
+         <property name="enabled" value="true" />
+         <property name="localName" value="0" />
+         <property name="diversionDir" value="diversions" />
+         <property name="checkUri" value="true" />
+         <property name="checkOutlinks" value="false"/>
+         <property name="rotationDigits" value="10" />
+
+         <!-- Number of crawlers being used in the multi-machine setup-->
+         <property name="crawlerCount" value="7" />
+ </bean>
+ ```
+ 
+ Chame o bean na cadeia do CandidateProcessor:
+ 
+ ```
+ <bean id="candidateProcessors">
+  <property name="processors">
+   <list>
+<!-- apply scoping rules to each individual candidate URI... -->
+ <ref bean="candidateScoper"/>
+<!-- Check URIs for crawler assignment -->
+ <ref bean="hashCrawlMapper"/>
+ ```
+ 
+Todos os rastreadores receberão a mesma lista inicial de seeds. O único valor que deve ser alterado entre diferentes rastreadores é "localName".
+
+Quando o rastreamento iniciar, o diretório "diversions" começará a ser preenchido com arquivos .divert. Cada arquivo .divert será nomeado $timestamp-$localname_currentmachine-to-$localname_assignedmachine.
+
+Os operadores de rastreamento devem configurar um processo em que os URIs contidos nos arquivos .divert sejam copiados de cada rastreador para seus rastreadores atribuídos e enfileirados no rastreamento ativo. Por exemplo, converter o arquivo .divert no formato esperado pelo diretório de ação como um arquivo .schedule seria suficiente.
+
+## Heritrix3 no Mac OS X
+
+### Usando o JAVA 6
+
+* Baixe o Java para Mac OS X
+* Vá para `/Applications/Utilities/Java` e execute o **Java Preferences.app**
+* No painel *Java application versions*, arraste o **Java SE 6** para o topo da lista.
+
+### Heritrix3 no Windows
+
+
+### REST API
+
+Este manual descreve a interface de programação de aplicativos REST (API) do rastreador da Web Heritrix. Heritrix é o rastreador de web do Internet Archive com qualidade de arquivamento extensível, escálavel e de código aberto.. Para mais informações sobre o Heritrix, visite http://crawler.archive.org/.
+
+Este documento destina-se a desenvolvedores de aplicativos e administradores interessados em controlar o rastreador da Web do Heritrix por meio de sua API REST.
+
+Qualquer cliente que suporte HTTPS pode ser usado para invocar a API do Heritrix. Os exemplos neste documento usam o curl da ferramenta de linha de comando, que é normalmente encontrado na maioria dos ambientes unix. Curl está disponível para muitos sistemas, incluindo o Windows.
+
+### Criar nova tarefa
+
+```
+POST https://(heritrixhost):8443/engine [action=create]
+```
+
+Cria uma nova tarefa de rastreamento. Usa a configuração padrão fornecida pelo perfil profile-defaults.
+
+Parâmetros do formulário:
+ 
+action - deve ser `create` 
+createpath - o nome da nova tarefa
+
+Exemplo HTML:
+
+```
+curl -v -d "createpath=myjob&action=create" -k -u admin:admin --anyauth --location \
+  https://localhost:8443/engine
+```
+
+Exemplo XML:
+
+```
+curl -v -d "createpath=myjob&action=create" -k -u admin:admin --anyauth --location \
+  -H "Accept: application/xml" https://localhost:8443/engine
+```
+
+### Adicionar diretório de tarefas
+
+```
+POST https://(heritrixhost):8443/engine [action=add]
+```
+
+Adiciona um novo diretório de tarefa à configuração do Heritrix. O diretório deve conter um arquivo de configuração cxml.
