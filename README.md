@@ -841,7 +841,7 @@ http://www.myhost3.net/pictures
 
 No nível de tarefa, uma tarefa de rastreamento do Heritrix possui três pipelines principais conhecidas como Cadeias de Processadores (aplicação sequencial de módulos de Processador trocáveis -- ver Configurações de Processador), com o Frontier atuando como um buffer entre as duas primeiras:
 
-* Cadeia de candidatos (Chain Candidates):
+* Chain Candidates:
 
 - Processa os URIs de rastreamento de entrada, decidindo se deve mantê-los (de acordo com o escopo) e se eles serão depositados no Frontier.
 
@@ -855,7 +855,7 @@ No nível de tarefa, uma tarefa de rastreamento do Heritrix possui três pipelin
 
 - Ver Frontier
 
-* Cadeia de busca (Fetch Chain):
+* Fetch Chain:
 
 - Como os URIs de rastreamento são emitidos pelo Frontier, a cadeia de busca processa cada um deles e decide o que fazer, como baixar etc.
 
@@ -2115,3 +2115,166 @@ Para usar o diretório action, o bean `ActionDirectory` deve ser configurado no 
 A classe org.archive.crawler.frontier.FrontierJournal contém as constantes reconhecidas como diretivas possíveis em um diário de recuperação.
 
 Observe que as linhas 'F +' do formato de diário de recuperação podem incluir um 'hops-path' e 'via URI', que são preservadas quando um URI é enfileirado pelos mecanismos acima, mas isso pode não ser uma representação completa de todo o estado de URI a partir de sua descoberta em um rastreamento normal.
+
+## Glossário
+
+Bytes, KB and statistics
+
+O Heritrix adere às seguintes convenções para exibir quantidades de bytes e bits:
+
+| Código  | Tipo |  
+| ------------- | ------------- |  
+| B | Bytes |
+| KB Kilobytes | 1KB = 1024 B |
+| MB Megabytes | 1MB = 1024 KB |
+| GB Gigabytes | 1GB = 1024 MB |
+| b | bits |
+| KB Kilobits | 1Kb = 1000 b |
+| Mb Megabits | 1Mb = 1000 kb |
+| Gb Gigabits | 1000 Mb |
+
+Isso também se aplica a todos os logs.
+
+Ponto de verificação (Checkpointing)
+
+O ponto de verificação do Heritrix é fortemente influenciado pela verificação do rastreador Mercator. Em um artigo sobre o Mercator, o ponto de verificação é descrito da seguinte maneira: "O ponto de verificação é uma parte importante de qualquer processo de execução longo, como um rastreamento da Web. 'Ponto de verificação' é a gravação de uma representação do estado do rastreador em um armazenamento estável. Caso aconteça uma falha, o ponto de verificação deve ser suficiente para que, ao ser lido pelo rastreador, ele consiga recuperar seu estado antes da falha e retomar o rastreamento a partir desse ponto. Por essa definição, no caso de uma falha, qualquer trabalho realizado depois do ponto de verificação mais recente é perdido, apenas o trabalho realizado antes fica salvo. No Mercator, a frequência com que o encadeamento secundário realiza um ponto de verificação é configurável pelo usuário, geralmente de 1 a 4 vezes por dia."
+
+Ver Ponto de Verificação para informações sobre a implementação do Heritrix.
+
+CrawlURI
+
+Um URI e seus dados associados, como o URI pai e o número de links.
+
+Data e hora
+
+Todos os horários no Heritrix são GMT, assumindo que o relógio e o fuso horário no sistema local estão corretos. Isso significa que todas as datas/horas nos registros são GMT, todas as datas/horas mostradas na IUW são GMT, e todas as horas ou datas inseridas pelo usuário devem estar em GMT.
+
+URIs descobertos 
+
+Um URI descoberto é qualquer URI confirmado dentro do "escopo". Isso inclui os URIs que foram processados, estão sendo processados e terminaram o processamento. Não inclui URIs que foram "esquecidas". Os URIs esquecidos são URIs considerados fora do escopo durante a busca. É provável que isso aconteça pela alteração da definição do escopo pelo operador.
+
+Observação: Como o mesmo URI pode ser buscado várias vezes (pelo menos na maioria dos Frontiers), o número de URIs descobertos pode ser um pouco menor do que os itens combinados enfileirados, em processo e finalizados. Isso ocorre porque os URIs duplicados estão sendo enfileirados e processados. É provável que a variação seja mais alta em Frontiers que estão implementando estratégias "revisit".
+
+Caminho de descoberta (Discovery Path)
+
+Cada URI tem um caminho de descoberta. O caminho contém um caractere para cada link ou incorporado do seed.
+
+A legenda dos caracteres é a seguinte:
+
+* R - Redirect
+* E - Embed
+* X - Speculative embed (aggressive JavaScript link extraction)
+* L - Link
+* P - Prerequisite (such as DNS lookup or robots.txt)
+* I - A partir da versão 3.1. Não necessariamente no material de origem, mas deduzido por convenção (como /favicon.ico)
+
+O caminho de descoberta de um seed é uma cadeia vazia.
+
+Frontier
+
+Módulo conectável no Heritrix que mantém o estado interno do rastreamento. Ver Frontier.
+
+Host
+
+Um host pode servir vários domínios ou um domínio pode ser servido por vários hosts. Para nossos propósitos, um host é o mesmo que o nome do host em um URI. O DNS não é considerado porque é volátil e pode estar indisponível. Por exemplo, se vários URIs apontarem para o mesmo endereço IP, eles serão considerados três hosts lógicos diferentes (no mesmo nível do protocolo URI/HTTP).
+
+Os proxies HTTP em conformidade se comportam de maneira semelhante. Eles não consideram um URI e um endereço IP intercambiáveis.
+
+Isso não é ideal para politeness porque aplica regras de cortesia ao host físico ao invés do host lógico.
+
+Trabalho de rastreamento 
+
+Para executar um rastreamento, uma configuração deve ser criada. No Heritrix, essa configuração é chamada de tarefa de rastreamento. Uma tarefa de rastreamento é baseada no framework Spring. A tarefa usa beans Spring como objetos de configuração que definem o rastreamento.
+
+Link Hop Count
+
+Número de links, seguidos do seed,  para alcançar um URI. Os seeds têm uma contagem de saltos de links de zero. A contagem de saltos do link é igual à contagem de `Ls` em um caminho de descoberta de URIs.
+
+URIs pendentes
+
+Número de URIs que estão aguardando processamento detalhado. É, também, o número de URIs descobertos que não foram inspecionados quanto ao escopo ou às duplicatas. Dependendo da implementação do Frontier, isso pode sempre ser zero. Também pode ser um número ajustado que considera duplicatas.
+
+Perfil
+
+Um perfil é um modelo base para uma tarefa de rastreamento. Contém todas as configurações em uma tarefa de rastreamento, mas não é considerado "rastreável". O Heritrix não permite que você rastreie diretamente um perfil. Somente tarefas baseados em perfis podem ser rastreados.
+
+Um exemplo comum de uma configuração de perfil é deixar a propriedade `metadata.operatorContactUrl` indefinida para forçar o operador a inserir um valor válido. Isso se aplica ao perfil padrão que acompanha o Heritrix. Outros exemplos seriam deixar a lista de seeds vazia ou não especificar um processador obrigatório.
+
+Os perfis podem ser usados como modelos, deixando suas configurações em um estado inválido. Dessa forma, um operador é forçado a escolher suas configurações ao criar uma tarefa a partir de um perfil. Isso pode ser vantajoso quando um administrador precisa configurar muitas tarefas de rastreamento diferentes para acomodar sua política de rastreamento.
+
+Politeness
+
+Tentativas do software de rastreador de limitar a carga do site que ele está rastreando. Sem restrições politeness, o rastreador pode sobrecarregar sites menores e até mesmo fazer com que sites de tamanhos moderados fiquem devagar. A menos que você tenha permissão expressa para rastrear um site de forma agressiva, você deve aplicar regras rígidas de cortesia a qualquer rastreamento.
+
+Estados de fila
+
+| Estado  | Significado |  
+| ------------- | ------------- |
+| ready | Filas prontas para emitir uma URL imediatamente. |
+| in-process | Filas que emitiram uma URL que está sendo processada no momento. |
+| snoozed | Devido ao atraso de rastreamento ou à ao tempo de espera entre tentativas. |
+| active | Total de in-proncess + ready + snoozed. |
+| inactive | Filas que atualmente não estão sendo consideradas (devido à rotação de filas). |
+| inegilible | Filas inativas em que a precedência da fila excede o andar de precedência. |
+| retired | Desativadas por algum motivo, ex. essa fila atingiu sua cota alocada. |
+| exhausted | Filas que estão vazias. |
+
+URIs enfileirados
+
+O número de URIs enfileirados e aguardando processamento. Os URIs enfileirados incluem todos os URIs que falharam em serem buscados, mas serão tentados novamente.
+
+Expressões regulares
+
+Todas as expressões regulares no Heritrix são expressões regulares do Java.
+
+As expressões regulares de Java diferem daquelas usadas em outras linguagens de programação, como o Perl. Para obter informações detalhadas sobre expressões regulares Java, consulte a descrição do Java API da classe `java.util.regex.Pattern`.
+
+SHA1
+
+Algorítmo (Secure Hash Algorithm (SHA)) usado pelo Heritrix para criptografar arquivos.
+
+Servidor (Server)
+
+Um servidor é um serviço em um host. Pode haver mais de um serviço em um host. Diferentes serviços são geralmente diferenciados pelo número da porta (port number).
+
+Spring
+
+Spring é uma estrutura de aplicativo Java usada pelo Heritrix. As tarefas de rastreamento são baseadas nos componentes Spring, conhecidos como "beans". Para visualizar os beans Spring de uma configuração de rastreamento, use a funcionalidade "Browse Beans".
+
+SURT
+
+SURT significa Sort-friendly URI Reordering Transform. É uma transformação aplicada a URIs que faz com que sua representação da esquerda para a direita corresponda melhor à hierarquia natural dos nomes de domínio.
+
+Um URI <scheme: //domain.tld/path? Query> tem uma forma SURT <scheme://(tld,domain,)/path?query.
+
+A conversão para o formulário SURT também envolve transformar todos os caracteres em minúsculas e a alteração do esquema https para http. Além disso, o caractere "/" após um componente de autoridade de URI só aparecerá no formato SURT se estiver em formato URI simples. Um exemplo de componente de autoridade de URI é a terceira barra em um URI HTTP regular. Essa convenção se mostra importante ao usar URIs reais como uma abreviação de prefixos SURT.
+
+Os URIs de formato SURT não são normalmente usados para especificar URIs exatos para busca. Em vez disso, a forma SURT é útil ao comparar ou classificar URIs. URIs em formato SURT se classificam em grupos naturais. Por exemplo, todos os URIs "archive.org" serão adjacentes, independentemente de subdomínios como "books.archive.org" ou "movies.archive.org".
+
+Mais importante, um URI de formato SURT ou uma versão truncada de um URI de formato SURT pode ser usado como um prefixo SURT. Um prefixo SURT geralmente corresponderá a todos os URIs dentro de uma área comum de interesse. Por exemplo, o prefixo http://(is será compartilhado por todos os URIs no domínio de nível superior `.is`.
+
+Prefixo SURT
+
+Um URI em formato SURT, especialmente se truncado, pode ser útil como um "prefixo SURT", uma cadeia de prefixo compartilhado de todos os URIs de formulário SURT na mesma área de interesse. Por exemplo, o prefixo http://(is. será compartilhado por todos os URIs de formato SURT no domínio de nível superior `.is`. O prefixo http://(org, archive.www,)/movies será compartilhado por todos os URIs em www.archive.org com um caminho que comece com /movies. http://(org,archive.www,)/movies é também um URI de formato SURT completo válido.
+
+Uma coleção de prefixos SURT classificados é uma maneira eficiente de especificar o escopo de rastreamento desejado. Por exemplo, qualquer URI cujo formato SURT comece com qualquer um dos prefixos deve ser incluído no escopo.
+
+Um pequeno conjunto de convenções pode ser usado para calcular um "prefixo SURT implícito" de um URI regular, como um URI fornecido como um seed de rastreamento. Essas convenções são:
+
+1. Converter o URI para seu formato SURT.
+2. Se houver pelo menos três barras ("/") no formato SURT, remova todos os caracteres após a última barra. Por exemplo, http://(org,example,www,)/main/subsection/ não é alterado. http://(org,example,www,)/main/subsection é truncado para http://(org,example,www,)/main/. http://(org.example,www,)/ não é alterado e http://(org,example,www) não é alterado.
+3. Se o formato final terminar com um parentêses fora (")", remova o parênteses. Cada um dos exemplos acima, exceto o último, permanece inalterado. O último, http://(org,example,www,) , torna-se becomes http://(org,example,www,.
+
+Isso permite que muitos URIs de seeds, em sua forma usual, indiquem os prefixos SURT mais úteis para rastrear URIs relacionados. A presença ou ausência de um "/" à direita em URIs sem informações de caminho adicionais é um indicador sutil se os subdomínios do domínio fornecido devem ser incluídos.
+
+Por exemplo, o seed http://www.archive.org/ se tornará o formato SURT e fornecerá o prefixo SURT http://(org,archive,www,)/ e é o prefixo de todas as URIs de formato SURT em www.archive.org. No entanto, qualquer URI de subdomínio como http://homepages.www.archive.org/directory seria excluído porque seu formato SURT http://homepages.www.archive.org/directory não inicia com o prefixo SURT completo, incluindo o ")" removido do seed.
+
+[Observação: esse parágrafo aplica-se apenas ao H1] Em contraste, o seed http://www.archive.org (note a falta de barra final) se tornará o formato SURT http://(org,archive,www,) e o prefixo SURT implícito http://(org,archive,www, (observe a falta de parênteses à direita). Esse será o prefixo de todos os URIs em www.archive.org, bem como quaisquer URIs de subdomínio como http://homepages.www.archive.org/directory, porque o prefixo SURT completo aparece no formato URI SURT de subdomínio.
+
+Toe Threads
+
+Ao rastrear, o Heritrix emprega um número configurável de Toe Threads para processar URIs. Cada um desses encadeamentos solicitará um URI do Frontier, aplicará o conjunto de Processadores a ele e, finalmente, o reportará como concluído para o Frontier.
+
+
+
+
