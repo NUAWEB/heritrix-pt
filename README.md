@@ -2765,7 +2765,7 @@ Este documento destina-se a desenvolvedores de aplicativos e administradores int
 
 Qualquer cliente que suporte HTTPS pode ser usado para invocar a API do Heritrix. Os exemplos neste documento usam o curl da ferramenta de linha de comando, que é normalmente encontrado na maioria dos ambientes unix. Curl está disponível para muitos sistemas, incluindo o Windows.
 
-### Criar nova tarefa
+### Crate New Job
 
 ```
 POST https://(heritrixhost):8443/engine [action=create]
@@ -2773,7 +2773,7 @@ POST https://(heritrixhost):8443/engine [action=create]
 
 Cria uma nova tarefa de rastreamento. Usa a configuração padrão fornecida pelo perfil profile-defaults.
 
-Parâmetros do formulário:
+Parâmetros do formato:
  
 action - deve ser `create` 
 createpath - o nome da nova tarefa
@@ -2792,10 +2792,302 @@ curl -v -d "createpath=myjob&action=create" -k -u admin:admin --anyauth --locati
   -H "Accept: application/xml" https://localhost:8443/engine
 ```
 
-### Adicionar diretório de tarefas
+### Add Job Directory
 
 ```
 POST https://(heritrixhost):8443/engine [action=add]
 ```
 
 Adiciona um novo diretório de tarefa à configuração do Heritrix. O diretório deve conter um arquivo de configuração cxml.
+
+Parâmetros do formulário:
+ 
+* ação - deve ser `add`
+* addpath - o diretório de tarefa para adicionar
+
+Exemplo HTML:
+
+```
+curl -v -d "action=add&addpath=/Users/hstern/job" -k -u admin:admin --anyauth --location https://localhost:8443/engine
+```
+
+Exemplo XML:
+
+```
+curl -v -d "action=add&addpath=/Users/hstern/job" -k -u admin:admin --anyauth --location -H "Accept: application/xml" https://localhost:8443/engine
+```
+
+### Build Job Configuration
+
+```
+POST https://(heritrixhost):8443/engine/job/(jobname) [action=build]
+```
+
+Cria a configuração de tarefa para a tarefa escolhida. Lê um arquivo descritor XML e usa o Spring para construir os objetos Java necessários para executar o rastreamento. Um rastreamento tem que ser criado para poder ser executado.
+
+Parâmetros do formato:
+
+* action: deve ser `build`
+
+Exemplo HTML:
+
+```
+curl -v -d "action=build" -k -u admin:admin --anyauth --location https://localhost:8443/engine/job/myjob
+```
+
+Exemplo XML:
+
+```
+curl -v -d "action=build" -k -u admin:admin --anyauth --location -H "Accept: application/xml" https://localhost:8443/engine/job/myjob
+```
+
+### Launch Job
+
+Inicia uma tarefa de rastreamento. A tarefa pode ser iniciada no estado “paused” ou no estado “unpaused”. Se for iniciado no estado “unpaused”, a tarefa iniciará o rastreamento imediatamene.
+
+Parâmetros do formato:
+
+* action - deve ser `launch`
+* checkpointing - campo opcional: Se fornecido, o Heritrix tentará iniciar a partir de um ponto de verificação. Deve ser o nome de um ponto de verificação (por exemplo, cp00001-20180102121229) ou (a partir da versão 3.3) o valor especial `latest`, que selecionará automaticamente o ponto de verificação mais recente. Se nenhum ponto de verificação for especificado (ou se o último ponto de verificação for solicitado e não houver pontos de verificação válidos), um novo rastreamento será iniciado.
+
+Exemplo HTML:
+
+```
+curl -v -d "action=launch" -k -u admin:admin --anyauth --location https://localhost:8443/engine/job/myjob
+```
+
+Exemplo XML:
+
+```
+curl -v -d "action=launch" -k -u admin:admin --anyauth --location -H "Accept: application/xml" https://localhost:8443/engine/job/myjob
+```
+
+### Rescan Job Directory
+
+```
+POST https://(heritrixhost):8443/engine [action=rescan]
+```
+
+Reexamina o diretório principal de tarefa e retorna uma página HTML contendo todos os nomes de tarefas. Também retorna informações sobre as tarefas, como o local do arquivo de configuração da tarefa e o número de iniciamentos.
+
+Parâmetros do formato:
+
+* action - deve ser `rescan`
+
+Exemplo HTML:
+
+```
+curl -v -d "action=rescan" -k -u admin:admin --anyauth --location https://localhost:8443/engine
+```
+
+Exemplo XML:
+
+```
+curl -v -d "action=rescan" -k -u admin:admin --anyauth --location -H "Accept: application/xml" https://localhost:8443/engine
+```
+
+### Pause Job
+
+```
+POST https://(heritrixhost):8443/engine/job/(jobname) [action=pause]
+```
+
+Pausa uma tarefa. Não haverá nenhum rastreamento enquanto a tarefa estiver pausada.
+
+Parâmetros de formato:
+
+* action - deve ser `pause`
+
+Exemplo HTML:
+
+```
+curl -v -d "action=pause" -k -u admin:admin --anyauth --location https://localhost:8443/engine/job/myjob
+```
+
+Exemplo XML:
+
+```
+curl -v -d "action=pause" -k -u admin:admin --anyauth --location -H "Accept: application/xml" https://localhost:8443/engine/job/myjob
+```
+
+### Unpause Job
+
+Despausa uma tarefa pausada. O rastreamento será retomado (ou começará, no caso de uma tarefa iniciada no estado "paused"), se possível.
+
+Parâmetros do formato:
+
+* action - deve ser `unpause`
+
+Exemplo HTML:
+
+```
+curl -v -d "action=unpause" -k -u admin:admin --anyauth --location https://localhost:8443/engine/job/myjob
+```
+
+Exemplo XML:
+
+```
+curl -v -d "action=unpause" -k -u admin:admin --anyauth --location -H "Accept: application/xml" https://localhost:8443/engine/job/myjob
+```
+
+### Terminate Job
+
+```
+POST https://(heritrixhost):8443/engine/job/(jobname) [action=terminate]
+```
+
+Encerra uma tarefa em andamento.
+
+Parâmetros do formato:
+
+* action - deve ser `terminate`
+
+Exemplo HTML:
+
+```
+curl -v -d "action=terminate" -k -u admin:admin --anyauth --location https://localhost:8443/engine/job/myjob
+```
+
+Exemplo XML:
+
+```
+curl -v -d "action=terminate" -k -u admin:admin --anyauth --location -H "Accept: application/xml" https://localhost:8443/engine/job/myjob
+```
+
+### Teardown Job
+
+Remove o código Spring usado para executar a tarefa. Quando uma tarefa é "demolida", ela deve ser reconstruída para ser executada.
+
+Parâmetros de formato:
+
+* action - deve ser `teardown`
+
+Exemplo HTML:
+
+```
+curl -v -d "action=teardown" -k -u admin:admin --anyauth --location https://localhost:8443/engine/job/myjob
+```
+
+Exemplo XML:
+
+```
+curl -v -d "action=teardown" -k -u admin:admin --anyauth --location -H "Accept: application/xml" https://localhost:8443/engine/job/myjob
+```
+
+### Copy Job
+
+```
+POST https://(heritrixhost):8443/engine/job/(jobname) [copyTo]
+```
+
+Copia uma configuração de tarefa existente para uma nova configuração de tarefa. Se a caixa de seleção “as profile” estiver selecionada, a configuração da tarefa será copiada como uma configuração de perfil não executável.
+
+Parâmetros de formato:
+
+* copyTo - o nome da nova tarefa ou configuração de perfil
+* asProfile - se deseja copiar a tarefa como uma configuração executável ou como um perfil não executável. O valor `on` significa que a tarefa será copiada como um perfil. Se omitido, a tarefa será copiada como uma configuração executável.
+
+Exemplo HTML:
+
+```
+curl -v -d "copyTo=mycopy&asProfile=on" -k -u admin:admin --anyauth --location https://localhost:8443/engine/job/myjob
+```
+
+Exemplo XML:
+
+```
+curl -v -d "copyTo=mycopy&asProfile=on" -k -u admin:admin --anyauth --location -H "Accept: application/xml" https://localhost:8443/engine/job/myjob
+```
+
+### Checkpoint Job
+
+```
+POST https://(heritrixhost):8443/engine/job/(jobname) [action=checkpoint]
+```
+
+Faz um ponto de verificação da tarefa escolhida. O ponto de verificação grava o estado atual de um rastreamento no sistema de arquivos para que o rastreamento possa ser recuperado caso ocorra uma falha.
+
+Parâmetros de formato:
+
+* action - must be `checkpoint`
+
+Exemplo HTML:
+
+```
+curl -v -d "action=checkpoint" -k -u admin:admin --anyauth --location https://localhost:8443/engine/job/myjob
+```
+
+Exemplo XML:
+
+```
+curl -v -d "action=checkpoint" -k -u admin:admin --anyauth --location -H "Accept: application/xml" https://localhost:8443/engine/job/myjob
+```
+
+### Execute Script in Job
+
+```
+POST https://(heritrixhost):8443/engine/job/(jobname)/script
+```
+
+Executa um script. O script pode ser escrito como Beanshell, ECMAScript, Groovy ou AppleScript.
+
+Parâmetros de formato:
+
+* engine - o mecanismo de script a ser usado: `beanshell`, `js`, `groovy` ou `AppleScriptEngine`.
+* script - o código de script para executar
+
+Exemplo HTML:
+
+```
+curl -v -d "engine=beanshell&script=System.out.println%28%22test%22%29%3B" -k -u admin:admin --anyauth --location https://localhost:8443/engine/job/myjob/script
+```
+
+Exemplo XML:
+
+```
+curl -v -d "engine=beanshell&script=System.out.println%28%22test%22%29%3B" -k -u admin:admin --anyauth --location -H "Accept: application/xml" https://localhost:8443/engine/job/myjob/script
+```
+
+### Submitting a CXML Job Configuration File
+
+```
+PUT https://(heritrixhost):8443/engine/job/(jobname)/jobdir/crawler-beans.cxml
+```
+
+Submete o conteúdo de um arquivo CXML para uma tarefa escolhida. Os arquivos CXML são os arquivos de configuração usados para controlar uma tarefa de rastreamento. Cada tarefa tem um único arquivo CXML.
+
+Exemplo:
+
+```
+curl -v -T my-crawler-beans.cxml -k -u admin:admin --anyauth --location https://localhost:8443/engine/job/myjob/jobdir/crawler-beans.cxml
+```
+
+Códigos de status: * 200 OK - Com sucesso, o Heritrix REST API retornará um HTTP 200 sem corpo.
+
+### Convenções e Pressupostos
+
+Os seguintes parâmetros *curl* são usados ao chamar a API.
+
+| Parâmetros *curl* | Descrição |  
+| ------------- | ------------- |
+| -v | Verbose. Output a detailed account of the curl command to standard out. |
+| -d | Dados. Estes são os pares de nome/valor que são enviados no corpo de um POST. |
+| -k | Permite conexões a sites SSL sem certificados. |
+| -u | Usuário. Permite o envio de um nome de usuário e senha para autenticar a solicitação HTTP. |
+| –anyauth | Qualquer tipo de autenticação. Permite a autenticação de uma solicitação com base em qualquer tipo de método de autenticação. | 
+| –location | Segue redirecionamentos HTTP. Essa opção é usada para que as chamadas de API que retornam dados (como HTML) não sejam interrompidas após o recebimento de um código de redirecionamento (como um HTTP 303). |
+| -H | Defina o valor de um header HTTP. Por exemplo, “Accept: application/xml”.
+
+Supõe-se que o leitor tenha um conhecimento prático do protocolo HTTP e da funcionalidade do Heritrix. Além disso, os exemplos assumem que o Heritrix é executado com um nome de usuário administrativo e senha de "admin".
+
+### Sobre a implementação do REST
+
+Representational State Transfer (REST) é uma arquitetura de software para sistemas hipermídia distribuídos, como a World Wide Web (WWW). O REST é construído sobre o conceito de representações de recursos. Recursos podem ser qualquer conceito coerente e significativo que possa ser abordado. Um URI é um exemplo de um recurso. A representação do recurso é tipicamente um documento que captura o estado atual ou pretendido do recurso. Um exemplo de representação de um recurso é uma página HTML.
+
+O Heritrix usa o REST para expor sua funcionalidade. A implementação do REST usada pelo Heritrix é Restlet. Restlet implementa os conceitos definidos pelo REST, incluindo recursos e representações. Também fornece um container REST que processa solicitações RESTful. O container é o Noelios Restlet Engine. Para informações detalhadas sobre o Restlet, visite http://www.restlet.org/.
+
+O Heritrix expõe sua funcionalidade REST por meio de HTTPS. O protocolo HTTPS é usado para enviar solicitações para recuperar ou modificar configurações de definições e gerenciar tarefas de rastreamento.
+
+
+
+
