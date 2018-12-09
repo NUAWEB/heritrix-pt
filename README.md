@@ -2773,7 +2773,7 @@ POST https://(heritrixhost):8443/engine [action=create]
 
 Cria uma nova tarefa de rastreamento. Usa a configuração padrão fornecida pelo perfil profile-defaults.
 
-Parâmetros do formato:
+Parâmetros do formulário:
  
 action - deve ser `create` 
 createpath - o nome da nova tarefa
@@ -2825,7 +2825,7 @@ POST https://(heritrixhost):8443/engine/job/(jobname) [action=build]
 
 Cria a configuração de tarefa para a tarefa escolhida. Lê um arquivo descritor XML e usa o Spring para construir os objetos Java necessários para executar o rastreamento. Um rastreamento tem que ser criado para poder ser executado.
 
-Parâmetros do formato:
+Parâmetros do formulário:
 
 * action: deve ser `build`
 
@@ -2845,7 +2845,7 @@ curl -v -d "action=build" -k -u admin:admin --anyauth --location -H "Accept: app
 
 Inicia uma tarefa de rastreamento. A tarefa pode ser iniciada no estado “paused” ou no estado “unpaused”. Se for iniciado no estado “unpaused”, a tarefa iniciará o rastreamento imediatamene.
 
-Parâmetros do formato:
+Parâmetros do formulário:
 
 * action - deve ser `launch`
 * checkpointing - campo opcional: Se fornecido, o Heritrix tentará iniciar a partir de um ponto de verificação. Deve ser o nome de um ponto de verificação (por exemplo, cp00001-20180102121229) ou (a partir da versão 3.3) o valor especial `latest`, que selecionará automaticamente o ponto de verificação mais recente. Se nenhum ponto de verificação for especificado (ou se o último ponto de verificação for solicitado e não houver pontos de verificação válidos), um novo rastreamento será iniciado.
@@ -2870,7 +2870,7 @@ POST https://(heritrixhost):8443/engine [action=rescan]
 
 Reexamina o diretório principal de tarefa e retorna uma página HTML contendo todos os nomes de tarefas. Também retorna informações sobre as tarefas, como o local do arquivo de configuração da tarefa e o número de iniciamentos.
 
-Parâmetros do formato:
+Parâmetros do formulário:
 
 * action - deve ser `rescan`
 
@@ -2894,7 +2894,7 @@ POST https://(heritrixhost):8443/engine/job/(jobname) [action=pause]
 
 Pausa uma tarefa. Não haverá nenhum rastreamento enquanto a tarefa estiver pausada.
 
-Parâmetros de formato:
+Parâmetros de formulário:
 
 * action - deve ser `pause`
 
@@ -2914,7 +2914,7 @@ curl -v -d "action=pause" -k -u admin:admin --anyauth --location -H "Accept: app
 
 Despausa uma tarefa pausada. O rastreamento será retomado (ou começará, no caso de uma tarefa iniciada no estado "paused"), se possível.
 
-Parâmetros do formato:
+Parâmetros do formulário:
 
 * action - deve ser `unpause`
 
@@ -2938,7 +2938,7 @@ POST https://(heritrixhost):8443/engine/job/(jobname) [action=terminate]
 
 Encerra uma tarefa em andamento.
 
-Parâmetros do formato:
+Parâmetros do formulário:
 
 * action - deve ser `terminate`
 
@@ -2958,7 +2958,7 @@ curl -v -d "action=terminate" -k -u admin:admin --anyauth --location -H "Accept:
 
 Remove o código Spring usado para executar a tarefa. Quando uma tarefa é "demolida", ela deve ser reconstruída para ser executada.
 
-Parâmetros de formato:
+Parâmetros de formulário:
 
 * action - deve ser `teardown`
 
@@ -2982,7 +2982,7 @@ POST https://(heritrixhost):8443/engine/job/(jobname) [copyTo]
 
 Copia uma configuração de tarefa existente para uma nova configuração de tarefa. Se a caixa de seleção “as profile” estiver selecionada, a configuração da tarefa será copiada como uma configuração de perfil não executável.
 
-Parâmetros de formato:
+Parâmetros de formulário:
 
 * copyTo - o nome da nova tarefa ou configuração de perfil
 * asProfile - se deseja copiar a tarefa como uma configuração executável ou como um perfil não executável. O valor `on` significa que a tarefa será copiada como um perfil. Se omitido, a tarefa será copiada como uma configuração executável.
@@ -3007,7 +3007,7 @@ POST https://(heritrixhost):8443/engine/job/(jobname) [action=checkpoint]
 
 Faz um ponto de verificação da tarefa escolhida. O ponto de verificação grava o estado atual de um rastreamento no sistema de arquivos para que o rastreamento possa ser recuperado caso ocorra uma falha.
 
-Parâmetros de formato:
+Parâmetros de formulário:
 
 * action - must be `checkpoint`
 
@@ -3031,7 +3031,7 @@ POST https://(heritrixhost):8443/engine/job/(jobname)/script
 
 Executa um script. O script pode ser escrito como Beanshell, ECMAScript, Groovy ou AppleScript.
 
-Parâmetros de formato:
+Parâmetros do formulário:
 
 * engine - o mecanismo de script a ser usado: `beanshell`, `js`, `groovy` ou `AppleScriptEngine`.
 * script - o código de script para executar
@@ -3087,6 +3087,446 @@ Representational State Transfer (REST) é uma arquitetura de software para siste
 O Heritrix usa o REST para expor sua funcionalidade. A implementação do REST usada pelo Heritrix é Restlet. Restlet implementa os conceitos definidos pelo REST, incluindo recursos e representações. Também fornece um container REST que processa solicitações RESTful. O container é o Noelios Restlet Engine. Para informações detalhadas sobre o Restlet, visite http://www.restlet.org/.
 
 O Heritrix expõe sua funcionalidade REST por meio de HTTPS. O protocolo HTTPS é usado para enviar solicitações para recuperar ou modificar configurações de definições e gerenciar tarefas de rastreamento.
+
+## Base de Conhecimento
+
+### Rastreamento responsável
+
+Um rastreamento responsável é um rastreamento que segue as leis e as convenções estabelecidas do rastreamento da web, afim de minimizar os custos que o rastreamento impõe aos sites coletados.
+
+Principais práticas:
+
+* respeitar o robots.txt, a não ser que você tenha recebido permissão explícita para fazer o contrário
+* fornecer informações de contato em seu User-Agent e responder prontamente quando for contatado
+* usar politeness-delay e outras configurações que afetam a frequência de acessos a um único site para garantir que a maior parte da capacidade de veiculação do site permaneça disponível para outros visitantes
+* monitorar regularmente os logs de rastreamento em busca de evidências de caminhos improdutivos/intermináveis (armadilhas) e ajustar ativamente o rastreador para interromper essa atividade quando observado
+
+### Adicionar URIs no meio do rastreamento
+
+(Procedimentos para o Heritrix 1.14.x, procedimentos para H2/H3 irão variar.)
+
+**Via IUW do operador**
+
+Há duas maneiras principais de adicionar URIs a um rastreamento que já foi iniciado a partir da interface do usuário da Web: alterando o arquivo fonte do seed (seeds.txt) e acionando uma nova verificação ou usando a opção 'import URIs' da página 'View/Edit Frontier' (disponível apenas em rastreamentos pausados).
+
+**Edições de seeds**
+
+O arquivo seeds é, por padrão, relido depois de qualquer alteração de configuração (mesmo pequenas alterações não relacionadas); isso pode ser alterado através da configuração "reler-seeds-on-reconfig" do escopo.
+
+(Você pode editar arquivos seeds menores na área de texto na parte inferior de todas as outras configurações editáveis. Arquivos grandes são difíceis ou impossíveis de editar através da área de texto da Web; nesse caso, você ainda pode editar o arquivo no disco por outros métodos.)
+
+Uma nova verificação de arquivos seeds aciona uma tentativa de reagendamento de todos os URIs contidos. No entanto, URIs que já foram agendados não serão reprogramados. Assim, somente os URIs novos no arquivo seed serão agendados recentemente. (E se, por algum motivo, esses novos URIs já estiverem programados por algum outro *discovery-path*, eles não serão reagendados.)
+
+Os escopos que são definidos em termos de seeds também são, por padrão, reconstruídos a partir de seeds em alterações de configurações. (Portanto, se estiver usando esse escopo, o recomendável é não remover as sementes originais, mesmo que elas já estejam agendadas - caso contrário, seu escopo pode ser redefinido para excluir os sites correspondentes.)
+
+**Importar URIs**
+
+Quando o rastreador é pausado, um link "View or Edit Frontier" aparecerá no console. A página correspondente oferece um formulário 'import URIs'.
+
+Este formulário espera um caminho de arquivo local para o rastreador; o arquivo pode estar em qualquer um dos três formatos listados (um URI por linha, um crawl.log ou um log de recuperação descompactado). Se o formato fornecido incluir informações de 'hops-path' e 'via', os URIs importados compartilharão essas informações. Se a caixa 'force revisit' estiver marcada, os URIs fornecidos serão programados à força, mesmo se previamente agendados.
+
+Nenhuma das opções de importação de URI faz com que os URIs sejam tratados como seeds ou alteram o escopo de qualquer maneira. (Por exemplo, você poderia forçar a programação de um URI fora do escopo - mas se ainda tiver o processador padrão 'Preselector' que verifica novamente o escopo, ele ainda será rejeitado do rastreamento quando for exibido.)
+
+**Via JMX
+
+A interface de controle remoto do JMX inclui as operações importUri e importUris no bean CrawlJob que imitam a função de importação de URIs da IUW. Um exemplo:
+
+Exemplo de importação de JMX
+
+### Parâmetros politeness
+
+### Script BeanShell para download de vídeos
+
+Aqui está um script BeanShell que pode ser usado para encontrar links de vídeo com o Heritrix. Atualmente, o script suporta apenas o youtube. Para fazer com que o script funcione, ele deve ser adicionado na fase de extração da cadeia do processador. Esse processo foi testado com o Heritrix 2.0.2 com uma sheet que limita o max-hops no youtube para 0, permitindo obter a primeira página dos vídeos do Youtube. Também é visível no modo proxy do Wayback 1.4.0. O script também funciona com vídeos do YouTube incorporados que usam "get_video_info" para recuperar tokens de vídeo.
+
+Quaisquer comentários ou sugestões para melhorias do script são bem-vindos.
+
+```
+// This is a beanshell processor that will allow downloading of vidoes in Heritrix.
+// Currently only supports Youtube video pages or embedded youtube video that use "get_video_info".
+//
+// The script should be added at the extraction part of the processor chain in the Heritrix profile.
+//
+// NOTE:  The video URIs that are extracted will automatically be added as
+// candidate URIs (normally this is done by LinksScoper) to ensure that they are always downloaded.
+// This can be changed if needed to instead have them added as outlinks so
+// that LinkScoper does a scope check after extraction.
+//
+// Author:  Adam Taylor (adam dot taylor at lac-bac dot gc dot ca)
+
+import java.io.IOException;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.net.URLDecoder;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.apache.commons.httpclient.URIException;
+import org.archive.crawler.datamodel.CrawlURI;
+import org.archive.crawler.datamodel.SchedulingConstants;
+import org.archive.net.UURI;
+import org.archive.net.UURIFactory;
+import org.archive.io.ReplayCharSequence;
+import org.archive.modules.extractor.Hop;
+import org.archive.modules.extractor.Link;
+import org.archive.modules.extractor.LinkContext;
+import org.archive.modules.fetcher.FetchStatusCodes;
+
+    process(CrawlURI curi) {
+        if (curi.toString().matches(".*www\\.youtube\\.com/watch\\?.*")) {
+
+            ReplayCharSequence cs = null;
+            cs = curi.getRecorder().getReplayCharSequence();
+
+            Matcher m = Pattern.compile(".*fullscreenUrl.*video_id=([^&]+).*t=([^&]+)").matcher(cs);
+            m.find();
+            String videoId = m.group(1);
+            String token = m.group(2);
+            String getVideoUrl = "http://www.youtube.com/get_video?video_id=" + videoId + "&t=" + token + "&el=detailpage&ps=";
+
+            Link getVideoLink1 = new Link (curi.getUURI(), UURIFactory.getInstance(getVideoUrl), LinkContext.EMBED_MISC, Hop.EMBED);
+            curi.getOutCandidates().add(curi.createCrawlURI(curi.getBaseURI(), getVideoLink1, SchedulingConstants.HIGH, false));
+        }
+        if (curi.toString().matches(".*youtube\\.com/swf/l\\.swf.*")) {
+            Matcher swfParamMatcher = Pattern.compile(".*swf=([^&]+).*video_id=([^&]+).*eurl=([^&]*).*iurl=([^&]+).*").matcher(curi.toString());
+            swfParamMatcher.find();
+
+            String swfUrl = swfParamMatcher.group(1);
+            String videoId = swfParamMatcher.group(2);
+            String eurl = swfParamMatcher.group(3);
+            String iurl = swfParamMatcher.group(4);
+
+            String iurlDecoded = URLDecoder.decode(iurl);
+            String swfUrlDecoded = URLDecoder.decode(swfUrl);
+            String iurlCrossdomainUrl = "http://" + new URL(iurlDecoded).getHost() + "/crossdomain.xml";
+            String youtubeCrossdomainUrl = "http://www.youtube.com/crossdomain.xml";
+
+            String getVideoInfoUrl1 = "http://www.youtube.com/get_video_info?&video_id="
+                + videoId
+                + "&el=embedded&ps=default&eurl="
+                + eurl;
+
+            if (curi.toString().matches(".*hl=[^&]+.*")) {
+                Matcher hlMatcher = Pattern.compile(".*hl=([^&]+).*").matcher(curi.toString());
+                hlMatcher.find();
+                getVideoInfoUrl1 += "&hl=" + hlMatcher.group(1);
+            }
+
+            Link getVideoInfoLink1 = new Link (curi.getUURI(), UURIFactory.getInstance(getVideoInfoUrl1), LinkContext.EMBED_MISC, Hop.EMBED);
+            Link swfLink = new Link (curi.getUURI(), UURIFactory.getInstance(swfUrlDecoded), LinkContext.EMBED_MISC, Hop.EMBED);
+            Link iurlLink = new Link (curi.getUURI(), UURIFactory.getInstance(iurlDecoded), LinkContext.EMBED_MISC, Hop.EMBED);
+            Link iurlCrossdomainLink = new Link (curi.getUURI(), UURIFactory.getInstance(iurlCrossdomainUrl), LinkContext.EMBED_MISC, Hop.EMBED);
+            Link youtubeCrossdomainLink = new Link (curi.getUURI(), UURIFactory.getInstance(youtubeCrossdomainUrl), LinkContext.EMBED_MISC, Hop.EMBED);
+
+            curi.getOutCandidates().add(curi.createCrawlURI(curi.getBaseURI(), getVideoInfoLink1, SchedulingConstants.HIGH, false));
+            curi.getOutCandidates().add(curi.createCrawlURI(curi.getBaseURI(), swfLink, SchedulingConstants.HIGH, false));
+            curi.getOutCandidates().add(curi.createCrawlURI(curi.getBaseURI(), iurlLink, SchedulingConstants.HIGH, false));
+            curi.getOutCandidates().add(curi.createCrawlURI(curi.getBaseURI(), iurlCrossdomainLink, SchedulingConstants.HIGH, false));
+            curi.getOutCandidates().add(curi.createCrawlURI(curi.getBaseURI(), youtubeCrossdomainLink, SchedulingConstants.HIGH, false));
+        }
+
+        if (curi.toString().matches(".*youtube\\.com/get_video_info\\?.*")) {
+            Matcher videoInfoMatcher = Pattern.compile(".*video_id=([^&]+).*eurl=([^&]*).*").matcher(curi.toString());
+            videoInfoMatcher.find();
+
+            String videoId = videoInfoMatcher.group(1);
+            String eurl = videoInfoMatcher.group(2);
+
+            ReplayCharSequence cs = null;
+            cs = curi.getRecorder().getReplayCharSequence();
+
+            Matcher tokenMatcher = Pattern.compile(".*token=([^&]+).*").matcher(cs);
+            tokenMatcher.find();
+            String videoToken = tokenMatcher.group(1);
+
+            String getVideoUrl1 = "http://www.youtube.com/get_video?video_id="
+                + videoId
+                + "&t="
+                + videoToken
+                + "&eurl="
+                + eurl
+                + "&el=embedded&ps=default";
+
+            Link getVideoLink1 = new Link (curi.getUURI(), UURIFactory.getInstance(getVideoUrl1), LinkContext.EMBED_MISC, Hop.EMBED);
+
+            curi.getOutCandidates().add(curi.createCrawlURI(curi.getBaseURI(), getVideoLink1, SchedulingConstants.HIGH, false));
+        }
+    }
+```
+
+### craw manifest
+
+Exemplo de um arquivo *crawl manifest* do Heritrix 1.15
+
+crawl-manifest.txt
+
+L+ /1/crawldata/CRAWL-03-16-2010/logs/crawl.log
+L+ /1/crawldata/CRAWL-03-16-2010/logs/runtime-errors.log
+L+ /1/crawldata/CRAWL-03-16-2010/logs/local-errors.log
+L+ /1/crawldata/CRAWL-03-16-2010/logs/uri-errors.log
+L+ /1/crawldata/CRAWL-03-16-2010/logs/progress-statistics.log
+C+ /0/jobs/CRAWL-03-16-2010/order.xml
+C+ /0/jobs/CRAWL-03-16-2010/settings/com/youtube/settings.xml
+C+ /0/jobs/CRAWL-03-16-2010/seeds.txt
+R+ /1/crawldata/CRAWL-03-16-2010/hosts-report.txt
+R+ /1/crawldata/CRAWL-03-16-2010/mimetype-report.txt
+R+ /1/crawldata/CRAWL-03-16-2010/responsecode-report.txt
+R+ /1/crawldata/CRAWL-03-16-2010/seeds-report.txt
+R+ /1/crawldata/CRAWL-03-16-2010/crawl-report.txt
+R+ /1/crawldata/CRAWL-03-16-2010/processors-report.txt
+
+L+: arquivos log
+C+: arquivos config
+R+: arquivos de relatório
+
+O *crawl manifest* é gerado ao clicar em "terminate" para uma tarefa na interface da Web do Heritrix. Pode levar algum tempo para criar o arquivo (20 minutos?), então seja paciente e não desligue o Heritrix muito cedo.
+
+### Opções JVM
+
+Notas diversas sobre as opções JVM de interesse para os operadores do Heritrix. 
+
+Recomendado:
+
+-XX: + UseParallelOldGC
+
+Pode ser útil para acelerar compactações completas de GC em máquinas com vários núcleos. Ver http://java.sun.com/javase/technologies/hotspot/gc/gc_tuning_6.html#par_gc
+
+-XX: + DoEscapeAnalysis
+
+Disponível em 6u14, pode melhorar o desempenho; ver http://java.sun.com/javase/6/webnotes/6u14.html
+
+-XX: + UseCompressedOops
+
+Disponível em 6u14, pode melhorar o uso de memória/GC if using 64-bit JVM on heaps <32GB in size;; ver http://java.sun.com/javase/6/webnotes/6u14.html
+
+Talvez:
+
+-XX: -UseGCOverheadLimit
+
+Desativa um OOME que não é criado quando a memória está realmente esgotada, mas quando uma quantidade excessiva de tempo é gasta no GC. We've seen this OOME at times when a requested memory-intensive report may have completed if not for this OOME (albeit in an extreme length of time).
+
+### Frontier queue budgets
+
+### 
+
+Configuração para capturar o material que é carregado quando você scroll down após o final da página no Facebook e no Twitter usando o novo ExtractorMultipleRegex:
+
+**Twitter**
+
+Configurar *extractors* no nível superior:
+
+```
+<bean id="extractorTwitterScrollOne" class="org.archive.modules.extractor.ExtractorMultipleRegex">
+                <property name="enabled" value="false"/>
+                <property name="uriRegex" value="^https?://(?:www\.)?twitter\.com/([^/]+)/?(?:\?.*)?$"/>
+                <property name="contentRegexes">
+                        <map>
+                                <entry key="maxId" value="data-max-id=&quot;(\d+)&quot;"/>
+                        </map>
+                </property>
+                <property name="template">
+                        <value>/i/profiles/show/${uriRegex[1]}/timeline/with_replies?include_available_features=1&amp;include_entities=1&amp;max_id=${maxId[1]}</value>
+                </property>
+        </bean>
+        <bean id="extractorTwitterScrollFurther" class="org.archive.modules.extractor.ExtractorMultipleRegex">
+                <property name="enabled" value="false"/>
+                <property name="uriRegex" value="^https?://(?:www\.)?twitter\.com/i/profiles/show/([^/]+)/timeline/with_replies\?include_available_features=1&amp;include_entities=1&amp;max_id=\d+$"/>
+                <property name="contentRegexes">
+                        <map>
+                                <entry key="maxId" value="&quot;max_id&quot;:&quot;(\d+)&quot;"/>
+                        </map>
+                </property>
+                <property name="template">
+                        <value>/i/profiles/show/${uriRegex[1]}/timeline/with_replies?include_available_features=1&amp;include_entities=1&amp;max_id=${maxId[1]}</value>
+                </property>
+        </bean>
+```
+
+Inserir na fetch chain:
+
+```
+ <ref bean="extractorHtml"/>
+                                <ref bean="extractorCss"/>
+                                <ref bean="extractorJs"/>
++                                <ref bean="extractorTwitterScrollOne"/>
++                                <ref bean="extractorTwitterScrollFurther"/> 
+                        </list>
+                </property
+```
+
+Use sheets para permitir URLs relevantes:
+
+```
+<bean id="twitterScrollOne" class="org.archive.spring.Sheet">
+                <property name="map">
+                        <map>
+                                <entry key="extractorTwitterScrollOne.enabled" value="true"/>
+                        </map>
+                </property>
+        </bean>
+        <bean class="org.archive.crawler.spring.SurtPrefixesSheetAssociation">
+                <property name="surtPrefixes">
+                        <list>
+                                <value>http://(com,twitter,)/</value>
+                                <value>http://(com,twitter,www,)/</value>
+                        </list>
+                </property>
+                <property name="targetSheetNames">
+                        <list>
+                                <value>twitterScrollOne</value>
+                        </list>
+                </property>
+        </bean>
+        <bean id="twitterScrollFurther" class="org.archive.spring.Sheet">
+                <property name="map">
+                        <map>
+                                <entry key="extractorTwitterScrollFurther.enabled" value="true"/>
+                                <entry key="extractorTwitterScrollOne.enabled" value="false"/>
+                        </map>
+                </property>
+        </bean>
+        <bean class="org.archive.crawler.spring.SurtPrefixesSheetAssociation">
+                <property name="surtPrefixes">
+                        <list>
+                                <value>http://(com,twitter,)/i/profiles/show/</value>
+                                <value>http://(com,twitter,www,)/i/profiles/show/</value>
+                        </list>
+                </property>
+                <property name="targetSheetNames">
+                        <list>
+                                <value>twitterScrollFurther</value>
+                        </list>
+                </property>
+        </bean>
+```
+
+**Facebook**
+
+Configurar *extractor* no nível superior:
+
+```
+<bean id="extractorFacebookScroll" class="org.archive.modules.extractor.ExtractorMultipleRegex">
+                <property name="enabled" value="false"/>
+                <property name="uriRegex" value="^https?://(?:www\.)?facebook\.com/[^/?]+$"/>
+                <property name="contentRegexes">
+                        <map>
+                                <entry key="jsonBlob" value="\[&quot;TimelineContentLoader&quot;,&quot;registerTimePeriod&quot;,[^,]+,[^,]+,[^,]+,\{(&quot;profile_id&quot;:[^}]+)\},false,null,(\d+),"/>
+                                <entry key="ajaxpipeToken" value="&quot;ajaxpipe_token&quot;:&quot;([^&quot;]+)&quot;"/>
+                                <entry key="timeCutoff" value="&quot;setTimeCutoff&quot;,[^,]*,\[(\d+)\]\]"/>
+                        </map>
+                </property>
+                <property name="template">
+                        <value>/ajax/pagelet/generic.php/ProfileTimelineSectionPagelet?ajaxpipe=1&amp;ajaxpipe_token=${ajaxpipeToken[1]}&amp;no_script_path=1&amp;data=${java.net.URLEncoder.encode('{' + jsonBlob[1] , 'UTF-8')},&quot;time_cutoff&quot;%3A${java.net.URLEncoder.encode(timeCutoff[1] , 'UTF-8')},&quot;force_no_friend_activity&quot;%3Afalse%7D&amp;__user=0&amp;__a=1&amp;__adt=${jsonBlob[2]}</value>
+                </property>
+        </bean>
+```
+
+Inserir na fetch chain:
+
+```
+ <ref bean="extractorCss"/>
+                                <ref bean="extractorJs"/>
+                                <ref bean="extractorTwitterScrollOne"/>
+                                <ref bean="extractorTwitterScrollFurther"/>
++                                <ref bean="extractorFacebookScroll"/>
+                        </list>
+                </property>
+```
+
+Use sheets para permitir URLs relevantes:
+
+```
+<bean id="enableFacebookScroll" class="org.archive.spring.Sheet">
+                <property name="map">
+                        <map>
+                                <entry key="extractorFacebookScroll.enabled" value="true"/>
+                        </map>
+                </property>
+        </bean>
+        <bean class="org.archive.crawler.spring.SurtPrefixesSheetAssociation">
+                <property name="surtPrefixes">
+                        <list>
+                                <value>http://(com,facebook,</value>
+                        </list>
+                </property>
+                <property name="targetSheetNames">
+                        <list>
+                                <value>enableFacebookScroll</value>
+                        </list>
+                </property>
+        </bean>
+```
+
+### Deduping (redução de duplicação)
+
+A partir do release 1.12.0, vários Processadores podem cooperar para transportar o histórico de conteúdo do URI entre os rastreamentos (consulte JavaDocs do pacote org.archive.crawler.processor.recrawl). Isso reduz a quantidade de material duplicado baixado ou armazenado em rastreamentos posteriores.
+
+### Configuração de desduplicação H1
+
+O Heritrix 1.x não suporta a execução de um mesmo rastreamento mais de uma vez, portanto, um rastreamento precisará ser configurado para *armazenar* dados de redução de duplicação, e o outro rastreamento precisará ser configurado para fazer o *carregamento* de dados de redução de duplicação. Exemplo (trecho do teste para o HER-1627):
+
+**configure persist STORE crawl**
+
+* adicione os processadores FetchHistory e PersistLog depois de `FetchHttp`
+`org.archive.crawler.processor.recrawl.FetchHistoryProcessor`
+`org.archive.crawler.processor.recrawl.PersistLogProcessor`
+
+**configure persist LOAD crawl**
+
+* *depois* de PreconditionEnforcer, *antes* de FetchDNS
+`org.archive.crawler.processor.recrawl.PersistLoadProcessor`
+* *depois* de FetchHTTP
+`org.archive.crawler.processor.recrawl.FetchHistoryProcessor`
+* preload-source:
+`${HERITRIX_HOME}/jobs/${JOB}/logs/persistlog.txtser.gz`
+
+### Configuração de desduplicação H3
+
+O Heritrix 3.x permite executar o mesmo rastreamento repetidamente, mas exige uma configuração diferente para a execução de rastreamentos que *armazenam* dados de deduplicação e a execução de rastreamento que *carregam* dados de redução de redundância conforme descrito em Processadores de Redução de Duplicação. O mesmo modelo é seguido para o H1, exceto pelo uso do beans CXML do rastreador do Spring-world (`crawler-beans.cxml`) para configuração.
+
+### Force speculative embed URIs into single queue
+
+O uso da configuração a seguir enviará incorporações especulativas (hoppath 'X' encontrado por meio da extração do javascript) em uma única fila separada.
+
+Isso é necessário devido ao extrator de javascript que enfileirava um grande número de URIs defeituosos/inexistentes.
+
+```
+<!-- extracted uris go to their own queue -->
+<bean class='org.archive.crawler.spring.DecideRuledSheetAssociation'>
+  <property name='rules'>
+    <bean>
+     <property name="regex" value=".*X$" />
+    </bean>
+  </property>
+  <property name='targetSheetNames'>
+   <list>
+    <value>speculativeSingleQueue</value>
+    <value>speculativeSingleQueueBalance</value>
+   </list>
+  </property>
+</bean> 
+
+<bean id='speculativeSingleQueue' class='org.archive.spring.Sheet'>
+  <property name='map'>
+   <map>
+    <entry key='queueAssignmentPolicy.forceQueueAssignment' value='speculative-queue' />
+   </map>
+  </property>
+ </bean>
+ <bean id='speculativeSingleQueueBalance' class='org.archive.spring.Sheet'>
+   <property name='map'>
+     <map>
+       <entry key='frontier.balanceReplenishAmount' value='2000000000' />
+     </map>
+   </property>
+</bean>
+```
+
+### Scripts úteis do Heritrix3
+
+Scripts úteis do Heritrix 3 H3 para executar no console de script.
+
+
 
 
 
