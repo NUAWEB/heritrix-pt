@@ -3526,8 +3526,126 @@ Isso é necessário devido ao extrator de javascript que enfileirava um grande n
 
 Scripts úteis do Heritrix 3 H3 para executar no console de script.
 
+* obter uma lista de seeds do arquivo de seeds no disco
+* imprimir variáveis disponíveis no contexto de script
+* printProps (obj) e utilização do appCtx.getData ()
+* changing a regex decide rule
+* adding an exclusion surt
+* take a gander at the decide rules
+* check your metadata
+* add a sheet forcing many queues into 'retired' state
+* create a sheet for forcing queue assignment, and associate two surts with it
+* add a decide rule sheet association
+* apply sheet (ignoreRobots) to a list of URIs as strings, taken from the seeds.txt file
+* reconsiderRetiredQueues
+* run arbitrary command on the machine (BE CAREFUL WITH THIS, OBVIOUSLY)
+* list pending urls
+* GC Garbage Collector Collection Info
+* Retrieving history for URI
+* dump surts
+* Add cookie to running crawl
+* Delete urls matching regex from frontier
+* Force a site to crawl through a proxy
+* Force wake all snoozed queues
+* Add a DecideRule to scope rejecting the second speculative hop
+* Retire Queues Matching Regex
+* Determine which multi-machine crawler is responsible for given URI
 
+**obtenção de uma lista de seeds do arquivo de seeds no disco**
 
+```
+//groovy
+//this is not the original list of seeds. it's just the contents of the seeds file, filtered.
+appCtx.getBean("seeds").textSource.file.readLines().findAll{l -> l =~ /^http/}.unique().each{seedStr ->
+ rawOut.println(seedStr)
+}
+```
 
+**impressão de variáveis disponíveis no contexto de script**
+
+```
+//groovy
+this.binding.getVariables().each{ rawOut.println("${it.key}=\n ${it.value}\n") }
+```
+
+**printProps (obj) e utilização do appCtx.getData ()**
+
+O comando bash `ls` é para o diretório de trabalho o que esse método é para um objeto java. Ele usa getProperties fornecido pela groovy.
+
+Colocar printProps em appCtx.getData () significa que você não precisa incluir toda a definição printProps posteriormente, o que ajuda a manter os scripts curtos e gerenciáveis. appCtx.getData () é um java.util.Map. Mais informações sobre o tópico fornecidas pelo Groovy (detalhadas) e pelo IBM (concisas).
+
+```
+//Groovy
+appCtxData = appCtx.getData()
+appCtxData.printProps = { rawOut, obj ->
+  rawOut.println "#properties"
+  // getProperties is a groovy introspective shortcut. it returns a map
+  obj.properties.each{ prop ->
+    // prop is a Map.Entry
+    rawOut.println "\n"+ prop
+    try{ // some things don't like you to get their class. ignore those.
+      rawOut.println "TYPE: "+ prop.value.class.name
+    }catch(Exception e){}
+  }
+  rawOut.println "\n\n#methods"
+  try {
+  obj.class.methods.each{ method ->
+    rawOut.println "\n${method.name} ${method.parameterTypes}: ${method.returnType}"
+  } }catch(Exception e){}
+}
+
+// above this line need not be included in later script console sessions
+def printProps(x) { appCtx.getData().printProps(rawOut, x) }
+
+// example: see what can be accessed on the frontier
+printProps(job.crawlController.frontier)
+```
+
+**alteração uma *rule* de regex**
+
+É recomendável pausar o rastreamento ao modificar as coleções das quais ele depende.
+
+```
+//Groovy
+pat = ~/your-regex-here/
+dec = org.archive.modules.deciderules.DecideResult.REJECT
+regexRuleObj = appCtx.getBean("scope").rules.find{ it.class == org.archive.modules.deciderules.MatchesListRegexDecideRule }
+regexRuleObj.decision = dec
+rawOut.println("decision: "+ regexRuleObj.decision)
+regexRuleObj.regexList.add(pat)
+rawOut.println("regexList: "+ regexRuleObj.regexList)
+```
+
+**adicão de "**
+
+### Como adicionar URLs em massa ao rastreador
+
+Se você precisar adicionar um grande número de URLs a um rastreamento, no início ou em qualquer outro momento, antes de seu término, há várias opções.
+
+Na prática, a primeira opção (adicionar como seeds) tem funcionado de forma aceitável com centenas de milhares de URLs - se o tratamento desses URLs como seeds for aceitável. A segunda opção, importar via interface do usuário da web ou JMX, funcionou bem para grupos de tamanhos variados, a qualquer momento durante um rastreamento, e permite definir o hops-path e os valores de URLs sem seeds. A terceira opção, importar um log de recuperação no início do rastreamento, funcionou bem com dezenas de milhões de URLs e, diferentemente das outras opções, permite que o rastreamento comece enquanto os URLs ainda estão sendo importadas (pausa menor).
+
+### Adicionar como seeds
+
+Os URLs podem ser inseridos (ou fornecidos em um arquivo de seeds) no início do rastreamento. Esses URLs podem ser tratados de forma especial por algumas opções de escopo - automaticamente consideradas em escopo ou usadas para determinar outras classes de URLs relacionadas que também devem ser regidas no escopo.
+
+A lista de seeds pode ser editada por meio da interface do usuário de configurações da Web durante um rastreamento, embora seja recomendável que o rastreamento seja pausado antes dessa edição. Depois de concluir a edição e retomar o rastreamento, a lista de seeds será verificada novamente (a menos que uma configuração de escopo tenha sido alterada para desabilitar essa verificação). Todos os URLs serão apresentados para agendamento no frontier - mas qualquer URL previamente agendado (inserido como um seed ou descoberto durante o rastreamento) será ignorado e considerao já incluído. Ou seja, apenas novos URLs não descobertos adicionados à lista de propagação serão agendados.
+
+Geralmente, a área de entrada de texto da interface do usuário da web não é utilizável após algumas milhares de entradas e, quando a lista de seeds exceder um determinado tamanho, a área de entrada de texto da web será desativada. Listas de seeds maiores - centenas de milhares ou milhões - podem ser fornecidas por um arquivo de seeds (geralmente chamado seeds.txt). As edições feitas diretamente neste arquivo não serão detectadas por uma simples pausa/retomada do rastreador - mas a edição de qualquer outra configuração causará uma nova verificação (novamente, a menos que a opção para desabilitar essa nova verificação tenha sido escolhida no escopo). Cada vez que uma lista muito grande de seeds é digitalizada, pode ocorrer uma pausa mais longa, e o rastreamento só começa depois que todas as seeds forem importadas.
+
+### Importar via interface do usuário da web ou JMX
+
+Quando um rastreamento é pausado, a opção "View or Edit Frontier URIs" aparecerá na área de informações da tarefa do controle. Nessa página, um arquivo contendo URIs pode ser importado. O arquivo pode ter um URI por linha, estar no mesmo formato de um craw.log ou no formato de um diário de recuperação (descompactado). (nesses casos, o hops-path e o URL de encaminhamento também serão retidos). A caixa de seleção "force fetch" forçará os URIs no arquivo a serem agendados, mesmo que eles tenham sido previamente agendados/ buscados.
+
+Opções semelhantes existem através da interface JMX no Heritrix 1. No Heritrix 3, o diretório "action" é um bom meio.
+
+### Começar o rastreamento com um log de recuperação 
+
+Especificar um log de recuperação no início do rastreamento, de acordo com o manual do usuário, fará com que um processo de duas etapas ocorra com o log que pode ser usado para adicionar um grande número de URIs ao rastreamento.
+
+Na primeira etapa, todos os URLs nas linhas de log de recuperação que começam com 'Fs' são marcados como tendo sido agendados - mas não agendadas. Isso impede que esses URIs sejam agendados posteriormente pelo rastreamento. Na segunda etapa, todos os URLs nas linhas de log de recuperação que começam com 'F +' são apresentados para agendamento. Somente aqueles que ainda não estiverem marcados como agendados serão agendados.
+
+Assim, editando ou compondo um arquivo de formato de log de recuperação, o rastreamento pode ser pré-configurado para incluir um grande número de URLs ou considerá-los já concluídos e, portanto, não programáveis.
+
+Esse processo funciona de forma aceitável com dezenas de milhões de URLs, e o rastreamento regular começa antes que todas as linhas sejam processadas na segunda etapa.
 
 
