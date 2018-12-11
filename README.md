@@ -85,24 +85,24 @@ O usuário e a senha administrativos proporcionam uma segurança rudimentar cont
 
 A página do Controle Principal aparece depois da instalação do Heritrix e do acesso da IUW.
 
-1. Insira o nome da nova tarefa (job) na caixa de texto abaixo de "Criar nova tarefa com configuração inicial recomendada". Depois clique em "criar".
+1. Insira o nome da nova tarefa (job) na caixa de texto abaixo de "Create new job with recommended starting configuration". Depois clique em "create".
 
 A tarefa recém criada aparecerá na lista de tarefas na página do Controle Principal. No Heritrix 3.0, a tarefa será baseada no perfil profile-defaults. A partir da versão 3.1, esse perfil foi eliminado. Ver Perfis para mais informações.
 
 2. Clique no nome da nova tarefa e você será redirecionado para a página da tarefa.
 O nome do arquivo de configuração, crawler-beans.cxml, aparecerá no topo da página. Ao lado, encontra-se a opção de "editar".
 
-3. CLique em "editar" e os conteúdos do arquivo de configuração aparecerão em uma área de texto editável.
+3. CLique em "edit" e os conteúdos do arquivo de configuração aparecerão em uma área de texto editável.
 
 4. Nesse passo, várias propriedades devem ser inseridas para a tarefa tornar-se executável.
 i. Primeiro, adicione um value válido na propriedade metadata.operatorContactUrl, como http://www.archive.org. 
-ii. Em seguida, preencha o elemento `<prop>` do bean `longOverrides` com os valores do seed para o rastreamento.  Um seed de teste é configurado para referência. Quando terminar, clique em "salvar mudanças" no topo da página. Para mais informações sobre configuração de tarefas ver Configurando Tarefas e Perfis. 
+ii. Em seguida, preencha o elemento `<prop>` do bean `longOverrides` com os valores do seed para o rastreamento.  Um seed de teste é configurado para referência. Quando terminar, clique em "save changes" no topo da página. Para mais informações sobre configuração de tarefas ver Configurando Tarefas e Perfis. 
   
-5. Na página da tarefa, clique em "montar". Esse comando montará a infraestrutura necessária para executar a tarefa. A seguinte mensagem será exibida no registro de tarefas: "INFO JOB instanciado".
+5. Na página da tarefa, clique em "build". Esse comando montará a infraestrutura necessária para executar a tarefa. A seguinte mensagem será exibida no registro de tarefas: "INFO JOB instantiated."
 
-6. Em seguida, clique no botão "iniciar". Este comando inicia a tarefa no modo "pausado". Nesse passo, a tarefa está pronta para ser executada.
+6. Em seguida, clique no botão "launch". Este comando inicia a tarefa no modo "paused". Nesse passo, a tarefa está pronta para ser executada.
 
-7. Para executar a tarefa, clique no botão de despausar. A tarefa, então, começará a enviar solicitações para as sementes do seu rastreamento. O status da tarefa será definido como "Em execução". Atualize a página para acompanhar as atualizações das estatísticas.
+7. Para executar a tarefa, clique no botão "unpause". A tarefa, então, começará a enviar solicitações para as sementes do seu rastreamento. O status da tarefa será definido como "Running". Atualize a página para acompanhar as atualizações das estatísticas.
 
 ### Observação
 
@@ -117,7 +117,7 @@ Mais informações sobre a avaliação do progresso de uma tarefa podem ser enco
 
 Para sair do Heritrix, envie a combinação de teclas para o controle (console), o que forçará o processo a sair (como o Control-C). Para sair de um processo em segundo plano no qual o Heritrix está em execução, use o comando kill.
 
-Para sair da versão 3.1, clique no botão "Sair do processo Java" depois de marcar "Tenho certeza".
+Para sair da versão 3.1, clique no botão "Exit Java process" depois de marcar a caixa "I'm sure".
 
 ## Editar uma tarefa em andamento
 
@@ -151,17 +151,17 @@ Isso fará com que um Timer Thread seja instalado e executado em intervalos de h
 
 A  partir da versão 3.1, 'hard links' (quando disponíveis) serão usados para coletar os arquivos BerkeleyDB-JE necessários para reproduzir o status do rastreamento. O deletamento automático de pontos de verificação antigos (arquivos ".DEL") foi reativado, eliminando a necessidade de excluir manualmente os arquivos desnecessários. Também facilita a movimentação e a limpeza de pontos de verificação antigos.
 
-Recomeçar a partir de um ponto de verificação
+**Recomeçar a partir de um ponto de verificação**
 
 A partir da versão 3.1, a IUW fornece a opção de recomeçar um rastreamento a partir de um ponto de verificação. Siga os passos abaixo para recomeçar um rastreamento a partir de um ponto de verificação:
 
-1. Checkpoint o rastreamento em execução clicando no botão "checkpoint".
-2. Quando o checkpoint terminar (uma mensagem aparecerá avisando o operador), encerre o rastreamento clicando no botão "terminar".
-3. Desmonte a tarefa clicando no botão "desmontar". 
-4. Reconstrua a tarefa clicando no botão "construir". Agora, uma caixa suspensa deve aparecer em cima dos botões de comando. A caixa suspensa tem os nomes dos pontos de verificação invocados anteriormente.
-5. Selecione um checkpoint da caixa. O checkpoint selecionado será usado para iniciar a tarefa recém-construída.
-6. Clique em "iniciar".
-7. Clique em "despausar".
+1. Faça um ponto de verificação do rastreamento em execução clicando em "checkpoint".
+2. Quando o checkpoint terminar (uma mensagem aparecerá avisando o operador), encerre o rastreamento clicando no botão "terminate".
+3. Desmonte a tarefa clicando no botão "teardown". 
+4. Reconstrua a tarefa clicando no botão "build". Agora, uma caixa deve aparecer em cima dos botões de comando. A caixa tem os nomes dos pontos de verificação invocados anteriormente.
+5. Selecione um ponto de verificação da caixa. O ponto de verificação selecionado será usado para iniciar a tarefa recém-construída.
+6. Clique em "launch".
+7. Clique em "unpause".
 A tarefa iniciará a partir do ponto de verificação escolhido.
 
 ## Página do Controle Principal
@@ -170,25 +170,25 @@ A página do controle principal aparece logo após o login. Esse página lista t
 
 ### Elementos e operações de dados do controle principal
 
-reexaminar
+rescan
 
-O botão de "reexaminar" faz com que o Heritrix examine o sistema de arquivos procurando qualquer mudança no diretório "tarefas". A exibição é, então, sincronizada com o sistema de arquivos
+Faz com que o Heritrix examine o sistema de arquivos procurando qualquer mudança no diretório "tarefas". A exibição é, então, sincronizada com o sistema de arquivos
 
-criar
+create
 
-O botão "criar" permite que um nome seja inserido e uma nova tarefa de rastreamento seja criada. A tarefa de rastreamento será baseada nos perfis padrões.
+Permite que um nome seja inserido e uma nova tarefa de rastreamento seja criada. A tarefa de rastreamento será baseada nos perfis padrões.
 
-adicionar
+add
 
-O botão "adicinar" permite que um diretório de tarefa não gerenciado pelo Heritrix seja especificado. Após inserir o caminho para o novo diretório e clicar "adicionar", o Heritrix permitirá que você administre o diretório. Por exemplo, será possível configurar a tarefa usando o arquivo crawler-beans.cxml.
+Permite que um diretório de tarefa não gerenciado pelo Heritrix seja especificado. Após inserir o caminho para o novo diretório e clicar "adicionar", o Heritrix permitirá que você administre o diretório. Por exemplo, será possível configurar a tarefa usando o arquivo crawler-beans.cxml.
 
 status
 
 O status das tarefas em andamento, o número de vezes que uma tarefa foi iniciada e o caminho para o arquivo de configuração das tarefas aparecem na página do Controle Principal. Também aparecem as estatísticas de memória do Heritrix e se a tarefa é um perfil ou não.
 
-Encerrar o Processo Java
+Exit Java Process
 
-A partir da versão 3.1, existe o botão "Encerrar o Processo Java". Após ser selecionado juntamente com a seleção da opção "Tenho certeza", esse botão fará com que o Heritrix seja encerrado e fechado.
+A partir da versão 3.1, existe o botão "Exit Java Process". Após ser selecionado juntamente com a seleção da opção "I'm sure", esse botão fará com que o Heritrix seja encerrado e fechado.
 
 ## Beans Browser
 
@@ -642,7 +642,7 @@ A partir da versão 3.1, melhorias foram feitas na capacidade do rastreador de d
 
 ```
 
-2. Defina as configurações "extractJS" e "extractValueAttributes" do bean "extractHtml" como falsas (false).
+2. Defina as configurações "extractJS" e "extractValueAttributes" do bean "extractHtml" como "false".
 
 ```
 
@@ -669,7 +669,7 @@ Como alternativa, você pode adicionar o MatchesFilePatternDecideRule. Defina us
 
 Suponha que você queira apenas rastrear URIs que correspondam a http://foo.org/bar/\*.html e salvar os arquivos rastreados em um formato de arquivo/diretório em vez de arquivos WARC. Além disso, suponha que o servidor da Web faz distinção entre maiúsculas e minúsculas.  Por exemplo, http://foo.org/bar/abc.html e http://foo.org/bar/ABC.HTML estão apontando para dois recursos diferentes.
 
-Primeiro, crie uma tarefa com apenas um see, http://foo.org/bar/. Configure o bean warcWriter para que sua classe seja org.archive.modules.writer.MirrorWriterProcessor. Esse Processador armazenará arquivos em uma estrutura de diretórios que corresponda aos URIs rastreadas. Os arquivos serão armanezados na cópia do diretório da tarefa de rastreamento.  The files will be stored in the crawl job's mirror directory.
+Primeiro, crie uma tarefa com apenas um seed, http://foo.org/bar/. Configure o bean warcWriter para que sua classe seja org.archive.modules.writer.MirrorWriterProcessor. Esse Processador armazenará arquivos em uma estrutura de diretórios que corresponda aos URIs rastreadas. Os arquivos serão armanezados na cópia do diretório da tarefa de rastreamento.  
 
 ### Armazenamento de páginas HTML bem-sucedidas
 
