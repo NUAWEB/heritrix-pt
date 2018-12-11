@@ -17,7 +17,7 @@ Atualizações da versão 3.0:
 1. Possibilidade de realizar vários rastreamentos simultaneos. O único limite de número de rastreamentos realizados simultaneamente refere-se a memória alocada no Heritrix.
 2. Arquivo único XML de configuração baseado no framework Spring. Esse arquivo substitui o order.xml e outros arquivos de configuração do Heritrix 1.x.
 3. Possibilidade de busca e modificação dos beans configurados por um navegador de uso simples. Olhar Bean Browser.
-4. Extensabilidade aprimorada por meio do framework Spring. Por exemplo, substituições de domínios podem ser definidas em um nível mais refinado. Olhar Sheets.
+4. Extensabilidade aprimorada por meio do framework Spring. Por exemplo, substituições de domínios podem ser definidas em um nível mais refinado. Olhar Planilhas.
 5. Controle de uso mais seguro. HTTPS é usada para acessar e manipular o controle de uso do usuário.
 6. Maior escabilidade.  Nas versões anteriores, rastreamentos com grandes valores de seed (dezenas ou centenas de milhões) podiam tentar utilizar memória além da alocada no Heritrix. Isso causava o interrompimento do rastreamento. A versão Heritrix 3.0 arrumou esses problemas, permitindo o processamento estável de rastreamentos de grande tamanho.
 7. Flexibilidade maior ao modificar um rastreamento em andamento. Rastreamentos em andamento podem ser modificados pelo navegador Bean ou pelo Action Directory.
@@ -127,7 +127,7 @@ O controle de script também pode ser usado para editar programaticamente tarefa
 
 Se um valor não atômico for alterado, é recomendável pausar o rastreamento antes de fazer a alteração, pois algumas modificações nas entidades de configuração composta podem não ocorrer de maneira segura. Um exemplo de uma mudança não atômica é a adição de uma nova planilha.
 
-A partir da versão 3.1, o tratamento de operações de orçamento de fila e de rotação/retirada foi refatorado para garantir que alterações feitas  durante o rastreamento (por meio de novas Sheets sobrepostas ou edição direta com a ferramenta Bean Browser ou controle de script) entrem em vigor imediatamente. O DispositionProcessor possui configuração de sobreposição de Sheets para aplicar essa marcação. Em geral, as alterações de configurações por meio de novas planilhas e associações de planilhas durante um rastreamento (conforme inserido via script) agora entram em vigor em todos os URIs que estão sendo retirados para processamento, em vez de apenas URIs recém-descobertos. Portanto, alterações feitas via bean-browse/scripting /new-sheet-overlays entram em vigor imediatamente.
+A partir da versão 3.1, o tratamento de operações de orçamento de fila e de rotação/retirada foi refatorado para garantir que alterações feitas  durante o rastreamento (por meio de novas planilhas sobrepostas ou edição direta com a ferramenta Bean Browser ou controle de script) entrem em vigor imediatamente. O DispositionProcessor possui configuração de sobreposição de planilhas para aplicar essa marcação. Em geral, as alterações de configurações por meio de novas planilhas e associações de planilhas durante um rastreamento (conforme inserido via script) agora entram em vigor em todos os URIs que estão sendo retirados para processamento, em vez de apenas URIs recém-descobertos. Portanto, alterações feitas via bean-browse/scripting /new-sheet-overlays entram em vigor imediatamente.
 
 ## FTP
 
@@ -1120,7 +1120,7 @@ Caso de uso de regra de canonização URI: remoção de IDs de sessão específi
 
 Neste caso de uso, assumimos que um site está retornando URIs com uma chave de ID de sessão de cid. Por exemplo, . Suponha que o ID da sessão tenha sempre 32 caracteres. Além disso, suponha que o cid aparece sempre no final do URI. Isso apresenta um problema porque o mesmo URI será capturado repetidamento devido aos IDs de sessão diferentes.
 
-A solução é adicionar uma segunda política de canonização de URI derivada da padrão. A nova política incluirá uma regra de expressão regular que filtra o ID da sessão e que é anexada a uma sobreposição de sheet. Uma sobreposição de sheet é uma maneira de substituir propriedades de beans com base em diferentes conjuntos de valores. A sobreposição de sheet criada será configurada de forma a aplicar-se apenas a URIs com um domínio específico. O exemplo abaixo mostra a configuração do Spring usada para obter esse efeito.
+A solução é adicionar uma segunda política de canonização de URI derivada da padrão. A nova política incluirá uma regra de expressão regular que filtra o ID da sessão e que é anexada a uma sobreposição de planilha. Uma sobreposição de planilha é uma maneira de substituir propriedades de beans com base em diferentes conjuntos de valores. A sobreposição de planilha criada será configurada de forma a aplicar-se apenas a URIs com um domínio específico. O exemplo abaixo mostra a configuração do Spring usada para obter esse efeito.
 
 Isso já está no cxml padrão:
 
@@ -2283,9 +2283,9 @@ O escopo de rastreamento define o conjunto de possíveis URIs que podem ser capt
 * REJECTED: O objeto é rejeitado
 * PASS: Nenhuma decisão foi feita, mantém-se a anterior
 
-Um URI sob consideração começa sem status definido. Cada rule é aplicada por vez ao URI candidato. Se o rule decidir ACCEPT ou REJECT, o status do URI será definido de acordo. Depois que todas os rules forem aplicados, o URI será determinado como "no escopo" se seu status for ACCEPT. Se seu status for REJECT, ele será descartado.
+Um URI sob consideração começa sem status definido. Cada regra é aplicada por vez ao URI candidato. Se a regra decidir ACCEPT ou REJECT, o status do URI será definido de acordo. Depois que todas as regras forem aplicadas, o URI será determinado como "no escopo" se seu status for ACCEPT. Se seu status for REJECT, ele será descartado.
 
-Sugerimos começar os rules com nossas configurações padrões recomendadas e realizar pequenos rastreamentos de teste. Com esses testes, tente entender porque certos URIs são determinados ou descartados sob essas configurações. Em seguida, faça pequenas alterações individuais no escopo para obter efeitos desejados que não sejam padrão. Criar um novo conjunto de rules a partir do zero pode ser difícil e pode facilmente resultar em rastreamentos que não podem fazer o progresso mínimo que outras partes do rastreador esperam. Da mesma forma, fazer muitas mudanças de uma só vez pode obscurecer a importância da interação e ordenação dos rules.
+Sugerimos começar as regras com nossas configurações padrões recomendadas e realizar pequenos rastreamentos de teste. Com esses testes, tente entender porque certos URIs são determinados ou descartados sob essas configurações. Em seguida, faça pequenas alterações individuais no escopo para obter efeitos desejados que não sejam padrão. Criar um novo conjunto de regras a partir do zero pode ser difícil e pode facilmente resultar em rastreamentos que não podem fazer o progresso mínimo que outras partes do rastreador esperam. Da mesma forma, fazer muitas mudanças de uma só vez pode obscurecer a importância da interação e ordenação das regras.
 
 ### DecideRules
 
@@ -2328,7 +2328,7 @@ A tabela a seguir lista os DecideRules disponíveis:
 | TransclusionDecideRule | aceita qualquer URI cujo path-from-seed termine em pelo menos um salto que não seja navlink. Um salto de navlink é representado por um "L". Além disso, o número de saltos não-navlink no path-from-seed não pode exceder o valor configurado. |
 | PrerequisiteAcceptsDecideRule | aceita todos os URIs de "pré-requisito". Os URIs de pré-requisito são aqueles cujo caminho de salto tem um "P" na última posição. |
 | RejectDecideRule | Rejeita qualquer URI. |
-| ScriptedDecideRule | Aplica a decisão configurada a qualquer URI que passe no teste de rules de um script JSR-223. A fonte do script deve ser uma função de um argumento chamada decisionFor. A função retorna o DecideResult apropriado. Variáveis disponíveis para o script incluem o objeto (o objeto a ser avaliado, como um URI), "self " (a ocorrência ScriptDecideRule), e contexto (ApplicationContext do rastreamento, do qual todos os beans de rastreamento nomeados são alcançáveis). |
+| ScriptedDecideRule | Aplica a decisão configurada a qualquer URI que passe no teste das regras de um script JSR-223. A fonte do script deve ser uma função de um argumento chamada decisionFor. A função retorna o DecideResult apropriado. Variáveis disponíveis para o script incluem o objeto (o objeto a ser avaliado, como um URI), "self " (a ocorrência ScriptDecideRule), e contexto (ApplicationContext do rastreamento, do qual todos os beans de rastreamento nomeados são alcançáveis). |
 | SeedAcceptDecideRule | aceita todos os URIs "seeds" (aqueles para os quais isSeed é "true"). |
 
 DecideRules são configurados pelo bean com o id "scope" sob a propriedade denominada "rules".
@@ -2646,15 +2646,15 @@ Outros códigos de status do Heritrix estão listados abaixo.
 
 Os códigos de status do Heritrix também estão documentados no código-fonte (ou no FishEye para H1 e H3) e no glossário.
 
-## Sheets
+## Planilhas (sheets)
 
-Sheets fornecem a capacidade de substituir as configurações padrão por domínio. Sheets são coleções de substituições. Contêm valores alternativos para propriedades de objetos que devem ser aplicados em determinados contextos. O destino é especificado como um caminho de propriedade arbitrariamente longo, que é uma string descrevendo como acessar a propriedade a partir de um beanName em um BeanFactory.
+As planilhas fornecem a capacidade de substituir as configurações padrão por domínio. Planilhas são coleções de substituições. Contêm valores alternativos para propriedades de objetos que devem ser aplicados em determinados contextos. O destino é especificado como um caminho de propriedade arbitrariamente longo, que é uma string descrevendo como acessar a propriedade a partir de um beanName em um BeanFactory.
 
-Sheets permitem que as configurações sejam sobrepostas com novos valores aplicados por domínios de nível superior (com, net, org, etc), por domínios de segundo nível (yahoo.com, archive.org, etc.), por subdomínios (crawler.archive. org, tech.groups.yahoo.com, etc.) e caminhos principais do URI (directory.google.com/Top/Computers/, etc.). Não há limite de tamanho do prefixo de domínio/caminho que especifica; a sintaxe de prefixos SURT é usada.
+planilhas permitem que as configurações sejam sobrepostas com novos valores aplicados por domínios de nível superior (com, net, org, etc), por domínios de segundo nível (yahoo.com, archive.org, etc.), por subdomínios (crawler.archive. org, tech.groups.yahoo.com, etc.) e caminhos principais do URI (directory.google.com/Top/Computers/, etc.). Não há limite de tamanho do prefixo de domínio/caminho que especifica; a sintaxe de prefixos SURT é usada.
 
-A criação de uma sheet envolve a configuração do arquivo `crawler-beans.cxml`, que contém a configuração Spring de uma tarefa.
+A criação de uma planilha envolve a configuração do arquivo `crawler-beans.cxml`, que contém a configuração Spring de uma tarefa.
 
-Por exemplo, se você tiver permissão explícita para rastrear determinados domínios sem o limite habitual de polite rate-limiting, uma Sheet poderá ser usada para criar uma política de rastreamento less polite associada a alguns desses domínios de destino. A configuração dessa sheet para os domínios example.com e example1.com é mostrada abaixo. Este exemplo permite até 5 solicitações pendentes paralelas de cada vez (em vez do padrão 1) e elimina as pausas comuns entre as solicitações
+Por exemplo, se você tiver permissão explícita para rastrear determinados domínios sem o limite habitual de polite rate-limiting, uma planilhas poderá ser usada para criar uma política de rastreamento less polite associada a alguns desses domínios de destino. A configuração dessa planilhas para os domínios example.com e example1.com é mostrada abaixo. Este exemplo permite até 5 solicitações pendentes paralelas de cada vez (em vez do padrão 1) e elimina as pausas comuns entre as solicitações
 
 **Observação importante**: A menos que um site alvo forneça permissão explícita para rastreamento extra-agressivo, os padrões típicos do Heritrix, que limitam o rastreador a não mais de um pedido pendente por vez, com esperas de vários segundos entre solicitações e esperas mais longas quando o site está respondendo mais devagar, é o caminho mais seguro. O rastreamento menos educado pode fazer com que o rastreador seja totalmente bloqueado pelos webmasters. Por fim, mesmo com permissão, certifique-se de que a string do User-Agent de seu rastreador inclui um link para informações válidas de contato do operador de rastreamento, para que você possa ser alertado e corrigir qualquer efeito colateral indesejado. 
 
@@ -2698,7 +2698,7 @@ http://(com,example1,www,)/
 </bean>
 ```
 
-A sheet nomeada `lessPolite`, no exemplo, define sobreposições para várias propriedades de cortesia. A sheet é associada a domínios adicionando um bean `org.archive.crawler.spring.SurtPrefixesSheetAssociation`. Este bean contém os domínios para os quais as sobreposições serão aplicadas.
+A planilha nomeada `lessPolite`, no exemplo, define sobreposições para várias propriedades de cortesia. A planilha é associada a domínios adicionando um bean `org.archive.crawler.spring.SurtPrefixesSheetAssociation`. Este bean contém os domínios para os quais as sobreposições serão aplicadas.
 
 A penalidade de desempenho no uso de sobreposições é pequena, uma vez que etapas extras no início do processamento do URI decoram o URI com todas as sobreposições aplicáveis de uma vez só.
 
@@ -3137,7 +3137,7 @@ Exemplo de importação de JMX
 
 ### Script BeanShell para download de vídeos
 
-Aqui está um script BeanShell que pode ser usado para encontrar links de vídeo com o Heritrix. Atualmente, o script suporta apenas o youtube. Para fazer com que o script funcione, ele deve ser adicionado na fase de extração da cadeia do processador. Esse processo foi testado com o Heritrix 2.0.2 com uma sheet que limita o max-hops no youtube para 0, permitindo obter a primeira página dos vídeos do Youtube. Também é visível no modo proxy do Wayback 1.4.0. O script também funciona com vídeos do YouTube incorporados que usam "get_video_info" para recuperar tokens de vídeo.
+Aqui está um script BeanShell que pode ser usado para encontrar links de vídeo com o Heritrix. Atualmente, o script suporta apenas o youtube. Para fazer com que o script funcione, ele deve ser adicionado na fase de extração da cadeia do processador. Esse processo foi testado com o Heritrix 2.0.2 com uma planilha que limita o max-hops no youtube para 0, permitindo obter a primeira página dos vídeos do Youtube. Também é visível no modo proxy do Wayback 1.4.0. O script também funciona com vídeos do YouTube incorporados que usam "get_video_info" para recuperar tokens de vídeo.
 
 Quaisquer comentários ou sugestões para melhorias do script são bem-vindos.
 
@@ -3354,7 +3354,7 @@ Inserir na fetch chain:
                 </property
 ```
 
-Use sheets para permitir URLs relevantes:
+Use planilhas para permitir URLs relevantes:
 
 ```
 <bean id="twitterScrollOne" class="org.archive.spring.Sheet">
@@ -3433,7 +3433,7 @@ Inserir na fetch chain:
                 </property>
 ```
 
-Use sheets para permitir URLs relevantes:
+Use planilhas para permitir URLs relevantes:
 
 ```
 <bean id="enableFacebookScroll" class="org.archive.spring.Sheet">
@@ -3601,7 +3601,7 @@ def printProps(x) { appCtx.getData().printProps(rawOut, x) }
 printProps(job.crawlController.frontier)
 ```
 
-**alteração uma *rule* de regex**
+**alteração uma regra de regex**
 
 É recomendável pausar o rastreamento ao modificar as coleções das quais ele depende.
 
