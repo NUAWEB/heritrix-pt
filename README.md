@@ -3648,4 +3648,418 @@ Assim, editando ou compondo um arquivo de formato de log de recuperação, o ras
 
 Esse processo funciona de forma aceitável com dezenas de milhões de URLs, e o rastreamento regular começa antes que todas as linhas sejam processadas na segunda etapa.
 
+### MatchesListRegexDecideRule vs NotMatchesListRegexDecideRule
+
+*class* NotMatchesListRegexDecideRule e MatchesListRegexDecideRule são usados pelo DecideRuleSequence para encontrar candidatos para rastreamento. Podem ser um pouco confusos no começo, mas descobri que:
+
+*class* NotMatchesListRegexDecideRule herda MatchesListRegexDecideRule e retorna o oposto (em termos de avaliação de regex):
+
+protected boolean evaluate(CrawlURI object) {
+*       return ! super.evaluate(object);*
+}
+
+Novamente, o oposto em termos de "avaliação regex" e não de "decision (ACCEPT, REJECT, NONE)". *Decision* para ambos, por padrão, é "ACCEPT", então o *decision* deve ser definido manualmente.
+
+Então:
+
+se você quiser aceitar uma correspondência de padrão positiva: adicione
+
+MatchesListRegexDecideRule with <property name="decision" value="ACCEPT"/>
+
+se você quiser rejeitar uma correspondência padrão positiva: adicione
+
+MatchesListRegexDecideRule with <property name="decision" value="REJECT"/>
+
+e:
+
+se você quiser aceitar uma correspondência de padrão negativa: adicione
+
+NotMatchesListRegexDecideRule with <property name="decision" value="ACCEPT"/>
+
+se você quiser rejeitar uma correspondência de padrão negativo: adicione
+
+NotMatchesListRegexDecideRule with <property name="decision" value="REJECT"/>
+
+
+Sinceramente, acho o comando NotMatchesListRegexDecideRule desnecessário, já que o MatchesListRegexDecideRule pode ser usado para quase tudo.
+
+### WARC (Web ARChive)
+
+### Formato de arquivo WARC
+
+O formato de arquivo WARC é sucessor do formato ARC. (O formato ARC tem sido usado por muitos anos para armazenar capturas da Web do Internet Archive.) Exemplos de arquivos ARC e WARC (v0.17) pequenos de um rastreamento raso (~ 2 hops) do site www.archive.org, feito pelo Heritrix, estão anexados nesta página wiki. É fácil criar arquivos ARC e WARC maiores e mais representativos usando qualquer versão recente do Heritrix.
+
+Download All
+
+Comparado ao ARC, observe que o WARC adiciona:
+
+* Uma quantidade expansível de informações de cabeçalho por registro
+* Novos tipos de registro opcionais para dados/metadados, além de respostas HTTP (que era só o que o arquivo ARC gravava)
+
+### Padrão ISO
+
+Em maio de 2009, um padrão WARC que havia sido proposto foi aprovado como padrão **ISO 28500:2009**, e as versões mais recentes dos arquivos WARC de saída do Heritrix estão em conformidade com este padrão, conforme descrito em http://bibnum.bnf.fr/WARC/ (último rascunho feito em novembro de 2008).
+
+### Heritrix renomeia o arquivo crawl.log ao capturar a tela de um rastreamento
+
+Ao tirar uma captura de tela de um rastreamento, o Heritrix renomeará o arquivo crawl.log. Por exemplo, o arquivo padrão 'crawl.log' será denominado crawl.logXXX, em que XXX é uma combinação de um ID sequencial e um registro de data e hora. Isso pode causar problemas se você estiver, por exemplo, usando um script para monitorar entradas de log referenciando, explicitamente, 'crawl.log'.
+
+### YouTube
+
+Para capturar vídeos do YouTube, adicione as regras de escopo:
+
+```
++http://(com,youtube,c,
++http://(com,youtube-nocookie,c,
++http://(com,ytimg,
++http://(be,youtu,
++http://(com,youtube,www,)/crossdomain.xml
+```
+
+e inclua o seguinte em order.xml.
+
+No final da seção *extractors":
+
+```
+ <newObject name="ExtractorImpliedURI-YoutubeEmbedded" class="org.archive.crawler.extractor.ExtractorImpliedURI">
+        <boolean name="enabled">true</boolean>
+        <newObject name="ExtractorImpliedURI-YoutubeEmbedded#decide-rules" class="org.archive.crawler.deciderules.DecideRuleSequence">
+          <map name="rules">
+          </map>
+        </newObject>
+        <string name="trigger-regexp">^(http://(?:www.)?youtube.com)/v/([a-zA-Z0-9_-]+).*$</string>
+        <string name="build-pattern">$1/watch?v=$2</string>
+        <boolean name="remove-trigger-uris">false</boolean>
+      </newObject>
+      <newObject name="ExtractorImpliedURI-YoutubeWatchPage" class="org.archive.crawler.extractor.ExtractorImpliedURI">
+        <boolean name="enabled">false</boolean>
+        <newObject name="ExtractorImpliedURI-YoutubeWatchPage#decide-rules" class="org.archive.crawler.deciderules.DecideRuleSequence">
+          <map name="rules">
+          </map>
+        </newObject>
+        <string name="trigger-regexp"/>
+        <string name="build-pattern"/>
+        <boolean name="remove-trigger-uris">false</boolean>
+      </newObject>
+ ```
+ 
+ Em settings/com/youtube/settings.xml:
+ 
+ ```
+   <object name="ExtractorImpliedURI-YoutubeWatchPage">
+    <boolean name="enabled">true</boolean>
+    <string name="trigger-regexp">^(http://[^/]*\.c\.youtube.com)/[^?]+\?(.*)$</string>
+    <string name="build-pattern">$1/videoplayback?$2</string>
+  </object>
+  ```
+  
+  Em settings/com/youtube/c/settings.xml:
+  
+  ```
+  <object name="robots-honoring-policy">
+    <string name="type">ignore</string>
+  </object>
+  ```
+  
+Se tiver alguma dúvida sobre qualquer coisa documentada aqui, por favor, não hesite em entrar em contato com a lista em archive-crawler em yahoogroups dot com.
+
+## Problemas relatados
+
+### Problemas de extração de JavaScript não resolvidos
+
+Solicitado por https://webarchive.jira.com/browse/LOC-345
+
+O Heritrix (ExtractorJS) tem dificuldade em encontrar os links que não são seqüências de caracteres codificadas em JavaScript.
+
+Por outro lado, extrai strings que o código javascript não usa como URIs, geralmente resultando em 404s notados pelos webmasters.
+
+Para tentar definir o problema melhor, este é um local para colocar exemplos de problemas de extração incorreta de javascript.
+
+https://webarchive.jira.com/browse/LOC-345
+
+https://webarchive.jira.com/browse/HER-1300
+
+https://webarchive.jira.com/browse/HER-1522
+
+https://webarchive.jira.com/browse/HER-1523
+
+Uma solução possível: pesquise por chamadas location.replace e métodos semelhantes de acessar um URL. Se os parâmetros para tal função envolverem variáveis, tente resolvê-los.
+
+## Leituras
+
+**Leituras essenciais**
+
+* Haydon, A; Najork, M. Mercator: A Scalable, Extensible Web Crawler (wayback (http://web.archive.org/web/\*/http://research.compaq.com/SRC/mercator/papers/www/paper.html)), 1999
+* Haydon, A; Najork, M. High-performance web crawling, 2001
+* Kimpton, Stata, Mohr. Internet Archive Crawler Requirements Analysis for library consortium, 2003
+* Lee, H; Leonard, D; Wang, X; Loguinov, D. IRLbot: Scaling to 6 Billion Pages and Beyond (new from WWW2008)
+
+**Leituras complementares**
+
+* Najork, M.; Wiener, J. Breadth-First Search Crawling Yields High-Quality Pages, 2001
+* Cho, J.; Garcia-Molina, H.; Page, L. Efficient Crawling Through URL Ordering, 1998
+* Abiteboul, S.; Preda, M.; Cobena, G. Computing web page importance without storing the graph of the web (extended abstract), 2001
+* Olsten, C.; Pandey, S. Recrawl Scheduling Based on Information Longevity (new from WWW2008)
+
+**Informações sobre Java em relação ao Heritrix/rastreamento**
+
+* Haydon, A; Najork, M. Performance Limitations of the Java Core Libraries (may not reflect latest Java issues, Heritrix uses a high performance DNS package)
+
+Os estudos abaixo podem ser encontrados (também podem estar desatualizados em relação ao Java atual e nossas opções de implementação) na página de arquivos archive-crawler Yahoo Group:
+
+* G. B. Reddy Study of synch vs. asynch IO in Java (synch vs. asynch IO em Java)
+* G. B. Reddy Study of multi-threaded DNS performance in Java (desempenho do DNS multi-threaded em Java)
+
+**Outros**
+
+* Arquivos de grupo archive-crawler
+* Cho, J.; Garcia-Molina, H. The Evolution of the Web and Implications for an Incremental Crawler, Conf. on Very Large Data Bases, 2000
+* Focused Crawling The Quest for Topic-specific Portals
+* Focused Crawling: : A New Approach to Topic-Specific Web Resource Discovery, 1999, WWW8
+* Intelligent Crawling on the World Wide Web with Arbitrary Predicates, 2001, WWW10
+* Web Crawling High-Quality Metadata using RDF and Dublin Core, 2002, WWW11
+* Stanford WebBase Project
+* An Introduction to Heritrix - Mohr et al, 4th International Web Archiving Workshop 2004
+
+**Especificações relevantes**
+
+* RFC 2616: Hypertext Transfer Protocol - HTTP/1.1
+* Clarifying the fundamentals of HTTP By Jeffery Mogul, an author of RFC-2616.
+* RFC 3986: Uniform Resource Identifiers (URI): Generic Syntax.
+* HTML 4.01 specification (from W3C).
+* Embora o robots.txt seja importante para o rastreamento, ele nunca foi oficialmente ratificado como RFC. A especificação mínima do defacto está disponível em robotstxt.org. Os mecanismos de pesquisa fizeram várias extensões ad hoc; recentemente, o Google compartilhou algumas informações sobre como o GoogleBot implementa o *Robots Exclusion Protocol*.
+* RFC 1034: Domain Names - Concepts and Facilities
+* RFC 1035: Domain Names - Implementation and Specification
+
+### Formato de arquivo ARC
+
+Original em: http://www.archive.org/web/researcher/ArcFileFormat.php
+
+Autores: Mike Burner e Brewster Kahle
+Data: 15 de setembro de 1996, versão 1.0
+Internet Archive
+
+**Visão geral**
+
+O Internet Archive armazena os dados coletados em grande escala (atualmente 100MB) e agrega arquivos para facilitar o armazenamento em um sistema de arquivos convencional. Sabe-se pela experiência do Archive que é difícil gerenciar centenas de milhões de arquivos pequenos na maioria dos sistemas de arquivos existentes.
+
+Este documento descreve o formato dos arquivos agregados. O formato do arquivo foi projetado para atender a vários requisitos:
+
+* O arquivo deve ser autocontido: ele deve permitir que os objetos agregados sejam identificados e descompactados sem o uso de um arquivo de índice complementar.
+
+* O formato deve ser extensível para acomodar arquivos recuperados por meio de vários protocolos de rede, incluindo http, ftp, news, gopher e mail.
+
+* O arquivo deve ser "capaz de transmitir": deve ser possível concatenar vários arquivos compactados em um fluxo de dados.
+
+* Uma vez escrito, um registro deve ser viável: a integridade do arquivo não deve depender da criação subseqüente de um índice no arquivo do conteúdo.
+
+* No entanto, o leitor reconhecerá rapidamente que um índice externo do conteúdo e dos deslocamentos de objeto aumentará muito a capacidade de recuperação de objetos armazenados nesse formato. O arquivo mantém tais índices, mas não procura padronizar seu formato.
+
+**Formato de arquivo do Archive**
+
+A descrição abaixo usa o pseudo-BNF para descrever o formato de arquivo do Archive. Por convenção, os arquivos archive são nomeados com uma extensão ".arc" (por exemplo, "IA-000001.arc").
+
+```
+arc_file == <version_block><rest_of_arc_file>
+version_block == See definition below
+rest_of_arc_file == <doc>|<doc><rest_of_arc_file>
+doc == <nl><URL-record><nl><network_doc>
+URL-record == See definition below
+network_doc == whatever the protocol returned
+nl == Unix-newline-delimiter
+sp == ' ' (ascii space) comma is inappropriate because it can be in an URL.
+```
+
+**Version Block**
+
+O *version block* identifica o nome do arquivo original, a versão do arquivo e os campos de registro de URL do arquivo archive.
+
+```
+version-block == filedesc://<path><sp><version specific data><sp><length><nl>
+<version-number><sp><reserved><sp><origin-code><nl>
+<URL-record-definition><nl>
+<nl>
+```
+
+**Version 1 block**
+
+```
+version-1-block == filedesc://<path><sp><ip_address><sp><date><sp>text/plain<sp><length><nl>
+1<sp><reserved><sp><origin-code><nl>
+<URL IP-address ArchivArchivee-date Content-type Archive-length<nl>
+<nl>
+```
+
+**Version 2 block**
+
+```
+version-2-block == filedesc://<path><sp><ip_address><sp><date><sp>text/plain<sp>200<sp>
+-<sp>-<sp>0<sp><filename><sp><length><nl>
+
+2<sp><reserved><sp><origin-code><nl>
+URL<sp>IP-address<sp>Archive-date<sp>Content-type<sp>Result-code<sp>Checksum<sp>Location<sp> Offset<sp>Filename<sp>Archive-length<nl>
+
+<nl>
+```
+
+A linha "filedesc" é um registro de URL de caso especial (veja abaixo). "path" é o nome do caminho original do arquivo archive, "IP-address" é o endereço (IP) da máquina que criou o arquivo, "date" é a data em que o arquivo archive foi criado. O tipo de conteúdo "text/plain" refere-se simplesmente ao restante do *version block*. "Lenght" especifica o tamanho, em bytes, do resto do *version block*.
+
+```
+version-number == integer in ascii
+reserved == string with no white space
+origin-code == Name of gathering organization with no white space
+URL-record-definition == names of fields in URL records
+```
+
+### URL Record
+
+introduz um objeto no arquiv e fornece o nome e o tamanho do objeto, bem como vários metadados sobre sua recuperação.
+
+**URL Record v1**
+
+```
+URL-record-v1 == <url><sp>
+<ip-address><sp>
+<archive-date><sp>
+<content-type><sp>
+<length><nl>
+```
+  
+**URL Record v2**
+
+```
+URL-record-v2 == <url><sp>
+<ip-address><sp>
+<archive-date><sp>
+<content-type><sp>
+<result-code><sp>
+<checksum><sp>
+<location><sp>
+<offset><sp>
+<filename><sp>
+<length><nl>
+```
+  
+**URL Record (campos)**
+
+```
+url == ascii URL string (e.g., "http://www.alexa.com:80/")
+ip_address == dotted-quad (eg 192.216.46.98 or 0.0.0.0)
+archive-date == data da criação do arquivo archive
+content-type == "no-type"|MIME type of data (e.g., "text/html")
+length == representação ascii do tamanho do doc de rede em bytes
+date == YYYYMMDDhhmmss (Greenwich Mean Time)
+result-code == código de resultado ou código de resposta, (e.g. 200 or 302)
+checksum == representação ascii de uma soma de verificação dos dados. As especificidades da soma de verificação são específicas da implementação.
+
+location == "-"|url of re-direct
+offset == deslocamento em bytes desde o início do arquivo até o início do registro de URL
+filename == nome do arquivo arc
+```
+
+Note que todos os valores de campo são texto ascii. Todos os campos possuem pelo menos um caractere. Nenhum valor de campo contém um espaço.
+
+**Exemplo de um arquivo Archive**
+
+No exemplo a seguir, lembre-se de que "lenght" inclui carriage returns e avanços de linha.
+
+**versão 1**
+
+```
+filedesc://IA-001102.arc 0 19960923142103 text/plain 76
+1 0 Alexa Internet
+URL IP-address Archive-date Content-type Archive-length
+
+http://www.dryswamp.edu:80/index.html 127.10.100.2 19961104142103 text/html 202
+HTTP/1.0 200 Document follows
+Date: Mon, 04 Nov 1996 14:21:06 GMT
+Server: NCSA/1.4.1
+Content-type: text/html Last-modified: Sat,10 Aug 1996 22:33:11 GMT
+Content-length: 30
+<HTML>
+Hello World!!!
+</HTML>
+```
+
+**versão 2**
+
+```
+filedesc://IA-001102.arc 0.0.0.0 19960923142103 text/plain 200 - - 0
+IA-001102.arc 122
+2 0 Alexa Internet
+URL IP-address Archive-date Content-type Result-code Checksum
+Location Offset Filename Archive-length
+
+http://www.dryswamp.edu:80/index.html 127.10.100.2 19961104142103
+text/html 200 fac069150613fe55599cc7fa88aa089d - 209 IA-001102.arc 202
+HTTP/1.0 200 Document follows
+Date: Mon, 04 Nov 1996 14:21:06 GMT
+Server: NCSA/1.4.1
+Content-type: text/html Last-modified: Sat,10 Aug 1996 22:33:11 GMT
+Content-length: 30
+<HTML>
+Hello World!!!
+</HTML>
+```
+
+**Lendo um arquivo ARC**
+
+Como observado acima, a melhor maneira de recuperar um objeto específico de um arquivo archive é manter um banco de dados externo de nomes de objetos, os arquivos nos quais eles estão localizados, seus deslocamentos nos arquivos e os tamanhos dos objetos. Então, para recuperar o objeto, basta abrir o arquivo, buscar o offset e fazer uma única leitura de `<size>` bytes.
+
+Programas que precisam ler o arquivo sem um índice (como descompactar o arquivo inteiro) devem usar I/O armazenada em buffer. O registro de URL pode, então, ser lido com um fgets (), e os objetos podem ser lidos com um fread () de <size> bytes.
+  
+**Usando o formato Archive para outros tipos de URL**
+
+Como o formato Archive usa a especificação de URL padrão para identificar objetos, ele naturalmente se empresta para o armazenamento de dados recuperados por meio de protocolos diferentes de HTTP. Por exemplo, um artigo de notícias pode aparecer da seguinte maneira:
+
+```
+news:28SEP96.21024750@alligator.dryswamp.edu 127.10.100.3 19960929142103 text/plain 328
+Path: news.alexa.com!news1.best.com!news.dryswamp.edu!joebob
+From: joebob@alligator.dryswamp.edu
+Newsgroups: alt.food
+Subject: Re: I'm hungry
+Date: 28 SEP 96 21:02:47 GMT
+Organization: Dry Swamp University
+Lines: 1
+Message-ID: <28SEP96.21024750@alligator.dryswamp.edu>
+NNTP-Posting-Host: alligator.dryswamp.edu
+```
+
+**Para mais informações**
+
+Entre em contato com info@archive.org
+
+## Análise de Requisitos do Rastreador do Internet Archive
+
+Análise de Requisitos do Rastreador do Internet Archive
+2003-03-07
+Michele Kimpton (michele@archive.org)
+[Raymie Stata (raymie@archive.org)
+Gordon Mohr (gojomo@archive.org)]
+
+### 1. Introdução
+
+O Internet Archive, em colaboração com várias *National Libraries*, está procurando construir um rastreador de código aberto que possa ser usado, principalmente, para fins de arquivamento da Web, atendendo aos requisitos definidos pelo National Libraries Web Archive Consortium.
+
+Este documento descreve, em parte, os requisitos previstos para tal software de rastreamento. A primeira subseção discute os "casos de uso" que desejamos suportar (isto é, descreve, detalhadamente, nossos padrões de uso previstos). A seção a seguir fornece uma declaração de requisitos derivados desses casos de uso.
+
+### 2. Análise de casos de uso
+
+O Archive deseja suportar os seguintes casos de uso:
+
+### 2.1 Rastreamentos amplos
+
+Rastreamentos amplos são rastreamentos grandes, de alta largura de banda, nos quais o número de sites e o número de páginas interessantes, individuais, "tocadas" é tão importante quanto a integridade com que qualquer site é coberto. A Web não está catalogada; um rastreamento amplo é importante para descobrir páginas desconhecidas. Além disso, não se pode saber a priori quais partes da Web serão importantes no futuro; rastreamentos amplos tentam garantir cobertura suficiente para esses usos desconhecidos.
+
+### 2.2 Rastreamentos restritos
+
+Rastreamentos restritros são rastreamentos de pequeno a médio porte nos quais o critério de qualidade é a cobertura completa de alguns sites ou tópicos selecionados. Rastreamentos restritos são necessários para capturar sites que são conhecidos a priori como importantes (intrinsecamente ou em relação a alguma coleção que está sendo montada).
+
+### 2.3 Rastreamentos contínuos
+
+Tradicionalmente, rastreadores tem se esforçado para não fazer download de páginas que já foram baixadas. Todos os rastreadores são geralmente conhecidos como rastreadores *batch* ou *snapshot crawlers*, pois geralmente são executados durante um período fixo para capturar a Web e, em seguida, são reiniciados para começarem um novo rastreamento.
+
+Rastreamentos contínuos fazem o download contínuo de páginas buscadas anteriormente (procurando alterações), bem como (possivelmente) a descoberta e a busca de novas páginas. O rastreamento contínuo é útil para capturar páginas que mudam rapidamente. Além disso, quando as taxas de download das páginas são ajustadas para refletir as freqüências de alteração medidas, o rastreamento contínuo pode ser mais eficiente do que o rastreamento *batch*.
+
+O Archive tem interesse em rastreamentos contínuos, tanto pelos amplos quanto restritos.
 
