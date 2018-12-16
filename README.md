@@ -4063,3 +4063,98 @@ Rastreamentos contínuos fazem o download contínuo de páginas buscadas anterio
 
 O Archive tem interesse em rastreamentos contínuos, tanto pelos amplos quanto restritos.
 
+### 2.4 Rastreamentos de multiprotocolo
+
+O Archive está interessado em rastrear páginas disponíveis através de protocolos diferentes de HTTP.RSS. Os protocolos adicionais incluem HTTPS, FTP e protocolos de streaming, como MMS, RTSP e PNA.
+
+### 2.5 Rastreamento experimental
+
+O Archive quer apoiar experimentos em técnicas de rastreamento e tecnologia executadas por organizações externas. O estudo da Biblioteca Nacional de Ciências Digitais (National Digital Science Library) feito na Universidade de Cornell é um bom exemplo do que queremos apoiar. Neste projeto, os pesquisadores queriam construir um reastreador focado em um tema, para encontrar materiais relacionados à ciência na Web. Eles foram capazes de escrever "analisadores" que usaram técnicas de vetor de termo para identificar material de interesse e foram capazes de modificar as políticas do rastreador para usar essas informações para direcionar o rastreamento.
+
+### 2.6 Administração "zero"/facilidade de operação
+
+O Archive não tem uma grande equipe de operadores e, portanto, requer um alto nível de automação em seus rastreadores. Em particular, acreditamos que um único rastreamento amplo pode ser administrado pelos esforços, em tempo parcial, de uma única pessoa (assumindo hardware e conectividade de rede). Além disso, o Archive não pode fornecer muito suporte técnico para organizações externas usando seu software de rastreamento, portanto, este software deve ser fácil de operar sem precisar de suporte.
+
+Queremos poder apoiar projetos como o NSDL. Para fazer isso, o rastreador precisa ser fácil de estender e usar, não podendo ser sobrecarregado com restrições de licenciamento.
+
+### 3. Requisitos
+
+Acreditamos que os seguintes requisitos são necessários para suportar os casos de uso descritos acima:
+
+### 3.1 Extensibilidade
+
+Extensibilidade é a capacidade de alterar o comportamento do rastreador: sua política de seleção, sua política de agendamento, o que ele armazena em disco e assim por diante. É o nosso requisito mais importante, já que é necessário para suportar quase todos os casos de uso acima (rastreamentos amplo e restritos, rastreamentos contínuos, rastreamentos de multiprotocolo, facilidade de operação e rastreamentos experimentais).
+
+Conforme enumerado abaixo, a extensibilidade se aplica a muitos aspectos do rastreador. Em um nível alto, o que realmente queremos é um *framework* para criar rastreadores, não um rastreador em particular que incorpore políticas ou recursos específicos. Um *designer de rastreamento* deve ser capaz de criar uma instância desta estrutura para atender às necessidades de um projeto de rastreamento específico. Ao mesmo tempo, não queremos um framework objeto-orientado tradicional que *exija* que a programação reúna sistemas úteis. Como discutiremos a seguir, enquanto a capacidade de conectar códigos novos e personalizados no framework é importante, também é importante que o framework também suporte extensibilidade através de parametrização.
+
+### 3.1.1 Aspectos extensíveis do rastreador
+
+Vários aspectos do rastreador precisam ser extensíveis. Nessa subseção, listamos o que precisa ser extensível no rastreador. Na subseção seguinte, listamos como essa extensibilidade deve ser alcançada.
+
+### 3.1.1.1 Protocolos
+
+A adição de novos protocolos de download ao framework deve ser fácil.
+
+### 3.1.1.2. Seleção (descoberta e filtragem)
+
+A política de seleção determina o que o rastreador fará o download. É, normalmente, o produto de dois mecanismos: um mecanismo de descoberta pelo qual novas URLs são identificadas e um mecanismo de filtragem que decide quais URLs descobertas devem ser baixadas. Nos rastreamentos contínuos, em que URLs antigos são rastreados novamente, também é necessário que haja um processo de filtragem para eliminar os URLs que não são mais de interesse.
+
+As políticas de seleção são de importância vital para rastreadores amplos e restritos. É uma área na qual esperamos que haja pesquisas e experimentos contínuos e significativos. Assim, nosso framework de rastreador deve oferecer suporte à extensibilidade mais ampla possível quando se trata de descoberta e mecanismos de filtragem.
+
+Às vezes, o processo de descoberta pode ocorrer fora do próprio rastreador. Por exemplo, algumas organizações têm acesso a proxies da Web ou outras informações de uso que podem ser boas fontes de URLs para rastrear. Para dar suporte a mecanismos externos de descoberta e filtragem, deve ser possível tanto adicionar quanto remover um grande número de URLs do rastreador enquanto um rastreamento está em andamento.
+
+### 3.1.1.3 Agendamento
+
+A política de agendamento (às vezes chamada de política de classificação) determina a ordem na qual os URLs pendentes são baixados. As políticas de agendamento e seleção, juntos, definem o conteúdo da coleção obtida por um rastreamento e, portanto, são de enorme interesse para designers de rastreamento no que diz respeito a ambos. No entanto, a flexibilidade em relação ao agendamento é particularmente difícil de fornecer, pois a política de agendamento é determinada pelo *frontier* de URLs pendentes do rastreador.
+
+O *frontier* de um rastreador é a coleção de URLs que o rastreador pretende baixar no futuro. Em um rastreamento em massa, o *frontier* contém apenas URLs novos (URLs que não foram baixados nesse rastreamento). Em um rastreamento contínuo, o *frontier* pode conter URLs novos e URLs antigos que devem ser rastreados novamente. A política de agendamento determina a ordem na qual os elementos são removidos desse *frontier*. Para rastreamentos amplos, o *frontier* pode se tornar muito grande, contendo até 10 de bilhões de URLs e, assim, em um rastreador com capacidade de escala, o *frontier* deve ser uma estrutura de dados baseado em disco. Estruturas de dados baseadas em disco podem ter alta latência, mas o frontier está no caminho crítico do rastreador, onde a latência não pode ser tolerada. Assim, um bom frontier requer habilidade de programação significativa para implementar e ajustar.
+
+Como resultado, não esperamos que novos *frontiers* sejam escritas com rapidez e facilidade e, portanto, a flexibilidade para agendar políticas não pode advir principalmente da criação de novas implementações de frontier. É importante que o framework do rastreador venha com uma variedade de implementações de frontier que suportam uma variedade de políticas de agendamento. Ao mesmo tempo, para apoiar a experimentação e desenvolvimento, deve haver uma boa API para definir novas implementações de frontier.
+
+### 3.1.1.4 Politeness
+
+Os rastreadores de alta capacidade podem facilmente sobrecarregar um servidor Web de baixo custo e podem até sobrecarregar os servidores Web de ponta. Por isso, é muito importante que os rastreadores sejam "educados", limitando a carga que eles colocam em um servidor da Web.
+
+Infelizmente, a necessidade de ser educado às vezes entra em conflito com a política de agendamento de um rastreamento. Por exemplo, uma política simples de politeness é de, com o tempo, escalonar as páginas baixadas de um determinado site. No entanto, como discutido acima, às vezes é desejável baixar imagens e outros objetos associados a uma página imediatamente após o download da própria página. Se este último requisito é particularmente importante para o rastreamento, é necessária uma política de politeness mais sofisticada para acomodá-lo. Ao mesmo tempo, quando esses problemas de atualização não são importantes para um rastreamento, é geralmente considerado vizinho ao espaço de downloads de um site tão distante quanto possível.
+
+O rastreador deve ser flexível em relação às políticas de educação que implementa. Novamente, não existe um rastreador de "tamanho único"; o que é necessário é um framework que acomode uma ampla variedade de políticas.
+
+### 3.1.1.5 Processamento de documentos
+
+Depois que um documento é baixado, ele é processado por vários motivos. Recursos podem ser extraídos para fins de rastreamento adicional (por exemplo, links na maioria dos rastreamentos, além de texto de links para rastreamentos focados em um tema). Recursos podem ser extraídos simplesmente para coletar estatísticas e a própria página pode ser transformada em algum formato de saída apropriado.
+
+Assim, o rastreador deve suportar um framework para "analisadores" conectáveis que processam documentos. Além disso, essa estrutura deve oferecer suporte à interoperabilidade efetiva entre os analisadores, garantindo que o bom trabalho de um grupo possa ser construído por outros.
+
+Os analisadores devem ter acesso ao máximo de metadados possíveis. Isso inclui o URL usado para buscar o objeto, download de timestamps (data e hora), informações de resolução de DNS e cabeçalhos de solicitação e resposta usados durante a transação (e qualquer outro material usado para buscar o objeto, como senhas ou chaves SSL).
+
+Os analisadores devem ter acesso aos resultados de todas as solicitações, não apenas aos bem-sucedidos. Isso é necessário, por exemplo, para detectar alterações na Web ou para detectar as "bordas" da *deep web*. Isso significa registrar, por exemplo, respostas 30x (moved/redirect) e 40x (invalid/not found/unauthorized). Isso também significa registrar solicitações negadas por regras de robot exclusion. Por fim, os arquivos de robot exclusion buscados automaticamente também devem estar sujeitos a análises regulares (em vez de serem manipulados por um caminho separado).
+
+A extração de links é, obviamente, uma forma muito importante de processamento de documentos. Extensibilidade, nesse respeito, significa que deve ser fácil adicionar módulos para lidar com Javascript, Flash e outros tipos de mídia que tenham links incorporados.
+
+Outra forma de processamento de documentos é a eliminação de arquivos duplicados. Deve ser possível para o rastreador reconhecer, durante o rastreamento, que uma duplicata foi encontrada para que etapas especiais (mais eficientes) possam ser executadas. Qualquer tratamento especial de uma duplicata deve ser observado na saída do rastreador e passível de análise por ferramentas padrão. Deve ser possível variar a definição de "duplicate" usada (de muito restrito a muito amplo).
+
+A saída (output) é outra forma importante de processamento de documentos. A saída do rastreador deve ser altamente configurável tanto na seleção dos dados a serem enviados quanto no formato em que são enviados. Embora um normalmente salve as páginas de um rastreamento, os rastreamentos geralmente são executados simplesmente para coletar recursos ou estatísticas. Nesses casos, as páginas em si não são armazenadas, em vez disso, os recursos e/ou estatísticas são extraídos no rastreador e armazenados diretamente no disco, reduzindo significativamente os requisitos de espaço em disco. O rastreador deve suportar esse tipo de saída.
+
+Formatos de arquivo para saída variam. No caso de páginas, por exemplo, usam-se arquivos ZIP, arquivos tar ou o arquivo "ARC" do Internet Archive. Precisamos dar suporte a arquivos ARC, cujo formato iremos documentar, expandir (onde for necessário) e promover como padrão geral. Nosso framework deve acomodar a extensão programática de terceiros para outros formatos, quando necessário.
+
+### 3.1.1.6 Interatividade
+
+A Web está se tornando cada vez mais interativa: para receber páginas da Web, os internautas geralmente precisam preencher formulários, e os navegadores devem oferecer suporte a mecanismos de autenticação e cookies.
+
+Para acompanhar essa Web cada vez mais interativa, os rastreadores devem oferecer suporte a esses mecanismos de interação. No mínimo, eles devem suportar cookies e esquemas simples de senha. Além disso, há um desejo crescente de ainda mais suporte, portanto, é preciso haver mecanismos de extensibilidade para permitir que os designers de rastreamento ampliem o repertório de interações suportadas pelo rastreamento.
+
+### 3.1.2 Mecanismos de extensibilidade
+
+Existem dois mecanismos bem conhecidos para tornar o software extensível: parametrização e extensões de código. A parametrização é fácil de usar, mas é restritiva no que pode suportar. Extensões de código requerem programação, mas suportam uma ampla gama de flexibilidade. Conforme discutido abaixo, a estrutura do rastreador deve oferecer suporte a ambas as formas de extensibilidade.
+
+Além de oferecer suporte a ambas as formas de extensibilidade, o rastreador deve oferecer suporte à extensão dinâmica, ou seja, a alteração do rastreamento enquanto um rastreamento está em andamento. Discutimos esta questão abaixo, também.
+
+### 3.1.2.1 Parametrização
+
+Extensibilidade através de parametrização é a capacidade de personalizar o comportamento do rastreamento através do uso de módulos de código cujo comportamento pode ser alterado fornecendo parâmetros apropriados. Por exemplo, um módulo de frontier pode ter um parâmetro politeness controlando quanto tempo esperar antes de revisitar um determinado servidor ou um parâmetro de agendamento controlando se os objetos de imagem de uma página são colocados no início ou no final da fila de rastreamento. Outro exemplo é que um módulo de filtro pode usar um conjunto de expressões regulares que controlam os URLs recém-descobertos que devem ser permitidos no frontier.
+
+Outra forma de parametrização é a capacidade de controlar, a partir de um arquivo de configuração simples em tempo de execução, quais módulos de código são usados durante o rastreamento. Por exemplo, uma implementação do frontier pode basear-se em uma política abrangente de rastreamento; uma implementação diferente pode ser baseada em uma política ordenada por classificação de página. Por meio de diretivas simples no arquivo de configuração do rastreador, o designer de rastreamento deve poder selecionar entre essas implementações de frontier. (É claro que esses módulos em si podem ser parametrizados mais adiante, como discutido acima. Por exemplo, os dois módulos podem ter um sinalizador indicando que as imagens de uma página devem ser tratadas como exceções à política geral de planejamento, garantindo que essas imagens sejam baixadas simultaneamente com as páginas referentes a elas.)
+
+No mínimo, o framework do rastreador deve ter parâmetros controlando os seguintes aspectos do rastreamento:
+
+
