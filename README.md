@@ -766,7 +766,7 @@ Esse log é salvo pelo bean StatisticsTracker.  Em intervalos configuráveis, um
 | heap-size-KB| The current heap size of the Java Virtual Machine. |
 |congestion | The congestion ratio is a rough estimate of how much initial capacity, as a multiple of current capacity, would be necessary to crawl the current workload at the maximum rate available given politeness settings.  This value is calculated by comparing the number of internal queues that are progressing against those that are waiting for a thread to become available. |
 | max-depth | O tamanho da fila Frontier com o maior número de URIs enfileirados.  |
-| avg-depth | O tamanho habitual de todas as filas do Frontier. |
+| avg-depth | O tamanho habitual de todas as filas Frontier. |
 
 runtime-errors.log
 
@@ -778,7 +778,7 @@ Esse log armazena erros de tentativas de busca de URI, normalmente causados por 
 
 frontier.recover.gz
 
-O arquivo frontier.recover.gz é um log gzipado de eventos Frontier que pode ser usado para restaurar o Frontier após uma falha.
+O arquivo frontier.recover.gz é um log gzipado de eventos Frontier que pode ser usado para restaurar a Frontier após uma falha.
 
 ## Configuração de Tarefas e Perfis
 
@@ -839,11 +839,11 @@ http://www.myhost3.net/pictures
 
 ## Cadeias de processamento
 
-No nível de tarefa, uma tarefa de rastreamento do Heritrix possui três pipelines principais conhecidas como Cadeias de Processadores (aplicação sequencial de módulos de Processador trocáveis -- ver Configurações de Processador), com o Frontier atuando como um buffer entre as duas primeiras:
+No nível de tarefa, uma tarefa de rastreamento do Heritrix possui três pipelines principais conhecidas como Cadeias de Processadores (aplicação sequencial de módulos de Processador trocáveis -- ver Configurações de Processador), com a Frontier atuando como um buffer entre as duas primeiras:
 
 * Chain Candidates:
 
-- Processa os URIs de rastreamento de entrada, decidindo se deve mantê-los (de acordo com o escopo) e se eles serão depositados no Frontier.
+- Processa os URIs de rastreamento de entrada, decidindo se deve mantê-los (de acordo com o escopo) e se eles serão depositados na Frontier.
 
 - Ver Candidate Chain Processors
 
@@ -857,7 +857,7 @@ No nível de tarefa, uma tarefa de rastreamento do Heritrix possui três pipelin
 
 * Fetch Chain:
 
-- Como os URIs de rastreamento são emitidos pelo Frontier, a cadeia de busca processa cada um deles e decide o que fazer, como baixar etc.
+- Como os URIs de rastreamento são emitidos pela Frontier, a cadeia de busca processa cada um deles e decide o que fazer, como baixar etc.
 
 - Também realiza operações como extração de links.
 
@@ -881,13 +881,13 @@ Cada cadeia de processamento é composta de zero ou mais processadores individua
 | Nome do processador  | Descrição |
 | ------------- | ------------- |
 | candidateScoper | Aplica regras de escopo a cada URI candidato. |
-| preparer | Prepara os URIs aceitos para enfileirar no Frontier.  |
+| preparer | Prepara os URIs aceitos para enfileirar na Frontier.  |
 
 ### Processadores da cadeia de busca (Fetch Chain Processors)
 
 | Nome do processador  | Descrição | Nome da classe |
 | ------------- | ------------- | ------------- |
-| preparer | Prepara os URIs aceitos para enfileirar no Frontier.  | |
+| preparer | Prepara os URIs aceitos para enfileirar na Frontier.  | |
 | preconditions | E  | |
 | fetchDns | Busca DNS URIs.  | |
 | fetchHttp |   | |
@@ -947,7 +947,7 @@ A maioria dos processadores de extração é pré-configurada no arquivo de conf
 | ------------- | ------------- | 
 | warcWriter| Grava os arquivos WARC de arquivamento. |
 | preconditions | Envia os links de saída do URI buscado para a cadeia de candidatos para processamento.  |
-| fetchDns | Atualiza estatísticas de rastreamento, estruturas de dados e decisões do Frontier.  |
+| fetchDns | Atualiza estatísticas de rastreamento, estruturas de dados e decisões da Frontier.  |
 
 ### Configurações de processador
 
@@ -1414,7 +1414,7 @@ Embora seja possível fazer muitas coisas com a IUW do Heritrix, há muitos recu
 
 ### Recuperação de rastreamento
 
-Durante a operação normal, o Heritrix Frontier mantém um diário. O diário é mantido no diretório de log e é nomeado `frontier.recovery.gz`. Se ocorrer uma falha durante um rastreamento, o diário `frontier.recover.gz` poderá ser usado para recriar o status aproximado do rastreador no momento da falha. Em alguns casos, a recuperação pode demorar, mas normalmente é muito mais rápida do que repetir o rastreamento travado.
+Durante a operação normal, a Frontier do Heritrix mantém um diário. O diário é mantido no diretório de log e é nomeado `frontier.recovery.gz`. Se ocorrer uma falha durante um rastreamento, o diário `frontier.recover.gz` poderá ser usado para recriar o status aproximado do rastreador no momento da falha. Em alguns casos, a recuperação pode demorar, mas normalmente é muito mais rápida do que repetir o rastreamento travado.
 
 A utilização desse processo inicia um rastreamento totalmente novo, com a mesma configuração (ou modificada). No entanto, esse novo rastreamento fará um desvio maior no início, no qual é usado as saídas frontier-recover.gz do rastreamento anterior para simular o status da fronteira (URIs descobertos, URIs enfileirados) do rastreamento anterior. Todos os ARC/WARCs, logs e pontos de verificação do rastreamento anterior seriam deixados de lado, retendo apenas os logs e ARC/WARCs como um registro do rastreamento até o momento.
 
@@ -1422,15 +1422,15 @@ Quaisquer arquivos ARC/WARC que existam com o sufixo `.open` não foram fechados
 
 ### Recuperação completa
 
-Para executar o processo de recuperação, reinicie o rastreador com falha e copie o arquivo `frontier.recover.gz` no Action Directory. Em seguida, reinicie o rastreamento. O Heritrix carregará automaticamente o arquivo de recuperação e começará a colocar seus URIs no Frontier para rastreamento.
+Para executar o processo de recuperação, reinicie o rastreador com falha e copie o arquivo `frontier.recover.gz` no Action Directory. Em seguida, reinicie o rastreamento. O Heritrix carregará automaticamente o arquivo de recuperação e começará a colocar seus URIs na Frontier para rastreamento.
 
-Se um arquivo `.recover.gz` estiver sendo usado, apenas um arquivo completo deve ser usado. (Isso é para que o diretório de ação processando um arquivo de cada vez possa fazer a primeira passagem completa de 'includes', em seguida, a passagem completa de 'schedules', de um arquivo. O fornecimento de vários arquivos `.recover.gz` em série resultará em um ciclo includes/schedule, includes/schedule, etc., que não produzirá o efeito desejado no frontier.)
+Se um arquivo `.recover.gz` estiver sendo usado, apenas um arquivo completo deve ser usado. (Isso é para que o diretório de ação processando um arquivo de cada vez possa fazer a primeira passagem completa de 'includes', em seguida, a passagem completa de 'schedules', de um arquivo. O fornecimento de vários arquivos `.recover.gz` em série resultará em um ciclo includes/schedule, includes/schedule, etc., que não produzirá o efeito desejado na frontier.)
 
-Enquanto o arquivo estiver sendo processado, qualquer ponto de verificação (manual ou automático) não será um snapshot válido do estado do rastreador. (O processo de log de recuperação do frontier ocorre por meio de um thread/caminho separado, fora do sistema de verificação mais recente.). Somente quando o processamento do arquivo for concluído (arquivo movido para 'concluído') o rastreador estará em um estado de verificação confiável.
+Enquanto o arquivo estiver sendo processado, qualquer ponto de verificação (manual ou automático) não será um snapshot válido do estado do rastreador. (O processo de log de recuperação da frontier ocorre por meio de um thread/caminho separado, fora do sistema de verificação mais recente.). Somente quando o processamento do arquivo for concluído (arquivo movido para 'concluído') o rastreador estará em um estado de verificação confiável.
 
 Depois que os URIs começarem a aparecer nas filas (quando a recuperação entrar na passagem de 'agendamentos'), o rastreador poderá ser despausado para começar a buscar URIs enquanto o restante da passagem de recuperação 'agendamentos' continuar. 
 
-No entanto, a nota acima sobre pontos de verificação ainda se aplica: um ponto de verificação preciso só ocorrerá quando o processamento de arquivos de recuperação do frontier for concluído.
+No entanto, a nota acima sobre pontos de verificação ainda se aplica: um ponto de verificação preciso só ocorrerá quando o processamento de arquivos de recuperação da frontier for concluído.
 
 Além disso, despausar o rastreamento dessa maneira pode resultar na redescoberta de alguns URIs por meio de novos caminhos antes que a descoberta original seja reproduzida por meio do processo de recuperação. (Muitos rastreamentos podem não se importar com esse pequeno desvio do estado de rastreamento recuperado, mas se o escopo for muito dependente do caminho ou do hop, isso pode causar diferenças no que é incluído no escopo).
 
@@ -1841,7 +1841,7 @@ Threads
 Esta área da página do trabalho exibe o número de encadeamentos sendo usados. Clicar em "threads" para ver um relatório de detalhado.
 
 Frontier
-Exibe estatísticas do Frontier, como o número de URIs enfileirados. Clicar em "frontier" para ver um relatório de detalhado.
+Exibe estatísticas da Frontier, como o número de URIs enfileirados. Clicar em "frontier" para ver um relatório de detalhado.
 
 Memory
 Exibe a quantidade de memória alocada para o heap Java, a quantidade de memória em uso e o tamanho máximo do heap Java.
@@ -1893,7 +1893,7 @@ Exibe a hierarquia dos beans Spring que formam uma tarefa de rastreamento. As pr
 
 ## Frontier
 
-O Frontier é um bean Spring que mantém o estado interno do rastreamento. O estado do rastreamento contém informações como URIs rastreadas ou descobertas anteriormente, bem como outras informações relevantes para o status do rastreamento.
+A Frontier é um bean Spring que mantém o estado interno do rastreamento. O estado do rastreamento contém informações como URIs rastreadas ou descobertas anteriormente, bem como outras informações relevantes para o status do rastreamento.
 
 Há apenas um bean Frontier por tarefa de rastreamento.
 
@@ -1901,11 +1901,11 @@ Crucialmente, a frontier do Heritrix3, além de armazenar várias filas de URLs 
 
 O Heritrix BdbFrontier também implementa a rotação de filas, para garantir que todas as filas sejam vistas, mesmo quando houver um número maior de filas do que de threads disponíveis para executar o rastreamento. Isso significa que as filas de rastreamento do Heritrix têm "orçamentos de sessão" (para manipular a rotação), além de cotas de rastreamento gerais (que são aplicadas a todo o rastreamento).
 
-Nas versões 3.0 e 3.1, existe apenas um tipo de Frontier, o Heritrix BdbFrontier. Outros frontiers que foram incluídos no Heritrix 1.x não são mais suportados.
+Nas versões 3.0 e 3.1, existe apenas um tipo de Frontier, o Heritrix BdbFrontier. Outras frontiers que foram incluídas no Heritrix 1.x não são mais suportados.
 
 Para mais detalhes, ver:
 
-* Configurações do Frontier 
+* Configurações da Frontier 
 * Frontier queue budgets
 * Heritrix BdbFrontier (detalhes técnicos)
 
@@ -1913,9 +1913,9 @@ Para mais detalhes, ver:
 
 Politeness
 
-Uma combinação de várias configurações controla a politeness do Frontier. É importante observar que, a qualquer momento, apenas um URI de qualquer host é processado. As regras de cortesia a seguir impõem um tempo de espera adicional entre o final do processamento de um URI e o início do próximo.
+Uma combinação de várias configurações controla a politeness da Frontier. É importante observar que, a qualquer momento, apenas um URI de qualquer host é processado. As regras de cortesia a seguir impõem um tempo de espera adicional entre o final do processamento de um URI e o início do próximo.
 
-* delayFactor - Essa configuração impõe um atraso entre a obtenção de URIs do mesmo host. O atraso é um múltiplo do tempo necessário para buscar o último URI baixado do host. Por exemplo, se foram necessários 800 milissegundos para buscar o último URI de um host e o delayFactor for 5 (um valor muito alto), o Frontier aguardará 4000 milissegundos (4 segundos) antes de permitir que outro URI desse host seja processado.
+* delayFactor - Essa configuração impõe um atraso entre a obtenção de URIs do mesmo host. O atraso é um múltiplo do tempo necessário para buscar o último URI baixado do host. Por exemplo, se foram necessários 800 milissegundos para buscar o último URI de um host e o delayFactor for 5 (um valor muito alto), a Frontier aguardará 4000 milissegundos (4 segundos) antes de permitir que outro URI desse host seja processado.
 
 * maxDelayMs- Essa configuração impõe um limite máximo no tempo de espera criado pelo delayFactor. Se definido como 1000 milissegundos, o atraso máximo entre as buscas de URI do mesmo host nunca excederá esse valor.
 
@@ -1930,7 +1930,7 @@ Uma combinação de várias configurações controla a politeness do Frontier. �
 
 Política de tentativas
 
-O Frontier pode ser usado para limitar o número de tentativas de busca para um URI. O Heritrix tentará recuperar um URI porque o erro de busca inicial pode ser uma condição transitória.
+A Frontier pode ser usada para limitar o número de tentativas de busca para um URI. O Heritrix tentará recuperar um URI porque o erro de busca inicial pode ser uma condição transitória.
 
 * maxRetries - Essa configuração limita o número de novas tentativas de busca em um URI devido a erros transitórios.
 
@@ -1948,7 +1948,7 @@ O Frontier pode ser usado para limitar o número de tentativas de busca para um 
  
  Limites de Largura de Banda
  
-O Frontier permite ao usuário limitar o uso de largura de banda, retendo URIs quando o uso da largura de banda excedeu certos limites. Como as limitações de uso da largura de banda são calculadas ao longo de um período de tempo, ainda pode haver picos de uso que excedam os limites.
+A Frontier permite ao usuário limitar o uso de largura de banda, retendo URIs quando o uso da largura de banda excedeu certos limites. Como as limitações de uso da largura de banda são calculadas ao longo de um período de tempo, ainda pode haver picos de uso que excedam os limites.
 
 * maxPerHostBandwidthUsageKbSec - Essa configuração limita a largura de banda máxima a ser usada por qualquer host. Essa configuração limita a carga colocada pelo Heritrix no host. É, portanto, uma configuração de politeness.
 
@@ -1960,7 +1960,7 @@ O Frontier permite ao usuário limitar o uso de largura de banda, retendo URIs q
 
 Parâmetros de extração
 
-A partir da versão 3.1, o comportamento do Frontier em relação à extração de links pode ser controlado pelos seguintes parâmetros.
+A partir da versão 3.1, o comportamento da Frontier em relação à extração de links pode ser controlado pelos seguintes parâmetros.
 
 * extract404s - Essa configuração permite que o operador evite a extração de links de páginas 404 (Not Found). O configuração padrão é "true", o que mantém o comportamento pré-3.1 de extração links de páginas 404.
 
@@ -1991,9 +1991,9 @@ Quando as filas diminium do top-N ou o valor é alterado no meio do rastreamento
 
 O armazenamento da fila é gerenciado por meio de um banco de dados BDB JE incorporado. É um armazenamento simples de valor-chave, portanto, a multiplicidade de filas é implementada como prefixos-chave. Cada CrawlURI é armazenado no banco de dados BDB como um binary blob serializado usando Kryo, sob uma chave que combina o prefixo de fila (classKey) e a prioridade de rastreamento do CrawlURI.
 
-A lista de active/snoozed/etc são mantidas na memória e gravadas no disco durante o checkpoint no formato JSON. Se você continuar a partir do checkpoint, o BdbFrontier será reutilizado, mas as informações necessárias da fila serão fornecidas pelos arquivos JSON. Se o banco de dados do frontier *não* for reutilizado a partir de um ponto de verificação, o banco de dados será 'truncado' e todos os dados no BdbFrontier serão descartados.
+A lista de active/snoozed/etc são mantidas na memória e gravadas no disco durante o checkpoint no formato JSON. Se você continuar a partir do checkpoint, o BdbFrontier será reutilizado, mas as informações necessárias da fila serão fornecidas pelos arquivos JSON. Se o banco de dados da frontier *não* for reutilizado a partir de um ponto de verificação, o banco de dados será 'truncado' e todos os dados no BdbFrontier serão descartados.
 
-A atualização do conteúdo do frontier a partir de vários encadeamentos exige cuidado, pois é necessário fazer alterações e confirmá-las no disco sem que ocorram conflitos. Uma vez que qualquer alteração tenha sido feita, por exemplo, um WorkQueue, a chamada `wq.makeDirty ()` é usada para iniciar um processo no qual o WorkQueue é serializado para o disco e lido novamente (para assegurar a consistência, mas descartando todos os campos temporários). Isso significa que as atualizações para cada WorkQueue devem ser sincronizadas nos encadeamentos para que não haja duas atualizações ao mesmo tempo. Por exemplo:
+A atualização do conteúdo da frontier a partir de vários encadeamentos exige cuidado, pois é necessário fazer alterações e confirmá-las no disco sem que ocorram conflitos. Uma vez que qualquer alteração tenha sido feita, por exemplo, um WorkQueue, a chamada `wq.makeDirty ()` é usada para iniciar um processo no qual o WorkQueue é serializado para o disco e lido novamente (para assegurar a consistência, mas descartando todos os campos temporários). Isso significa que as atualizações para cada WorkQueue devem ser sincronizadas nos encadeamentos para que não haja duas atualizações ao mesmo tempo. Por exemplo:
 
 ```
  synchronized (wq) {
@@ -2086,7 +2086,7 @@ Os seguintes sufixos de arquivos são suportados:
 
 | Sufixo  | Descrição |  
 | ------------- | ------------- |  
-| `.seeds`| Um arquivo `.seeds` deve conter seeds que o operador do Heritrix deseja incluir no rastreamento. Colocar um arquivo `.seeds` no diretório "action" adicionará os seeds ao rastreamento em andamento. As mesmas diretivas que podem ser usadas em listas de seeds durante a configuração inicial de rastreamento podem ser usadas aqui. Se os seeds introduzidos no rastreameno dessa maneira já estiverem no frontier (talvez já um seed), esse método não as força. |
+| `.seeds`| Um arquivo `.seeds` deve conter seeds que o operador do Heritrix deseja incluir no rastreamento. Colocar um arquivo `.seeds` no diretório "action" adicionará os seeds ao rastreamento em andamento. As mesmas diretivas que podem ser usadas em listas de seeds durante a configuração inicial de rastreamento podem ser usadas aqui. Se os seeds introduzidos no rastreameno dessa maneira já estiverem na frontier (talvez já um seed), esse método não as força. |
 | `.recover` | Um arquivo `.recover` será usado como um diário de recuperação tradicional. (O diário de recuperação pode reproduzir aproximadamente o estado das filas de um rastreamento e o conjunto já incluído, repetindo todos os eventos de conclusão de URI e de descoberta de URI. Um diário de recuperação reproduz menos estados do que um ponto de verificação adequado.) Em uma primeira passagem, todas as linhas que começarem com `Fs` no diário de recuperação serão consideradas incluídas, para que não possam ser enfileiradas novamente. Em seguida, em uma segunda passagem, as linhas que começarem com `F+` serão enfileiradas novamente para rastreamento (se não forem impedidas pela primeira passagem).  | 
 | `.include` | Um arquivo `.include` será usado como um diário de recuperação, mas todos os URIs, independentemente do prefixo de linha, serão marcados como já incluídos, evitando que eles sejam enfileirados novamente a partir desse ponto. (Os URIs já enfileirados ainda estarão qualificados para rastreamento quando surgirem.) O uso de um arquivo `.include` é uma maneira de suprimir o novo rastreamento de URIs. |
 | `.schedule` | Um arquivo `.schedule` será usado como um diário de recuperação, mas todos os URIs, independentemente do prefixo de linha, serão oferecidos para enfileiramento. (No entanto, se eles forem reconhecidos como já incluídos, eles não serão enfileirados.) O uso de um arquivo `.schedule` é uma maneira de incluir URIs em um rastreamento em andamento, inserindo-os nas filas de rastreamento do Heritrix. |
@@ -2153,7 +2153,7 @@ URIs descobertos
 
 Um URI descoberto é qualquer URI confirmado dentro do "escopo". Isso inclui os URIs que foram processados, estão sendo processados e terminaram o processamento. Não inclui URIs que foram "esquecidas". Os URIs esquecidos são URIs considerados fora do escopo durante a busca. É provável que isso aconteça pela alteração da definição do escopo pelo operador.
 
-Observação: Como o mesmo URI pode ser buscado várias vezes (pelo menos na maioria dos Frontiers), o número de URIs descobertos pode ser um pouco menor do que os itens combinados enfileirados, em processo e finalizados. Isso ocorre porque os URIs duplicados estão sendo enfileirados e processados. É provável que a variação seja mais alta em Frontiers que estão implementando estratégias "revisit".
+Observação: Como o mesmo URI pode ser buscado várias vezes (pelo menos na maioria das Frontiers), o número de URIs descobertos pode ser um pouco menor do que os itens combinados enfileirados, em processo e finalizados. Isso ocorre porque os URIs duplicados estão sendo enfileirados e processados. É provável que a variação seja mais alta em Frontiers que estão implementando estratégias "revisit".
 
 Caminho de descoberta (Discovery Path)
 
@@ -2192,7 +2192,7 @@ Número de links, seguidos do seed,  para alcançar um URI. Os seeds têm uma co
 
 URIs pendentes
 
-Número de URIs que estão aguardando processamento detalhado. É, também, o número de URIs descobertos que não foram inspecionados quanto ao escopo ou às duplicatas. Dependendo da implementação do Frontier, isso pode sempre ser zero. Também pode ser um número ajustado que considera duplicatas.
+Número de URIs que estão aguardando processamento detalhado. É, também, o número de URIs descobertos que não foram inspecionados quanto ao escopo ou às duplicatas. Dependendo da implementação da Frontier, isso pode sempre ser zero. Também pode ser um número ajustado que considera duplicatas.
 
 Perfil
 
@@ -2273,7 +2273,7 @@ Por exemplo, o seed http://www.archive.org/ se tornará o formato SURT e fornece
 
 Toe Threads
 
-Ao rastrear, o Heritrix emprega um número configurável de Toe Threads para processar URIs. Cada um desses encadeamentos solicitará um URI do Frontier, aplicará o conjunto de Processadores a ele e, finalmente, o reportará como concluído para o Frontier.
+Ao rastrear, o Heritrix emprega um número configurável de Toe Threads para processar URIs. Cada um desses encadeamentos solicitará um URI da Frontier, aplicará o conjunto de processadores a ele e, finalmente, o reportará como concluído para a Frontier.
 
 ## Configurando o escopo do rastreamento usando DecideRules
 
@@ -2621,7 +2621,7 @@ Outros códigos de status do Heritrix estão listados abaixo.
 | -7 | URI reconhecida como não suportada ou ilegal. |
 | -8 | Várias tentativas falharam, limite de novas tentativas foi atingido.
 | -50 | Status temporário atribuído a URIs aguardando condições prévias. Aparência em logs pode ser um bug. |
-| -60 | Status de falha atribuído a URIs. Eles não puderam ser enfileirados pelo Frontier e podem ser inacessíveis. |
+| -60 | Status de falha atribuído a URIs. Eles não puderam ser enfileirados pela Frontier e podem ser inacessíveis. |
 | -61 | A obtenção do pré-requisito robots.txt falhou, impedindo uma tentativa de busca. |
 | -62 | Algum outro pré-requisito falhou, impedindo uma tentativa de busca. |
 | -63 | Um pré-requisito (de qualquer tipo) não pôde ser agendado, impedindo uma tentativa de busca. |
@@ -2635,7 +2635,7 @@ Outros códigos de status do Heritrix estão listados abaixo.
 | -5002 | Bloqueado por um processador personalizado, que poderia incluir o mapeador de hash (para rastreamento de vários nós), se ativado. |
 | -5002 | Bloqueado por exceder uma cota estabelecida. |
 | -5004 | Bloqueado devido a exceder um tempo de execução estabelecido. |
-| -6000 | Excluído do Frontier pelo usuário.
+| -6000 | Excluído da Frontier pelo usuário.
 | -7000 | Thread de processamento foi morto pelo operador. Isso pode acontecer se um encadeamento for uma condição não responsiva. |
 | -9998 | As regras do Robots.txt impediram a busca. |
 
