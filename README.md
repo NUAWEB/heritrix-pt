@@ -4166,3 +4166,56 @@ No mínimo, o framework do rastreador deve ter parâmetros controlando os seguin
 *Site-first frontier.* Essas frontiers estão mais próximas de rastreadores depth-first, tentando concluir sites o mais rápido possível antes de iniciar novos sites. Como frontiers abrangentes, elas são muito escalonáveis e podem oferecer suporte a um esquema de prioridade.
 
 *Frontier classificado dinamicamente.* As frontiers anteriores atribuem uma prioridade imutável às URLs quando elas são (re) inseridas na frontier. Uma frontier classificada dinamicamente permite que o rastreamento atualize prioridades de URL após a inserção. Tais frontiers podem ser usadas, por exemplo, para fazer o download de páginas na ordem do Pagerank próximo e também permitir que as classificações sejam modificadas de acordo com considerações lingüísticas ou outras. Essas frontiers normalmente têm um componente na memória que limita sua escalabilidade de acordo com a quantidade de memória nas máquinas do rastreador e menos escalonável do que as frontiers classificadas estatisticamente.
+
+Todas essas frontiers devem oferecer suporte à distribuição em várias máquinas. Elas devem oferecer suporte a rastreamentos contínuos e políticas flexíveis de politeness.
+
+*HTTP.* O rastreador deve vir com suporte embutido para HTTP (v. 1.1). Essa implementação HTTP deve suportar robot exclusions, mas também deve ser possível ignorar robot exclusions. Este módulo deve suportar a parametrização de cabeçalhos de saída (por exemplo, permitindo que o designer de rastreamento defina o User-Agent e outros campos de cabeçalho). Este módulo deve suportar o uso do cabeçalho if-modified-since do HTTP (e também suportar não usá-lo).
+
+*Extração de links.* O rastreador deve conseguir extrair links de HTML e de objetos Flash. Em objetos HTML, ele deve fazer um "best effort" para extrair links do Javascript e outras linguagens de script.
+
+*Saída.* Como mencionado acima, a saída para arquivos ARC, arquivos TAR e arquivos ZIP precisa ser suportada. Deve haver um mecanismo para controlar quais objetos são salvos, com base no tipo de mídia e também nos testes baseados em URL.
+
+Os designers de rastreamento não precisarão escrever novos códigos para obter as alterações listadas acima.
+
+### 3.1.2.2 Extensões de código
+
+Extensibilidade através de extensões de código é a capacidade de alterar o comportamento do rastreamento, inserindo no software de rastreamento módulos de personalização que substituem ou aumentam módulos padronizados. Isso permite que o designer de rastreamento desenvolva (ou tenha desenvolvido) módulos que atendem necessidades que não podem ser atendidas por meio da parametrização de módulos existentes.
+
+Suporte para extensões de código é complicado. Uma coisa é quando os autores originais do rastreador escrevem dois ou três módulos a partir dos quais o operador de rastreamento pode escolher. Outra bem diferente é fazer um design e documentar APIs internas apropriadas que permitem que terceiros escrevam seus próprios módulos. Esse design extensível não pode ser adicionado a um rastreador depois dele já ter sido escrito - influencia todos os aspectos da composição interna do rastreador e deve ser contemplado desde o início.
+
+Uma estrutura de rastreamento extensível deve suportar extensões de código em seus módulos de download (que impactam a extensibilidade de protocolos e interatividade), sua frontier (impacta o agendamento e a politeness), inserção de frontier (seleção) e processamento de documentos (extração de recursos, saída, descoberta, filtragem) . Também deve haver uma boa infraestrutura interna para os vários módulos comunicarem seus resultados uns aos outros; este é particularmente o caso para comunicar os resultados do processamento de documentos em todo o rastreador.
+
+### 3.1.2.3 Extensibilidade dinâmica
+
+Os rastreamentos geralmente se estendem por dias e até semanas; rastreamentos contínuos podem ser executados por meses. Não é suficiente que um rastreamento de longa duração seja extensível quando é iniciado pela primeira vez, deve ser possível alterar o rastreamento durante o próprio rastreamento. Para alterar as políticas, talvez seja necessário suspender temporariamente o rastreador, mas o processo de reinicialização deve ser razoavelmente rápido e não deve perder o controle do estado do rastreamento.
+
+## 3.2 Alta largura de banda
+
+Uma única máquina baseada em Pentium (adequadamente configurada) deve ser capaz de baixar de 10 a 20 milhões de documentos por dia (o que significa cerca de 15-30 Mbps de largura de banda em média durante o dia inteiro). Além disso, deve ser possível distribuir um rastreamento 10-20 dessas máquinas para obter melhorias de 10 a 20 vezes na largura de banda de rastreamento.
+
+### 3.3 Largura de banda sustentada
+
+A largura de banda do rastreador não deve parar de ser baixada até que pelo menos 2.5B documentos tenham sido baixados (se houver). (Isso não pressupõe interferência de questões de politeness. Por exemplo, um conjunto adequado de sites para escolher).
+
+### 3.4 Acréscimo
+
+O rastreador deve ser utilizável para rastreamentos grandes ou pequenos. Embora ele deva ser fácil de usar para todos os tipos de rastreamentos, ele deve ser simples para rastreamentos pequenos, ou seja, o operador de um rastreamento pequeno não deve sofrer por conta de complexidade desnecessária apenas porque também queremos suportar grandes rastreamentos. Acreditamos que a melhor maneira de suportar esse requisito é uma configuração padrão do "toolkit" que faz um trabalho adequado para problemas simples de rastreamento.
+
+### 3.5 Portabilidade
+
+O rastreador deve rodar muito bem no Linux. Onde for prático, o rastreador também deve ser capaz de pequenas execuções de teste no Windows 2K/XP. Isso significa que o rastreador está escrito em linguagens e middlewares e bibliotecas portáveis.
+
+### 3.6 Facilidade de operação
+
+Como sugerido em 3.4, "facilidade de operação" pode ser um termo relativo. Um rastreamento simples, com uma única máquina e com várias horas de trabalho, pode ser feito por operadores com habilidades administrativas do SO relativamente primitivas e sem habilidades de programação. Um rastreamento complexo de várias semanas e várias máquinas exigirá habilidades mais avançadas. Mas, em ambos os casos, por meio de uma combinação de simplicidade e boa documentação, o rastreador deve ser operável por qualquer pessoa com o SO e as habilidades de programação necessárias; apelos a uma "tradição oral" secreta (infelizmente comum quando se trata de rastreadores) não deveriam ser absolutamente necessários.
+
+Além de ser simples de operar, o rastreador deve exigir pouca atenção ou esforço enquanto estiver em andamento. Embora condições excepcionais que exijam a intervenção do operador sempre existam, o rastreador deve ser tão robusto quanto possível à rede e a outros problemas. O operador não deve ser obrigado a fornecer uma lista contínua de URLs para download ou alimentar o rastreador para mantê-lo em andamento (embora seja possível que um operador insira URLs se quiser).
+
+Rastreamentos longos (de vários dias) podem ser temporariamente interrompidos por diversos motivos: a conexão WAN está indisponível, um bug no software ou a política de rastreamento precisa ser alterada. Para suportar tais interrupções, deve ser possível reiniciar o rastreamento a partir de dados armazenados no disco. Idealmente, essas reinicializações devem ser "limpas", no sentido de não haver perda de dados; por exemplo, se um documento está sendo baixado, mas não termina quando o rastreador é desligado, o rastreador deve tentar baixar esse documento novamente quando ele for reiniciado.
+
+Um bom registro (incluindo controle sobre a saída de log) também é necessário para monitorar o comportamento do rastreador e diagnosticar qualquer problema. O registro também deve suportar a confiança de longo prazo na saída da atividade de rastreamento, auxiliando na determinação da proveniência e autenticidade dos dados. No entanto, esses logs nunca devem se tornar necessários para analisar os resultados do rastreamento de maneira útil: os arquivos ARC independentes devem permanecer suficientes e completos como um registro de rastreamento autocontido.
+
+Algum tipo de "painel de controle" é necessário para permitir que o operador realize operações básicas, como iniciar um rastreamento, monitorar o progresso do rastreamento, iniciar uma interrupção temporária do rastreamento ou alterar os parâmetros de registro. Uma interface baseada na web para executar essas tarefas, a partir da máquina local ou remotamente, deve ser disponibilizada.
+
+Por fim, a "facilidade de operação" se estende ao software exigido pelo rastreador, bem como ao próprio rastreador. Por exemplo, embora os ORBs sejam aceitáveis, muitos deles são muito difíceis de administrar, e o rastreamento não deve depender de um deles.
+
