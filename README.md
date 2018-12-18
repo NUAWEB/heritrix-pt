@@ -4542,7 +4542,7 @@ Primeiro, você precisa de uma coleção para abrigar seus WARCs. Se você preci
 # * this file is read everytime it is needed, so your
 #   changes effect existing processes
 # * please be verbose in your description_effort
-#   required keywords: CRAWLHOST, CRAWLJOB, START_DATE, END_DATE
+#   palavras-chave necessárias: CRAWLHOST, CRAWLJOB, START_DATE, END_DATE
 #
 # siznax 2010
 
