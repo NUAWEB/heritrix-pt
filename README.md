@@ -4219,3 +4219,437 @@ Algum tipo de "painel de controle" é necessário para permitir que o operador r
 
 Por fim, a "facilidade de operação" se estende ao software exigido pelo rastreador, bem como ao próprio rastreador. Por exemplo, embora os ORBs sejam aceitáveis, muitos deles são muito difíceis de administrar, e o rastreamento não deve depender de um deles.
 
+### 3.7 Licença Aberta
+
+Embora não seja um requisito técnico em si, acreditamos que o licenciamento aberto é necessário para atingir nossos objetivos, especialmente o objetivo da colaboração externa. O Archive tem ampla experiência no uso de rastreadores de outras organizações. Descobrimos que as atividades do Archive têm baixa prioridade nessas organizações e, portanto, pode levar muito tempo para obter permissão para fazer qualquer coisa (se é que podemos obtê-la). Além disso, já tentamos dar acesso à tecnologia de reastreamento a terceiros, afim de apoiar pesquisas e experimentos realizados em universidades e outras instituições, mas fomos impedidos.
+
+Assim, queremos um framework de rastreamento no qual não tenhamos que pedir permissão para fazer a maioria das coisas que desejamos fazer. Idealmente, queremos um rastreador completamente aberto. No mínimo, queremos um rastreador que qualquer pessoa (por exemplo, o Archive, as universidades e até mesmo laboratórios de pesquisa de empresas) possa usar para fins não comerciais sem pedir permissão ao detentor dos direitos autorais.
+
+Esperamos que a *GNU Lesser General Public License* (LGPL) atenda às nossas necessidades de licenciamento, e planejamos liberar nosso trabalho, no mínimo, sob esta licença. (Outras opções de licença são possíveis.)
+
+Em um tópico relacionado, o rastreador não deve depender de middleware ou outro software que vem com termos de licenciamento proibitivos.
+
+## Usuários do Heritrix
+
+Se o seu projeto, instituição ou empresa usa o Heritrix, sinta-se à vontade para adicionar detalhes aqui.
+
+### Bibliotecas, *Archives* e Instituições de memória
+
+* Internet Archive - lidera o desenvolvimento de código aberto do Heritrix; usa o Heritrix como o rastreador de inúmeros projetos de rastreamento focados/temáticos e amplos, incluindo o serviço Archive-It, e rastreia alimentando nossa Wayback Machine e coleções de parceiros. Versões mais utilizadas: Heritrix 1.14.4-SNAPSHOT, 3.0.0-SNAPSHOT.
+
+* Biblioteca Britânica (The British Library) - usa o Heritrix 1.14.3 como rastreador para o nosso Projeto de Pesquisa de Domínio. Colaborou com a Biblioteca Nacional da Nova Zelândia para desenvolver a *Web Curator Tool* (Ferramenta de Curadoria da Web), que também usa o Heritrix como o rastreador subjacente e é atualmente usado para impulsionar o UK Web Archive.
+
+* A Biblioteca do Congresso (The Library of Congress) - trabalha com o Internet Archive para ajudar a criar arquivos da web de coleções focalizadas e temáticas. A equipe de arquivamento da web da Biblioteca também começou a fazer rastreamentos locais, usando, atualmente, o Heritrix 3.0.X para projetos selecionados.
+
+* Biblioteca Digital da Califórnia, Serviço de Arquivamento da Web (California Digital Library, Web Archiving Service)
+
+* Biblioteca Nacional Central de Florença (Biblioteca Nazionale Centrale Firenze) - usa heritrix3 e warc 1.0 para o programa de arquivamento de teses de doutorado eletrônico de repositórios de universidades.
+
+* Smithsonian Institution Archives - testa o Heritrix 1.14.3 em uma máquina Windows para capturar seus inúmeros sites e redes sociais.
+
+* Netarchive.dk - usa o Heritrix 1.14.3 integrado no NetarchiveSuite para coletar a internet dinamarquesa.
+
+* Biblioteca Nacional e Universitária da Islândia (National and University Library of Iceland) - Participou ativamente do desenvolvimento do Heritrix desde o início do projeto. Usa o Heritrix 1 para conduzir rastreamentos de domínio e direcionados desde 2004 e o Heritrix 3 desde 2010.
+
+* Biblioteca Nacional da França (French National Library) - usa o Heritrix para rastreamentos produtivos desde o final de 2006. Executou o primeiro rastreamento de domínio nacional francês com o Heritrix/NetarchiveSuite na primavera de 2010.
+
+* Biblioteca Nacional Austríaca (Austrian National Library) - usa o Heritrix desde o início da Web@rchive Áustria, em 2008.
+
+* Biblioteca Nacional da Catalunha - iniciou em junho de 2005 um projeto chamado PADICAT (Patrimônio Digital da Catalunha). Usa o Heritrix 1.14.4 como um rastreador para o domínio de nível superior .CAT, compilação seletiva de saída de sites de organizações catalãs e captura centrada de eventos públicos. Esses rastreamentos são usados para alimentar a Wayback 1.4.2 (pesquisa de URL) e WERA (pesquisa por palavra-chave) e são mostrados, com acesso livre, através do PADICAT. 
+
+* [adicione o nome de sua instituição aqui]
+
+### Empresas e Projetos Comerciais
+
+* neofonie - usa o Heritrix 1.14.4 e 3.0.x para reunir dados não estruturados. Depois que os dados são processados, enriquecidos e classificados, são usados em mecanismos de pesquisa e aplicativos da Web.
+
+* Dataclip - usa o Heritrix 3 para rastrear os top 10 milhões de websites de negócios, afim de oferecer inteligência de marketing e vendas com base nas tecnologias da web usadas por essas organizações.
+
+* TNR Global - usa o Heritrix para rastrear conteúdo da web. Por exemplo: slide #12 dessa apresentação: Migration from Fast ESP to Lucene Solr - Michael McIntosh
+
+* [adicione sua empresa ou projeto aqui]
+
+### Projetos de pesquisa
+
+* CiteSeerX - usa o Heritrix 1.14.4 e 3.0.x para rastrear documentos acadêmicos de acesso livre online.
+
+* Web Archiving Integration Layer (WAIL) - agrupa um binário Heritrix 3.2.0 pré-configurado com outras ferramentas pessoais de arquivamento da Web em um aplicativo nativo e fornece uma interface gráfica de usuário para acesso.
+
+* [adicione seu projeto aqui]
+
+### Outros
+
+* [adicione aqui]
+
+## Como fazer um rastreamento
+
+* Requisitos
+
+* Espaço de trabalho e arquivos
+
+* Configuração
+
+* Executar o rastreamento
+
+* Verificar o status do rastreamento
+
+* Arquivos de Saída WARC
+
+* Adicionar WARCs ao Archive
+
+* Solução de problemas
+
+Rasteje antes de andar. - C. Darwin
+
+### Requisitos
+
+Para executar um rastreamento da Web com o Heritrix, você precisará do código (arquivos de classe Java), arquivos de configuração e recursos adequados do sistema:
+
+* pelo menos 4 GB de RAM
+* espaço em disco local suficiente para todos os arquivos WARC de saída
+* menor número de processos concorrentes possível
+
+### Espaço de trabalho e arquivos
+
+Os exemplos neste documento são baseados em rastreamentos executados em uma VM chamada `blub-dev`, com arquivos denominados `blub_`...* nome*. Use suas próprias convenções de nomeação de arquivo.
+
+```
+blub@blub-dev:/1$ df -h
+Filesystem Size Used Avail Use% Mounted on
+udev 2.0G 4.0K 2.0G 1% /dev
+tmpfs 396M 5.1M 391M 2% /run
+/dev/vda1 28G 5.8G 21G 22% /
+none 4.0K 0 4.0K 0% /sys/fs/cgroup
+none 5.0M 0 5.0M 0% /run/lock
+none 2.0G 0 2.0G 0% /run/shm
+none 100M 0 100M 0% /run/user
+/dev/vdb1 126G 41G 86G 33% /1
+nfs-home:/home 7.1T 6.1T 990G 87% /home
+```
+
+O diretório `/1` tem muito espaço. Criamos um diretório chamado `/1/crawling` e copiamos o código Heritrix e os arquivos de configuração, criados originalmente por John Lekashman para rastreamento de sites cubanos.
+
+```
+# cd /1
+# mkdir crawling
+# chown blub.users crawling
+^D
+$ cd /1/crawling
+$ cp /home/lekash/blub.crap/* .
+$ tar xvf cuba00000.tar
+$ mv cuba0000 blub_test
+```
+
+Precisamos de um repositório padrão ou outra fonte desses arquivos de código e configuração.
+
+### Configurações
+
+O `README` não é necessário, mas é útil para documentar detalhes do rastreamento que não estão especificados nos arquivos de configuração.
+
+```
+$ cd blub_test
+$ vi README
+```
+
+Agora vamos modificar nossa configuração para esse rastreamento.
+
+```
+$ mv cuba test_config
+$ cd test_config
+```
+
+Primeiro, precisamos de um arquivo de texto `seed` de URLs que serão as origens do rastreamento. Neste caso, criamos o arquivo `mcloud_seeds.txt` a partir do arquivo RSS https://core.mediacloud.org/static/mc_20160317.rss:
+
+```
+$ head mcloud.seeds.txt
+http://feeds.washingtonpost.com/c/34656/f/636663/s/4e55a97b/sc/7/l/0L0Swashingtonpost0N0Cblogs0Cright0Eturn0Cwp0C20A160C0A30C170Cwe0Ecant0Edefend0Edemocracy0Eby0Eelecting0Ea0Ethug0C/story01.htm
+http://feeds.washingtonpost.com/c/34656/f/636663/s/4e56fd0f/sc/7/l/0L0Swashingtonpost0N0Cblogs0Cright0Eturn0Cwp0C20A160C0A30C170Ca0Elot0Eof0Erepublicans0Eare0Ein0Elindsey0Egrahams0Eshoes0C/story01.htm
+http://www.news.com.au/sport/nrl/five-things-you-need-to-know-about-new-nrl-ceo-todd-greenberg/story-fndujljl-1227793059847?from=public_rss
+http://www.abc.es/opinion/abci-secta-201603180423_noticia.html
+...
+```
+
+Agora editamos os valores de configuração:
+
+```
+$ mv cuba.cxml blub_test.cxml
+$ vi blub_test.cxml
+```
+
+A configuração do Heritrix é uma combinação complexa de sintaxe XML e nomes de beans Java. As opções dependem do tamanho e profundidade do rastreamento, da verificação de arquivos duplicados e assim por diante. Este exemplo é de um rastreamento razoavelmente restrito.
+
+Edite os valores mostrados abaixo e deixe as outras linhas como estão:
+
+```
+# (definições editáveis em blub_test.cxml)
+ 
+# serão exibidos no painel de rastreamento:
+metadata.jobName = blub_test
+metadata.description = mediacloud_crawl
+ 
+# prefixo do nome do arquivo WARC de saída, por convenção <= 6 caracteres, TUDO EM MAIÚSCULAS:
+warcwriter.prefix = MCLOUD
+ 
+# tópicos de gravação Java:
+warcwriter.poolMaxActive = 6
+ 
+# o arquivo "seed" de URLs:
+<property name="path" value="mcloud.seeds.txt">
+ 
+# inclua isso para ativar a deduplicação:
+<import resource="hq-beans.xml">
+ 
+# defina uma hop count (quão longe rastrear):
+<bean class="org.archive.modules.deciderules.TooManyHopsDecideRule">
+    <property name="maxHops" value="1" />
+</bean>
+ 
+# SURTs (URLs normalizados) para evitar (esse foi um dos arquivos copiados):
+<bean class="org.archive.modules.deciderules.surt.SurtPrefixedDecideRule">
+      <property name="surtsSourceFile" value="negative-surts.txt">
+```
+
+Ronomeie e edite este arquivo:
+
+```
+$ mv hq-beans.xml.0 hq-beans.xml
+$ vi hq-beans.xml
+```
+
+```
+Comente os beans uriUniqFilter, hqclient e hqpersist:
+```
+
+```
+<!--
+<bean id="uriUniqFilter"
+      class="org.archive.modules.hq.OnlineCrawlMapper">
+  <property name="nodeNo" value="0"/>
+  <property name="totalNodes" value="4"/>
+  <property name="discoveredBatchSize" value="500"/>
+  <property name="feedBatchSize" value="80"/>
+  <property name="localUniqFilter">
+    <bean class="org.archive.crawler.util.BloomUriUniqFilter">
+      <property name="bloomFilter">
+        <bean class="org.archive.util.BloomFilter64bit">
+          <constructor-arg value="250000000"/>
+          <constructor-arg value="30"/>
+        </bean>
+      </property>
+    </bean>
+  </property>
+</bean>
+-->
+ 
+<!-- headquarter client adapter used by HttpPersistProcessor and OnlineCrawlMapper -->
+<!--
+<bean id="hqclient" class="org.archive.modules.hq.HttpHeadquarterAdapter">
+</bean>
+-->
+
+<!-- finished submitter to be included in disposition chain -->
+<!--
+<bean id="hqpersist" class="org.archive.modules.hq.HttpPersistProcessor">
+</bean>
+-->
+```
+
+### Executar o rastreamento
+
+Se tudo for feito corretamente, isso deve funcionar:
+
+```
+$ ./startup.sh
+```
+
+Agora, um painel da web estará acessível na porta 9443 no mesmo host (obtenha o nome e a senha de autenticação pelo ```ps -ef | grep java```):
+
+{height="250"}
+
+Clique no link **test_config**, depois no botão azul **build**, no topo da página. Deve dizer "Job Is Ready". Depois, clique no botão azul **launch**. Ele deve exibir uma sequência de strings de status depois de "Job Is Active": `NASCENT`, depois `PREPARING` e, em seguida, `PAUSED`. Clique no botão azul `unpause` para (finalmente!) iniciar o rastreamento. 
+
+A função de pausa (pause) depende das definições de configuração padrão como `True`:
+
+```
+<!-- <property name="pauseAtStart" value="true" /> -->
+<!-- <property name="pauseAtFinish" value="true" /> -->
+```
+
+### Verificar o status do rastreamento
+
+Atualize seu navegador para atualizar o painel:
+
+{height="250"}
+
+Mostra quantos URLs foram processados e quantos estão pendentes, taxas de processamento de URL, status do encadeamento e outros dados.
+
+### Arquivos de saída WARC
+
+Arquivos WARC são escritos, por padrão, no subdiretório `warcs`. Cada WARC recebe cerca de um gigabyte de dados antes de outro ser criado:
+
+```
+$ ls -l warcs
+total 41005888
+-rw-r--r-- 1 blub users 1161204614 Jun  9 21:37 MCLOUD-20160609210332357-00000-5421~blub-dev.us.archive.org~9443.warc.gz
+-rw-r--r-- 1 blub users 1064202832 Jun  9 21:56 MCLOUD-20160609210332359-00001-5421~blub-dev.us.archive.org~9443.warc.gz
+-rw-r--r-- 1 blub users 1520977725 Jun  9 21:52 MCLOUD-20160609210332360-00002-5421~blub-dev.us.archive.org~9443.warc.gz
+-rw-r--r-- 1 blub users 1011777223 Jun  9 21:24 MCLOUD-20160609210332361-00003-5421~blub-dev.us.archive.org~9443.warc.gz
+-rw-r--r-- 1 blub users 1000574144 Jun  9 21:52 MCLOUD-20160609210332362-00004-5421~blub-dev.us.archive.org~9443.warc.gz
+-rw-r--r-- 1 blub users 1000005845 Jun  9 21:51 MCLOUD-20160609210332363-00005-5421~blub-dev.us.archive.org~9443.warc.gz
+-rw-r--r-- 1 blub users 1000015034 Jun  9 22:15 MCLOUD-20160609212455312-00006-5421~blub-dev.us.archive.org~9443.warc.gz
+-rw-r--r-- 1 blub users 1000020459 Jun  9 22:36 MCLOUD-20160609213753231-00007-5421~blub-dev.us.archive.org~9443.warc.gz
+-rw-r--r-- 1 blub users 1399930055 Jun  9 22:46 MCLOUD-20160609215107987-00008-5421~blub-dev.us.archive.org~9443.warc.gz
+-rw-r--r-- 1 blub users 1292349285 Jun  9 23:37 MCLOUD-20160609215207090-00009-5421~blub-dev.us.archive.org~9443.warc.gz
+-rw-r--r-- 1 blub users 1000039653 Jun  9 23:32 MCLOUD-20160609215226776-00010-5421~blub-dev.us.archive.org~9443.warc.gz
+-rw-r--r-- 1 blub users 1000014926 Jun  9 22:29 MCLOUD-20160609215649483-00011-5421~blub-dev.us.archive.org~9443.warc.gz
+-rw-r--r-- 1 blub users 1000021659 Jun 10 01:31 MCLOUD-20160609221555291-00012-5421~blub-dev.us.archive.org~9443.warc.gz
+-rw-r--r-- 1 blub users 1000055761 Jun 10 02:23 MCLOUD-20160609222931584-00013-5421~blub-dev.us.archive.org~9443.warc.gz
+-rw-r--r-- 1 blub users 1000005175 Jun 10 02:18 MCLOUD-20160609223645636-00014-5421~blub-dev.us.archive.org~9443.warc.gz
+-rw-r--r-- 1 blub users 2119870356 Jun 10 00:56 MCLOUD-20160609224628152-00015-5421~blub-dev.us.archive.org~9443.warc.gz
+-rw-r--r-- 1 blub users 1462329740 Jun 10 03:29 MCLOUD-20160609233227602-00016-5421~blub-dev.us.archive.org~9443.warc.gz
+-rw-r--r-- 1 blub users 1551420349 Jun 10 01:45 MCLOUD-20160609233722737-00017-5421~blub-dev.us.archive.org~9443.warc.gz
+-rw-r--r-- 1 blub users 1000022245 Jun 10 05:31 MCLOUD-20160610005626706-00018-5421~blub-dev.us.archive.org~9443.warc.gz
+-rw-r--r-- 1 blub users 1704015803 Jun 10 05:38 MCLOUD-20160610013124232-00019-5421~blub-dev.us.archive.org~9443.warc.gz
+-rw-r--r-- 1 blub users 1511938554 Jun 10 02:58 MCLOUD-20160610014557756-00020-5421~blub-dev.us.archive.org~9443.warc.gz
+-rw-r--r-- 1 blub users 1364297055 Jun 10 08:02 MCLOUD-20160610021836348-00021-5421~blub-dev.us.archive.org~9443.warc.gz
+-rw-r--r-- 1 blub users 1013434840 Jun 10 08:21 MCLOUD-20160610022319581-00022-5421~blub-dev.us.archive.org~9443.warc.gz
+-rw-r--r-- 1 blub users 1815742049 Jun 10 06:20 MCLOUD-20160610025853439-00023-5421~blub-dev.us.archive.org~9443.warc.gz
+-rw-r--r-- 1 blub users 1000058523 Jun 10 05:40 MCLOUD-20160610032921930-00024-5421~blub-dev.us.archive.org~9443.warc.gz
+-rw-r--r-- 1 blub users 1096104506 Jun 10 10:18 MCLOUD-20160610053126093-00025-5421~blub-dev.us.archive.org~9443.warc.gz
+-rw-r--r-- 1 blub users 1325952334 Jun 10 09:10 MCLOUD-20160610053804044-00026-5421~blub-dev.us.archive.org~9443.warc.gz
+-rw-r--r-- 1 blub users 1004554334 Jun 10 15:06 MCLOUD-20160610054041702-00027-5421~blub-dev.us.archive.org~9443.warc.gz
+-rw-r--r-- 1 blub users 1006686502 Jun 10 07:13 MCLOUD-20160610062044379-00028-5421~blub-dev.us.archive.org~9443.warc.gz
+-rw-r--r-- 1 blub users 1262064822 Jun 10 09:47 MCLOUD-20160610071347444-00029-5421~blub-dev.us.archive.org~9443.warc.gz
+-rw-r--r-- 1 blub users 1346247746 Jun 10 12:31 MCLOUD-20160610080214994-00030-5421~blub-dev.us.archive.org~9443.warc.gz
+-rw-r--r-- 1 blub users 1000015074 Jun 10 18:00 MCLOUD-20160610082131840-00031-5421~blub-dev.us.archive.org~9443.warc.gz
+-rw-r--r-- 1 blub users  936592729 Jun 10 18:11 MCLOUD-20160610091017844-00032-5421~blub-dev.us.archive.org~9443.warc.gz.open
+-rw-r--r-- 1 blub users  832670771 Jun 10 18:11 MCLOUD-20160610094801606-00033-5421~blub-dev.us.archive.org~9443.warc.gz.open
+-rw-r--r-- 1 blub users  670126053 Jun 10 18:11 MCLOUD-20160610101843380-00034-5421~blub-dev.us.archive.org~9443.warc.gz.open
+-rw-r--r-- 1 blub users  337385272 Jun 10 18:11 MCLOUD-20160610123108719-00035-5421~blub-dev.us.archive.org~9443.warc.gz.open
+-rw-r--r-- 1 blub users  162329199 Jun 10 18:11 MCLOUD-20160610150641246-00036-5421~blub-dev.us.archive.org~9443.warc.gz.open
+-rw-r--r-- 1 blub users   14747939 Jun 10 18:11 MCLOUD-20160610180030443-00037-5421~blub-dev.us.archive.org~9443.warc.gz.open
+```
+
+### Adicionar WARCs ao Archive
+
+Primeiro, você precisa de uma coleção para abrigar seus WARCs. Se você precisar de uma nova, peça a alguém (atualmente Jeff ou Alexis) para fazer uma para você. Em seguida, edite `dtmon.cfg` com valores para (pelo menos) `crawljob`, `job_dir`, `xfer_dir`, `description`, `operator` e `collections`:
+
+```
+# dtmon.cfg  - draintasker "simple" config file
+#
+# * params must begin in col1, so preceding by anything
+#   effectively causes the parameter to be ignored
+# * this file is read everytime it is needed, so your
+#   changes effect existing processes
+# * please be verbose in your description_effort
+#   required keywords: CRAWLHOST, CRAWLJOB, START_DATE, END_DATE
+#
+# siznax 2010
+
+crawljob:           blub_test
+job_dir:            warcs
+xfer_dir:           sink
+
+sleep_time:         300
+max_size:           10
+# WARC_naming      1 # {TLA}-{timestamp}-{serial}-{fqdn}.warc.gz
+WARC_naming:        2 # {TLA}-{timestamp}-{serial}-{PID}~{fqdn}~{port}.warc.gz
+block_delay:        120   # blocking
+max_block_count:    120   # total blocking time = delay x count
+retry_delay:        2400 # non-blocking
+
+# ALL CAPS strings in the description below are substituted:
+description:        Internet Archive crawldata from Media Cloud, captured by CRAWLHOST:CRAWLJOB from START_DATE to END_DATE.
+ 
+# Operator's email
+operator:           blub@archive.org
+ 
+# These collections need to be precreated:
+collections: # may have multiple, each on its own line
+  - mediacloud
+
+title_prefix:       Webwide Crawldata
+creator:            Internet Archive
+sponsor:            Internet Archive
+contributor:        Internet Archive
+scanningcenter:     sanfrancisco
+
+derive:          1
+compact_names:   1# Same as the parent directory:
+```
+
+Agora, execute o `draintasker` para obter seus WARCs de saída em coleções de petabox. Há alguns documentos disponíveis sobre draintasker, porém confusos: 
+
+Draintasker
+Draintasker Definitions (definições)
+Draintasker Use Cases (casos de uso)
+Draintasker Config (configuração)
+Draintasker Execution (execução)
+Draintasker Operations (operações)
+Draintasker Processing (processamento)
+Draintasker Output (saída)
+
+Alguns desses documentos, além de tentativas e erros, revelaram as etapas a seguir.
+
+Primeiro, crie um arquivo `~/.ias3cfg`. Obtenha os valores de `access_key` e `secret_key` do seu arquivo `~/config/internetarchve.yml`. (Não use aspas nos valores das linhas de *key*).
+
+```
+access_key = ...
+secret_key = ...
+```
+
+Depois:
+
+```
+$ cd /1/crawling/blub_test/site
+$ touch warcs/DRAINME
+$ ../draintasker/dtmon.py -L dtmon.log dtmon.cfg &
+```
+
+Os arquivos são retirados do diretório `warc` e processados no diretório `sink`.
+
+### Solução de problemas
+
+Arquivos de Entrada
+
+`blub_test.cxml` - arquivo de configuração de rastreamento do heritrix
+`dtmod.cfg` - arquivo de configuração do draintasker
+`hq-beans.xml` - heritrix ?
+`negative-surts.txt` - tenta evitar o rastreamento, por algum motivo
+`seeds.txt` - arquivo de seed de URL
+
+Arquivos de saída
+
+`negative-surts.dump` -
+`reports/frontier-summary-report.txt` -
+`warcs/*.warc.gz.open` -
+`warcs/*warc.gz` -
+
+Arquivos de log
+
+`job.log` -
+`logs/alerts.log` -
+`logs / crawl.log` -
+`logs / nonfatal-errors.log` -
+`logs / progress-statistics.log` -
+`logs / runtime-errors.log` -
+`logs / uri-errors.log` -
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
