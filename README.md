@@ -4635,12 +4635,33 @@ Arquivos de log
 `logs / runtime-errors.log` -
 `logs / uri-errors.log` -
 
+## Desenvolvimento
 
+### Notas sobre o H3 para operadores de rastreamento
 
+### Notas sobre desenvolvimento
 
+A maior parte dos esforços de desenvolvimento, no momento, é direcionada para a linha Heritrix3. Informações gerais sobre o desenvolvimento 3.x estão disponíveis no Heritrix3. Um tema importante dos lançamentos 3.x possibilitará o rastreamento adaptável e contínuo revisitado em larga escala. Os próximos trabalhos em direção a esse objetivo incluirão:
 
+* refatoração e, possivelmente, uma combinação da estrutura interna de dados com estruturas de dados já incluídas; melhorando a flexibilidade das filas frontier (disponibilizando a possibilidade de filas com tempo de longa duração e várias filas por host/grupo de exclusão)
 
+* permissão de revisita dos URIs descobertos de acordo com uma política de swappable, que pode levar em consideração os intervalos de revisita desejados e as taxas de alteração de URI detectadas em visitas anteriores
 
+Outras áreas de foco, no futuro, embora ainda não agendadas para versões específicas, incluem:
+
+* melhorar a usabilidade e a documentação de recursos recém-adicionados (supressão de duplicação; priorização ajustável) em fluxos de trabalho típicos do operador
+
+* melhorar a cobertura de teste automatizada com rastreamento simulado, especialmente para configurações de recursos não padrão e execuções de teste mais longas e com maior desempenho
+
+* melhor rastreamento de conteúdo de vídeo da Web com configurações padrão
+
+* uma interface de serviços da Web como alternativa ao JMX para controle remoto do rastreador
+
+* novas heurísticas e compartilhamento de conhecimento para redução de armadilhas/spam
+
+* relatórios aprimorados durante a fila de rastreamento, incluindo previsões melhores do tempo de conclusão
+
+* opções aprimoradas para rastrear sites de acesso controlado (senha/outra autenticação)
 
 
 
