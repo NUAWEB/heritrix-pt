@@ -4665,21 +4665,19 @@ Outras áreas de foco, no futuro, embora ainda não agendadas para versões espe
 
 ## Visão Geral de (Re)Rastreamento Contínuo
 
-* Continuous Recrawling Overview
-     * Generic Scenario
+* Visão Geral de (Re)Rastreamento Contínuo
+     * Cenário genérico
+     * Cenário Alvo Concreto
+     * Estratégia de Design
+     
+* Notas de design da Fase A de (re)Rastreamento contínuo
+     * Frontier Unbundling Design Details
+     * Springified Heritrix Design Details
+     * Streamlined Checkpointing Design Details
 
+* Notas de design da Fase B de (re)Rastreamento contínuo
 
-Generic Scenario
-Concrete Target Scenario
-Design Strategy
-Continuous Recrawling Phase A Design Notes
-
-Frontier Unbundling Design Details
-Springified Heritrix Design Details
-Streamlined Checkpointing Design Details
-Continuous Recrawling Phase B Design Notes
-
-Continuous Recrawling Phase C Design Notes
+* Notas de design da Fase C de (re)Rastreamento contínuo
 
 ### Cenário genérico
 
@@ -4712,9 +4710,5 @@ Os objetivos da fase B serão adicionar novos recursos às filas Frontier, estru
 
 Os objetivos da fase C serão implementar um conjunto mínimo de políticas de revisão viáveis e acompanhar o trabalho da interface do usuário para dar suporte aos cenários de uso genéricos e concretos. Além disso, garantir a estabilidade do trabalho durante muitos meses de rastreamento, em combinação com os recursos anteriores da fase do Smart Crawler. Essas alterações estarão totalmente disponíveis na versão final 3.2. Notas sobre o design da fase C de Rastreamento Contínuo.
 
-
-
-
-
-
+## Visão Geral de (Re)Rastreamento Contínuo
 
