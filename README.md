@@ -4711,5 +4711,88 @@ Os objetivos da fase B serão adicionar novos recursos às filas Frontier, estru
 
 Os objetivos da fase C serão implementar um conjunto mínimo de políticas de revisão viáveis e acompanhar o trabalho da interface do usuário para dar suporte aos cenários de uso genéricos e concretos. Além disso, garantir a estabilidade do trabalho durante muitos meses de rastreamento, em combinação com os recursos anteriores da fase do Smart Crawler. Essas alterações estarão totalmente disponíveis na versão final 3.2. Notas sobre o design da fase C de Rastreamento Contínuo.
 
-## Visão Geral de (Re)Rastreamento Contínuo
+## Notas de design da fase A de (re)rastreamento contínuo
+
+## **Notas de design da fase A: Definições e atualizações de pontos de verificação**
+
+Esperamos que a fase A termine em uma versão 2.2 independente.
+
+### Definições/Configurações
+
+A configuração do Heritrix 2.0...
+
+* é modelada a partir do framework Spring de maneira significativa
+* não adotou o framework Spring diretamente devido a preocupações de que ele não suportaria nossa necessidade de substituir ambos valores e implementar classes para grupos de URIs
+* ainda não oferece uma maneira fácil/automatizada de trazer as configurações da versão 1.x
+* usa um formato personalizado, em disco, sensível a pedidos, que gerou preocupação no feedback inicial
+* deixa sobreposições de mapeamentos (URIs-> configurações especiais) em um banco de dados BerkeleyDB de difícil arquivamento
+
+Objetivo: mudar para uma configuração baseada no Spring 2.5
+
+* faz com que a configuração do rastreador encaixe em um modelo padrão para conectar componentes alternativos e fornecer valores de configuração
+* fornece um formato XML bem caracterizado para configuração
+
+Problema: suporte de sobreposições
+
+* Escopos personalizados e retornos de chamadas do Spring devem permitir a inserção de um nível extra de indireção (wrapper) em componentes e valores primitivos
+
+* A resolução de valores/componentes seria adiada para o tempo de execução, e a consulta de sobreposições de mapeamentos aconteceria primeiro
+
+Problema: configuração arquivável
+
+* mapeamentos e valores sobrepostos alternativos também seriam especificados no modelo/sintaxe Spring
+* podem ser incluídos no arquivo de configuração principal; outros podem ser incluídos por referência
+* resultado: configuração de qualquer complexidade *pode* ser representada como um único arquivo grande - muito fácil de arquivar 
+* ou, pode ser representada como uma coleção de arquivos relacionados, a maioria dos quais são componentes padronizados reutilizados por um longo período
+
+Problema: mudança de definições no meio do rastreamento
+
+* será possível, mas por manipulação direta de beans do componente do rastreador
+* implicação: a configuração inicial precisará ser alterada manualmente e separadamente
+* para investigar: maneiras de tornar isso mais fácil/menos propenso a erros
+
+Problema: interface do usuário para compor a configuração do Spring
+
+* oferecer edição de texto com opção de validação de formato/dependência
+* oferecer modos de edição guiados (campos com texto de ajuda, XML como modelo)
+
+Problema: ferramenta de migração 1.x para 2.x
+
+* irá aguardar até que as configurações Spring-ified estejam prontas
+* irá trabalhar por configurações simples; fornecerá lista de exceções de problemas que o operador precisa corrigir manualmente no final
+* estratégia geral: walk 1.x settings, find handler for that setting, build new XML
+
+Ver também: [Heritrix Springified (detalhes de design)] (https://github.com/internetarchive/heritrix3/wiki/Springified%20Heritrix%20Design%20Details)
+
+### Ponto de verificação
+
+O ponto de verificação do Heritrix, atualmente...
+
+* requere pausa total do rastreador
+* depende fortemente de serialização Java, para todo o estado de componente
+* muito frágil se o software for alterado antes da restauração (nunca tivemos compatibilidade de ponto de verificação entre os lançamentos, principais ou não)
+
+Objetivo: ponto de verificação mais rápido, mais fácil e mais robusto
+
+* dividir o processamento de URI em duas fases: uma transitória (pode ser descartada enquanto a URI for repetida), e uma que altera estatísticas ou estruturas persistentes (que devem ser concluídas até a consistência antes que o ponto de verificação continue)
+* step right after laggy network fetch is threshold between phases
+* permitir a retenção de URIs após a busca (rastreador semi-pausado) para que o ponto de verificação possa ocorrer assim que todo o processamento de *needing-persistence* for concluído (mas sem esperar que todas as buscas sejam concluídas)
+* desenfatizar serialização; executar a maioria dos componentes salvando o estado em um formato de texto solto (JSON ou XML) para facilitar a restauração de código alterado ou a edição offline manual
+* mover atividades que estão apenas copiando o processo externo do rastreador: ou seja, o ponto de verificação é, principalmente, um manifesto de arquivos para restaurar o rastreamento; cabe ao operador copiá-los em outro lugar, se desejar
+* componente de ponto de verificação opcional na configuração; se presente, todos os componentes devem restaurar a partir dele.
+
+Ver também: [Detalhes do design de ponto de verificação simplificado] (https://github.com/internetarchive/heritrix3/wiki/Streamlined%20Checkpointing%20Design%20Details)
+
+### Separação da Frontier
+
+Objetivo: separar o máximo possível, de dentro da Frontier, em processadores independentes que marcam o URI
+
+* geral: deixar a Frontier ser a mais burra possível, apenas siga as instruções dentro das URIs agendadas / terminadas
+* decisões atuais na fronteira que podem ser removidas:
+      * canonização
+      * decisão de disposição (success, retry, failure)
+      * precedência de uri
+      * atraso de cortesia
+      * chave de fila
+* fronteira lançava erro se a orientação necessária não estivesse presente
 
