@@ -599,7 +599,7 @@ Processadores multi-core também são recomendados para rastreamentos de mídia 
 
 * Mídia de transmissão (streaming media)
 
-Streaming media is media content delivered sequentially over time to a media-consumer from a media-producer.  Examples of streaming media include Internet Radio and TV.  Streaming media is concerned with the delivery mechanism of the media format and not the format itself.   Heritrix can capture media streamed over HTTP or FTP, but does not recognize other streaming protocols such as Real Time Streaming Protocol (RTSP).  This limitation has generated interest in embedding a media player in Heritrix that does recognize most streaming formats.  For more information on embedding a Media Player in Heritrix, see the "Archiving Streaming Media on the Web Proof of Concept and First Results" article in the International Web Archiving Workshop 2006 conference paper at http://iwaw.europarchive.org/06/PDF/iwaw06-proceedings.pdf.
+Mídia de transmissão é o conteúdo de mídia entregue seqüencialmente, ao longo do tempo, para um consumidor de mídia a partir de um produtor de mídia. Exemplos de mídia de transmissão incluem Internet, rádio e TV. Esse tipo de mídia está preocupado com o mecanismo de entrega do formato de mídia e não o formato em si. O Heritrix pode capturar mídia transmitida por HTTP ou FTP, mas não reconhece outros protocolos de streaming, como o RTSP (Real Time Streaming Protocol). Essa limitação gerou interesse em incorporar um media player no Heritrix que reconhece a maioria dos formatos de transmissão. Para obter mais informações sobre como incorporar um Media Player ao Heritrix, consulte o artigo "Archiving Streaming Media on the Web Proof of Concept and First Results" no documento da conferência International Web Archiving Workshop, 2006, em http://iwaw.europarchive.org/06/PDF/iwaw06-proceedings.pdf.
 
 * Redes sociais
 
@@ -734,17 +734,17 @@ UOKDGOLGI5JYHDTXRFFQ5FF4N2EJRV - -
 
 | Nome do campo  | Descrição |
 | ------------- | ------------- |
-| Timestamp  | The timestamp in ISO8601 format, to millisecond resolution.  The time is the instant of logging.  |
-| Fetch Status Code  | Usually this is the HTTP response code but it can also be a negative number if URI processing was unexpectedly terminated.  |
+| Timestamp  | Registro de data e hora no formato ISO8601, com resolução em milissegundos. A hora é o instante do registro. |
+| Fetch Status Code  | Normalmente, esse é o código de resposta HTTP, mas também pode ser um número negativo se o processamento de URI tiver sido encerrado inesperadamente.  |
 | Tamanho do documento | Tamanho do documento baixado, em bytes. Para HTTP, é apenas o tamanho do conteúdo. O tamanho exclui os cabeçalhos de resposta HTTP. Para DNS, o campo de tamanho é o tamanho total da resposta do DNS. |
 | URI baixado | O URI do documento baixado. |
 | Caminho de Descoberta | Códigos de navegação (caminho de descoberta) que mostram a trilha de downloads que levam ao URI baixado. A partir da versão 3.1, o comprimento do caminho de descoberta foi limitado aos últimos 50 hop-types.  Por exemplo, um caminho de 62-hop pode aparecer, a partir de agora, como "12+LLRLLLRELLLLRLLLRELLLLRLLLRELLLLRLLLRELLLLRLLLRELE".  Esse aprimoramento diminui o tamanho do log e limita o uso de memória. Os códigos de navegação são os seguintes. |
 | Referenciador | O URI que precedeu imediatamente o URI baixado. Este é o referenciador. O caminho de descoberta e o referenciador estarão vazios para URIs de seeds. |
-| Mime Type | The downloaded document mime type. |
+| Mime Type | Documento baixado do tipo mime. |
 | Worker Thread ID | The id of the worker thread that downloaded the document. |
-| Fetch timestamp | The timestamp in RFC2550/ARC condensed digits-only format indicating when the network fetch was started.  If appropriate the millisecond duration of the fetch is appended to the timestamp with a "+" character as separator. |
+| Fetch timestamp | O registro de data e hora no formato somente de dígitos condensados RFC2550/ARC, indicando quando a busca de rede foi iniciada. Se apropriado, a duração de milissegundos da busca é anexada ao registro de data e hora com um caractere "+" como separador. |
 | SHA1 Digest | The SHA1 digest of the content only (headers are not digested). |
-| Source Tag | The source tag inherited by the URI, if source tagging is enabled. |
+| Source Tag | A tag de origem herdada pelo URI, se a marcação de origem estiver ativada. |
 | Annotations | If an annotation has been set, it will be displayed.  Possible annotations include: the number of times the URI was tried, the literal "lenTrunc" if the download was truncanted due to exceeding configured size limits, the literal "timeTrunc" if the download was truncated due to exceeding configured time limits or "midFetchTrunc" if a midfetch filter determined the download should be truncated. |
 | warc | Nome do arquivo WARC/ARC em que o conteúdo rastreado foi salvo. Esse valor só será salvo se a propriedade logExtraInfo do bean loggerModule está definida como true. Essa informação registrada será salva no formato JSON. |
 
@@ -754,17 +754,17 @@ Esse log é salvo pelo bean StatisticsTracker.  Em intervalos configuráveis, um
 
 | Nome do campo  | Descrição |
 | ------------- | ------------- |
-| timestamp  | Timestamp in ISO8601 format indicating when the log line was written.  |
+| timestamp  | Registro de data e hora no formato ISO8601, indicando quando a linha de log foi gravada.  |
 | discovered  | Número de URIs descobertos até o momento. |
 | queued | Número de URIs enfileirados. |
 | downloaded | Número de URIs baixados até o momento. |
 | doc/s(avg) | Número de documentos baixados por segundo desde a última snapshot. O valor entre parênteses é medido desde o início do rastreamento. |
 | KB/s(avg) | Quantidade em kilobytes baixados por segundo desde a última snapshot. O valor entre parênteses é medido desde o início do rastreamento. |
 | dl-failures | Número de URIs que o Heritrix não conseguiu baixar. |
-| busy-thread | Number of toe threads busy processing a URI. |
+| busy-thread | Número de toe threads ocupados processando um URI. |
 | mem-use-KB | Quantidade de memória sendo usada pelo Java Virtual Machine. |
-| heap-size-KB| The current heap size of the Java Virtual Machine. |
-|congestion | The congestion ratio is a rough estimate of how much initial capacity, as a multiple of current capacity, would be necessary to crawl the current workload at the maximum rate available given politeness settings.  This value is calculated by comparing the number of internal queues that are progressing against those that are waiting for a thread to become available. |
+| heap-size-KB| O tamanho de heap atual da Java Virtual Machine. |
+|congestion | O índice de congestionamento é uma estimativa aproximada de quanta capacidade inicial, como um múltiplo da capacidade atual, seria necessária para rastrear a carga de trabalho atual, na taxa máxima disponível em determinadas configurações de politeness. Esse valor é calculado comparando o número de filas internas que estão progredindo em relação àquelas que estão aguardando a disponibilização de um encadeamento. |
 | max-depth | O tamanho da fila Frontier com o maior número de URIs enfileirados.  |
 | avg-depth | O tamanho habitual de todas as filas Frontier. |
 
@@ -959,7 +959,7 @@ preparer
 
 * preferenceEmbedHops - Number of embed hops (ERX) to bump to front of host queue.
 
-* canonicalizationPolicy - Ordered list of URI canonicalization rules.  Rules are applied in the order listed from top to bottom.
+* canonicalizationPolicy - Lista ordenada de regras de canonização de URI. As regras são aplicadas na ordem listada, de cima para baixo.
 
 * queueAssignmentPolicy - Define como atribuir URIs a filas. Pode atribuir por host, por IP, pela autoridade ordenada por SURT, pela autoridade ordenada por SURT truncada em um domínio atribuível mais alto e em um de um conjunto fixo de buckets (1k).
 
@@ -968,19 +968,19 @@ preparer
 * costAssignmentPolicy - Calcula um valor de 'custo' total para o CrawlURI fornecido.
 preselector
 
-* recheckScope - Recheck if URI is in scope. This is meaningful if the scope is altered during a crawl.  When URIs are added to queues they are checked against the scope.  Setting this value to true forces the URI to be checked against the scope when it comes out of the queue, possibly after the scope is altered.
+* recheckScope - Verifica novamente se o URI está no escopo. Isso é significativo se o escopo for alterado durante um rastreamento. Quando os URIs são adicionados às filas, eles são verificados no escopo. Definir esse valor como "true" força o URI a ser verificado em relação ao escopo quando sai da fila, possivelmente após o escopo ser alterado. 
 
 * blockAll- Bloqueia todos os URIs de serem processados. É mais provável que seja usado em sobreposições para rejeitar facilmente determinados hosts de serem processados.
 
-* blockByRegex - Block all URIs matching the regular expression from being processed.
+* blockByRegex - Bloqueia todos os URIs correspondentes à expressão regular de serem processados.
 
-* allowByRegex - Allow only URIs matching the regular expression to be processed.
+* allowByRegex - Permite que apenas URIs que correspondam à expressão regular sejam processados.
 
 preconditions
 
-* ipValidityDurationSeconds - The minimum interval for which a dns-record will be considered valid (in seconds). If the record's DNS TTL is larger, that will be used instead.
+* ipValidityDurationSeconds - O intervalo mínimo para o qual um registro de DNS será considerado válido (em segundos). Se o DNS TTL do registro for maior, ele será usado no lugar.
 
-* robotsValidityDurationSeconds- The time in seconds that fetched robots.txt information is considered valid. If the value is set to '0', then the robots.txt information will never expire.
+* robotsValidityDurationSeconds- O tempo em segundos que as informações obtidas do robots.txt são consideradas válidas. Se o valor estiver definido como '0', as informações do robots.txt nunca irão expirar.
 
 * calculateRobotsOnly - Whether to calculate the robot's status of a URI, without actually applying any exclusions found. If true, excluded URIs will only be annotated in the crawl.log, but still fetched.
 
@@ -999,10 +999,11 @@ fetchHttp
 
 * maxLengthBytes - Determina o número máximo de bytes para download por documento. Quando o limite é atingido, o documento será truncado. Por padrão, essa configuração é um valor muito grande (no intervalo exabyte), que teoricamente nunca será atingido.
 
-* maxFetchKBSec - The maximum rate in KB/sec to use when fetching data from a server. The default of 0 means no maximum.
-defaultEncoding - The character encoding to use for files that do not have one specified in the HTTP response headers. The default is ISO-8859 -1.
+* maxFetchKBSec - A taxa máxima em KB/s para usar ao buscar dados de um servidor. Se o padrão for 0, significa que não há um valor máximo. 
 
-* shouldFetchBodyRule- DecideRules applied after receipt of HTTP response headers but before download of the HTTP body. If any rule returns FALSE, the fetch is aborted. Prerequisites such as robots.txt are excluded from filtering, i.e. they cannot be midfetch aborted.
+* defaultEncoding - A codificação de caracteres a ser usada para arquivos que não possuem um especificado nos cabeçalhos de resposta HTTP. O padrão é ISO-8859 -1.
+
+* shouldFetchBodyRule- DecideRules aplicado após o recebimento dos cabeçalhos de resposta HTTP, mas antes do download do corpo HTTP. Se alguma regra retornar FALSE, a busca será cancelada. Pré-requisitos, como o robots.txt, são excluídos da filtragem, ou seja, não podem ser interrompidos pelo midfetch.
 
 * soTimeoutMs - If the socket is unresponsive for this number of milliseconds, the request is cancelled.  Setting the value to zero (no timeout) is not recommended as it could hang a thread on an unresponsive server. This timeout is used to time out socket opens and socket reads. Make sure this value is less than timeoutSeconds for optimal configuration.  This ensures at least one retry read.
 sendIfModifiedSince - Send If-Modified-Since header, if previous Last-Modified fetch history information is available in URI history.
@@ -3693,7 +3694,7 @@ Download All
 
 Comparado ao ARC, observe que o WARC adiciona:
 
-* Uma quantidade expansível de informações de cabeçalho por registro
+* Uma quantidade expansível de informações de header por registro
 * Novos tipos de registro opcionais para dados/metadados, além de respostas HTTP (que era só o que o arquivo ARC gravava)
 
 ### Padrão ISO
@@ -4125,7 +4126,7 @@ Depois que um documento é baixado, ele é processado por vários motivos. Recur
 
 Assim, o rastreador deve suportar um framework para "analisadores" conectáveis que processam documentos. Além disso, essa estrutura deve oferecer suporte à interoperabilidade efetiva entre os analisadores, garantindo que o bom trabalho de um grupo possa ser construído por outros.
 
-Os analisadores devem ter acesso ao máximo de metadados possíveis. Isso inclui o URL usado para buscar o objeto, download de timestamps (data e hora), informações de resolução de DNS e cabeçalhos de solicitação e resposta usados durante a transação (e qualquer outro material usado para buscar o objeto, como senhas ou chaves SSL).
+Os analisadores devem ter acesso ao máximo de metadados possíveis. Isso inclui o URL usado para buscar o objeto, download de timestamps (data e hora), informações de resolução de DNS e headers de solicitação e resposta usados durante a transação (e qualquer outro material usado para buscar o objeto, como senhas ou chaves SSL).
 
 Os analisadores devem ter acesso aos resultados de todas as solicitações, não apenas aos bem-sucedidos. Isso é necessário, por exemplo, para detectar alterações na Web ou para detectar as "bordas" da *deep web*. Isso significa registrar, por exemplo, respostas 30x (moved/redirect) e 40x (invalid/not found/unauthorized). Isso também significa registrar solicitações negadas por regras de robot exclusion. Por fim, os arquivos de robot exclusion buscados automaticamente também devem estar sujeitos a análises regulares (em vez de serem manipulados por um caminho separado).
 
@@ -4169,7 +4170,7 @@ No mínimo, o framework do rastreador deve ter parâmetros controlando os seguin
 
 Todas essas frontiers devem oferecer suporte à distribuição em várias máquinas. Elas devem oferecer suporte a rastreamentos contínuos e políticas flexíveis de politeness.
 
-*HTTP.* O rastreador deve vir com suporte embutido para HTTP (v. 1.1). Essa implementação HTTP deve suportar robot exclusions, mas também deve ser possível ignorar robot exclusions. Este módulo deve suportar a parametrização de cabeçalhos de saída (por exemplo, permitindo que o designer de rastreamento defina o User-Agent e outros campos de cabeçalho). Este módulo deve suportar o uso do cabeçalho if-modified-since do HTTP (e também suportar não usá-lo).
+*HTTP.* O rastreador deve vir com suporte embutido para HTTP (v. 1.1). Essa implementação HTTP deve suportar robot exclusions, mas também deve ser possível ignorar robot exclusions. Este módulo deve suportar a parametrização de headers de saída (por exemplo, permitindo que o designer de rastreamento defina o User-Agent e outros campos de header). Este módulo deve suportar o uso do header if-modified-since do HTTP (e também suportar não usá-lo).
 
 *Extração de links.* O rastreador deve conseguir extrair links de HTML e de objetos Flash. Em objetos HTML, ele deve fazer um "best effort" para extrair links do Javascript e outras linguagens de script.
 
@@ -4689,7 +4690,7 @@ Em termos gerais, esta é a principal capacidade que queremos adicionar nesta fa
 
 O objetivo dos rastreadores é visitar as páginas de um site não mais frequentemente do que cada intervalo mínimo de visita, mas não menos frequentemente do que o intervalo mínimo.
 
-A taxa real entre esses limites deve ser baseada nas taxas de mudança observadas - deduzidas a partir de conteúdo e cabeçalhos
+A taxa real entre esses limites deve ser baseada nas taxas de mudança observadas - deduzidas a partir de conteúdo e headers
 
 ### Cenário Alvo Concreto
 
