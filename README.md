@@ -4862,7 +4862,63 @@ A FetchChain é a mesma que a primeira parte da cadeia de processamento geral do
 
 Todas as etapas contidas na Disposition Chain devem ser feitas atomicamente em relação ao ponto de verificação. Normalmente, incluirá apenas dois processadores:
 
+* CandidatesProcessor: substitui o antigo LinksScoper e o FrontierScheduler, executando a candidates chain em cada URI descoberto e, em seguida, agendando (ou aplicando tratamento especial de seeds descobertas) para quaisquer URIs não cancelados por essa cadeia
+* DispositionProcessor: o CrawlStateUpdater renomeado, atualizando estatísticas, robots e preenchendo o CrawlURI com decisões/atrasos para a frontier consultar
 
+(Alguns rastreamentos podem querer mover gravações ARC/WARC para a disposition chain, se o risco de um pequeno número de gravações escritas duplicadas após a retomada do ponto de verificação for uma preocupação.)
+
+## Detalhes do Design do Heritrix Springified
+
+### Uso do Spring Core Container / Inversão-de-Controle
+
+Uma configuração de rastreamento é, agora, uma coleção de beans, especificada e inicializada no estilo Spring.
+
+Um arquivo de configuração do Spring, nomeado, por convenção, 'crawler-beans.xml' (em vez do usual Spring 'beans.xml') é a principal maneira de especificar um rastreamento. Como tal, substitui o order.xml do Heritrix 1.X e o global.sheet (e possivelmente outras planilhas) do Heritrix 2.0.
+
+Usar recursos do Spring para incluir outros arquivos de configuração por referência, a configuração pode, de fato, ser dividida em vários arquivos, incluindo arquivos padronizados reutilizados em vários rastreamentos (onde eles são idênticos).
+
+O container, por meio de uma subclasse Spring ApplicationContext personalizada especial, pode ser instanciado a qualquer momento, ou muitas vezes (descartando resultados provisórios) ao compor a configuração. Assim, é importante que os componentes não executem ações intensivas em recursos ou destrutivas durante a instanciação/iniciação simples.
+
+Em vez disso, a interface Spring 'Lifecycle' informa aos componentes quando começar (start), e é quando os recursos significativos devem ser alocados/abertos/mantidos (como grandes estruturas na memória, ambientes BDB, arquivos de disco).
+
+### Implementando sobreposições
+
+Todos os valores que podem ser sobrepostos terão acessores Java padrão (tipo bean), de seu tipo natural.
+
+Uma classe com valores substituíveis deve implementar a interface HasKeyedProperties; isso dá acesso a um mapa (do tipo KeyedProperties) que contém todos os valores de bean que podem ser sobr. O suporte para a interface HasKeyedProperties é tão simples quanto:
+
+```
+ KeyedProperties kp = new KeyedProperties();
+    public KeyedProperties getKeyedProperties() {
+        return kp;
+    }
+```
+
+Uma propriedade com capacidade de sobreposição deve ser armazenada e recuperada do KeyedProperties; qualquer inicialização pode ocorrer em um bloco inicializador estático. Por exemplo:
+
+```
+  {
+        setMinDelayMs(3000);
+    }
+    public int getMinDelayMs() {
+        return (Integer) kp.get("minDelayMs");
+    }
+    public void setMinDelayMs(int minDelay) {
+        kp.put("minDelayMs",minDelay);
+    }
+```
+
+Um bean de planilha é declarado na configuração para qualquer sobreposição desejada. Inclui um mapeamento de chaves de estilo string property-path (por exemplo, beanName.property.property) para valores de sobreposição. Um exemplo de planilha:
+
+```
+<bean id="eduSheet" class="org.archive.spring.Sheet">
+  <property name="overrideProperties">
+   <value>
+    frontier.minDelayMs=10000
+   </value>
+  </property>
+</bean>
+```
 
 
 
