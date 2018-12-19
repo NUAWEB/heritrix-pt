@@ -4299,7 +4299,7 @@ Se o seu projeto, instituição ou empresa usa o Heritrix, sinta-se à vontade p
 
 * Solução de problemas
 
-Rasteje antes de andar. - C. Darwin
+> Crawl before you walk. - C. Darwin
 
 ### Requisitos
 
@@ -4663,10 +4663,54 @@ Outras áreas de foco, no futuro, embora ainda não agendadas para versões espe
 
 * opções aprimoradas para rastrear sites de acesso controlado (senha/outra autenticação)
 
+## Visão Geral de (Re)Rastreamento Contínuo
+
+* Continuous Recrawling Overview
+     * Generic Scenario
 
 
+Generic Scenario
+Concrete Target Scenario
+Design Strategy
+Continuous Recrawling Phase A Design Notes
 
+Frontier Unbundling Design Details
+Springified Heritrix Design Details
+Streamlined Checkpointing Design Details
+Continuous Recrawling Phase B Design Notes
 
+Continuous Recrawling Phase C Design Notes
+
+### Cenário genérico
+
+Em termos gerais, esta é a principal capacidade que queremos adicionar nesta fase de 'rastreamento contínuo' do desenvolvimento do Smart Crawler.
+
+* capacidade de rastrear X mil sites (0 <X <100)
+* sites/URIs  divididos em grupos N (principalmente, por domínio; possivelmente, por URI-padrão/discovery-path /etc.)
+* cada grupo tem um intervalo mínimo de visita e intervalo de visita máximo nos destinos
+
+O objetivo dos rastreadores é visitar as páginas de um site não mais frequentemente do que cada intervalo mínimo de visita, mas não menos frequentemente do que o intervalo mínimo.
+
+A taxa real entre esses limites deve ser baseada nas taxas de mudança observadas - deduzidas a partir de conteúdo e cabeçalhos
+
+### Cenário Alvo Concreto
+
+O teste de rastreamento realístico e de vários meses que pretendemos como o uso principal (e o local de teste primário) do Rastreamento Contínuo será uma variante do cenário genérico com esses parâmetros adicionais:
+
+* 50K sites escolhidos: 45K 'gerais' e 5K 'intensos'
+* sites gerais: min-visita 1 semana max-visita 3 meses
+* sites intensos: min-visita 1 dia max-visita 1 mês
+* sobreposições: tipos de arquivos 'geralmente estáticos': min-visita 1 mês, max-visita 6 meses
+
+### Estratégia de design
+
+Pretendemos dividir o trabalho de design e implementação em três fases amplas e, de certa forma, sobrepostas:
+
+Os objetivos da fase A serão resolver as preocupações pendentes com o sistema de definições/configurações 2.x e aprimorar os pontos de verificação para suportar plausivelmente rastreamentos contínuos de duração arbitrária, mesmo que eles precisem reiniciar com um software significativamente atualizado. Essas mudanças culminarão no lançamento oficial 3.0. Notas sobre o design da fase A de Rastreamento Contínuo.
+
+Os objetivos da fase B serão adicionar novos recursos às filas Frontier, estrutura já conhecida, e armazenamento de histórico de URI para suportar vários tipos de rastreamento. Essas alterações aparecerão nas primeiras versões de teste do 3.2. Notas sobre o design da fase B de Rastreamento Contínuo.
+
+Os objetivos da fase C serão implementar um conjunto mínimo de políticas de revisão viáveis e acompanhar o trabalho da interface do usuário para dar suporte aos cenários de uso genéricos e concretos. Além disso, garantir a estabilidade do trabalho durante muitos meses de rastreamento, em combinação com os recursos anteriores da fase do Smart Crawler. Essas alterações estarão totalmente disponíveis na versão final 3.2. Notas sobre o design da fase C de Rastreamento Contínuo.
 
 
 
