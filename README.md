@@ -4762,7 +4762,7 @@ Problema: ferramenta de migração 1.x para 2.x
 * irá trabalhar por configurações simples; fornecerá lista de exceções de problemas que o operador precisa corrigir manualmente no final
 * estratégia geral: walk 1.x settings, find handler for that setting, build new XML
 
-Ver também: [Heritrix Springified (detalhes de design)] (https://github.com/internetarchive/heritrix3/wiki/Springified%20Heritrix%20Design%20Details)
+Ver também: [Detalhes do Design do Heritrix Springified] (https://github.com/internetarchive/heritrix3/wiki/Springified%20Heritrix%20Design%20Details)
 
 ### Ponto de verificação
 
@@ -4781,7 +4781,7 @@ Objetivo: ponto de verificação mais rápido, mais fácil e mais robusto
 * mover atividades que estão apenas copiando o processo externo do rastreador: ou seja, o ponto de verificação é, principalmente, um manifesto de arquivos para restaurar o rastreamento; cabe ao operador copiá-los em outro lugar, se desejar
 * componente de ponto de verificação opcional na configuração; se presente, todos os componentes devem restaurar a partir dele.
 
-Ver também: [Detalhes do design de ponto de verificação simplificado] (https://github.com/internetarchive/heritrix3/wiki/Streamlined%20Checkpointing%20Design%20Details)
+Ver também: [Detalhes do Design de Ponto de Verificação Simplificado] (https://github.com/internetarchive/heritrix3/wiki/Streamlined%20Checkpointing%20Design%20Details)
 
 ### Separação da Frontier
 
@@ -4795,4 +4795,75 @@ Objetivo: separar o máximo possível, de dentro da Frontier, em processadores i
       * atraso de cortesia
       * chave de fila
 * fronteira lançava erro se a orientação necessária não estivesse presente
+
+Ver também: [Detalhes do Design de Separação da Frontier] (https://github.com/internetarchive/heritrix3/wiki/Frontier%20Unbundling%20Design%20Details)
+
+## Detalhes do Design de Separação da Frontier
+
+## Análise Inicial
+
+### Cadeia de URI descoberto?
+
+Coisas que acontecem a um URI descoberto, atualmente:
+
+* regras de escopo são aplicadas - alguns URIs são rejeitados (LinksScoper)
+* URI enviado a Frontier para agendamento (FrontierScheduler)
+     * URI canonizado (entro da sincronização de frontier; bottleneck)
+     * Valor de precedência de URI atribuído (dentro da sincronização de frontier; bottleneck)
+     
+Pode haver outros bits de processamento/classificação que podem ocorrer em URIs descobertos mas ainda não buscados, portanto, configurar todas essas etapas em uma nova cadeia configurável faz sentido do ponto de vista da flexibilidade, from and offloading complexity from frontier standpoint, and decreasing serialized bottlenecks.
+
+### Políticas aplicadas a URIs sendo buscados
+
+Pode ser movido para um módulo de cadeia de processamento tardio:
+
+* a decisão de disposição (success, retry, failure) move-se para um módulo dispositiondecision no final da cadeia de processadores
+* atraso de cortesia passa para o módulo politenesspolicy na cadeia de processamento
+
+### Três Cadeias de Processamento
+
+Podemos refatorar a configuração de rastreamento para destacar três cadeias de processadores.
+
+Duas são, juntas, análogas ao ProcessorChain existente e se aplicam a URIs que saem da frontier. A primeira cadeia é a 'fetch chain' e inclui todas as etapas que podem ser abortadas/repetidas livremente no caso de pontos de verificação. A segunda cadeia é a 'disposition chain' e qualquer URI que inicie essa cadeia deve finalizá-la, com toda a mutação atendente de filas frontier e estatísticas totais, antes que um ponto de verificação seja tentado. Na disposition chain, o antigo CrawlStateUpdater foi renomeado para DispositionProcessor e, além de sua atualização anterior de robots/estatísticas, agora atualiza o CrawlURI com informações (como atrasos calculados de cortesia) para a consideração da frontier.
+
+A terceira cadeia toma o lugar das etapas que agora ocorrem em LinksScoper e FrontierScheduler e na frontier, para URIs que ainda não foram agendados para uma fila. Essa cadeia pode ser chamada de "candidates chain". Além do escopo, também prepara o CrawlURI com informações pré-calculadas para todas as decisões de frontier - permitindo que essas políticas sejam aplicadas em paralelo, fora dos bloqueios críticos de frontier/managerThread.
+
+### Candidate Chain
+
+A CandidateChain, geralmente, contém apenas dois processadores (embora mais possam ser adicionados):
+
+* CandidateScoper: aplica o escopo ao URI que está sendo processado, configurando seu fetchStatucomo s negativo, caso não deva ser agendado
+* FrontierPreparer:
+     * calcula a priorização de 'schedulingDirective'
+     * calcula o URI canonicalizado
+     * calcula a chave da fila de destino
+     * calcula o 'custo'
+     * calcula a precedência de URI, se houver
+     
+A Candidate Chain é aplicada a URIs:
+
+* descobertos durante o rastreamento
+
+O FrontierPreparer, no entanto, também está disponível diretamente para a Frontier para ajudar a preparar quaisquer URIs que (ainda) não passam pela CandidateChain, como seeds ou outros URIs adicionados de maneiras diferents no meio do rastreamento.
+
+A CandidateChain é aplicada a cada URI candidato por um novo processador, CandidatesProcessor, que substitui o LinksScoper e o FrontierScheduler.
+
+### Fetch Chain
+
+A FetchChain é a mesma que a primeira parte da cadeia de processamento geral do H1/H2. Inclui processadores que:
+
+* verificam o escopo novamente, se desejado
+* verificam/impõem condições prévias
+* tentam fazer buscas
+* fazem extração de link
+* gravam arquivos ARC/WARC
+
+### Disposition Chain
+
+Todas as etapas contidas na Disposition Chain devem ser feitas atomicamente em relação ao ponto de verificação. Normalmente, incluirá apenas dois processadores:
+
+
+
+
+
 
