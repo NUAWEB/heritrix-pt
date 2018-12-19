@@ -4920,6 +4920,37 @@ Um bean de planilha é declarado na configuração para qualquer sobreposição 
 </bean>
 ```
 
+Os mapeamentos de prefixos SURT para o nome da planilha a ser aplicada são, semelhantemente, um bean:
+
+```
+<bean id="overrideMappings" class="org.archive.spring.SurtToSheetMap">
+ <property name="map">
+   <map>
+    <entry key="http://(edu," value="eduSheet"/>
+   </map>
+  </property>
+```
+
+Uma instância de HesKeyedProperies, ou uma propriedade em si, não reconhece inerentemente seu nome de property-path completo. (Na verdade, pode ter vários desses nomes.) No entanto, antes que uma planilha possa ser usada, ela deve ser 'preparada'. Cada caminho dentro dela é interpretado em relação ao BeanFactory atual. Cada caminho deve resolver para uma propriedade de uma instância que implementa HasKeyedProperties; a instância KeyeProperties está, no momento da preparação, informada do nome do property-path.
+
+Aplicar uma planilha significa empurrá-la para uma pilha ThreadLocal mantida em um campo estático KeyedProperties. Instâncias de KeyedProperties consultam essa pilha de planilhas antes de retornar seu valor interno/padrão.
+
+Uma expressão usual para aplicar uma planilha incluiria operações push e pop emparelhadas. Por exemplo:
+
+```
+ try {
+  KeyedProperties.pushOverridesMaps(sheet);
+  // do stuff
+ } finally {
+  KeyedProperties .popOverridesMap(sheet);
+ }
+ ```
+ 
+Uma planilha será automaticamente iniciada na primeira vez que for pressionada. Push/pop incompatíveis irão gerar um evento de log SEVERE; provavelmente um bug sério.
+
+(Inicialmente, somente os mapeamentos de prefixos SURT para sobreposições serão permitidos, mas essa abordagem também deixa em aberto a possibilidade de que conjuntos de DecideRules possam ser usados para determinar se uma planilha de sobreposição deve ser aplicada a um URI específico. Ou, esse código personalizado pode aplicar uma planilha de substituição em qualquer ponto no processamento de URI.)
+
+
 
 
 
