@@ -4776,8 +4776,8 @@ Objetivo: ponto de verificação mais rápido, mais fácil e mais robusto
 
 * dividir o processamento de URI em duas fases: uma transitória (pode ser descartada enquanto a URI for repetida), e uma que altera estatísticas ou estruturas persistentes (que devem ser concluídas até a consistência antes que o ponto de verificação continue)
 * step right after laggy network fetch is threshold between phases
-* permitir a retenção de URIs após a busca (rastreador semi-pausado) para que o ponto de verificação possa ocorrer assim que todo o processamento de *needing-persistence* for concluído (mas sem esperar que todas as buscas sejam concluídas)
-* desenfatizar serialização; executar a maioria dos componentes salvando o estado em um formato de texto solto (JSON ou XML) para facilitar a restauração de código alterado ou a edição offline manual
+* permitir a retenção de URIs após a busca (rastreador semi-pausado) para que o ponto de verificação possa ocorrer assim que todo o processamento *needing-persistence* for concluído (mas sem esperar que todas as buscas sejam concluídas)
+* desenfatizar serialização; executar a maioria dos componentes salvando o estado em um formato de texto solto (JSON ou XML) para facilitar a restauração de código alterado ou a edição manual offline 
 * mover atividades que estão apenas copiando o processo externo do rastreador: ou seja, o ponto de verificação é, principalmente, um manifesto de arquivos para restaurar o rastreamento; cabe ao operador copiá-los em outro lugar, se desejar
 * componente de ponto de verificação opcional na configuração; se presente, todos os componentes devem restaurar a partir dele.
 
@@ -4949,6 +4949,37 @@ Uma expressão usual para aplicar uma planilha incluiria operações push e pop 
 Uma planilha será automaticamente iniciada na primeira vez que for pressionada. Push/pop incompatíveis irão gerar um evento de log SEVERE; provavelmente um bug sério.
 
 (Inicialmente, somente os mapeamentos de prefixos SURT para sobreposições serão permitidos, mas essa abordagem também deixa em aberto a possibilidade de que conjuntos de DecideRules possam ser usados para determinar se uma planilha de sobreposição deve ser aplicada a um URI específico. Ou, esse código personalizado pode aplicar uma planilha de substituição em qualquer ponto no processamento de URI.)
+
+## Detalhes simplificados de design de pontos de verificação
+
+## Objetivos
+
+### Evitar pausa completa e lenta
+
+* dividir o processamento de URI em duas fases: uma transitória (pode ser descartada enquanto a URI for repetida), e uma que altera estatísticas ou estruturas persistentes (que devem ser concluídas até a consistência antes que o ponto de verificação continue)
+* step right after laggy network fetch is threshold between phases
+* iniciar um ponto de verificação requer um bloqueio exclusivo em um *frontier-atomic-mutation-lock* que, geralmente, está disponível para vários encadeamentos
+* permitir a retenção de URIs após a busca (rastreador semi-pausado) para que o ponto de verificação possa ocorrer assim que todo o processamento *needing-persistence* for concluído (mas sem esperar que todas as buscas sejam concluídas)
+
+### Melhorar a velocidade
+
+* usar estruturas em disco que podem ser congeladas/marcadas, em vez de exigirem novas cópias. (por exemplo: um snapshot LVM)
+* mover tanto quanto simplesmente copiado o processo exterior do rastreador: o ponto de verificação é, principalmente, um manifesto de arquivos para restaurar o rastreamento; cabe ao operador copiá-los em outro lugar, se desejar
+
+### Melhore a robustez nas alterações de código
+
+* cada objeto é responsável pelo próprio ponto de verificação
+* desenfatizar serialização; executar a maioria dos componentes salvando o estado em um formato de texto solto (JSON ou XML) para facilitar a restauração de código alterado ou a edição manual offline
+* componente de ponto de verificação opcional na configuração; se presente, todos os componentes devem restaurar a partir dele
+* a fiação é transitória - sempre vem da configuração
+
+## Abordagem geral
+
+Cada componente do rastreador com estado possível de ponto de verificação implementará uma interface diferenciada que permita a solicitação do ponto de verificação de seu estado e uma propriedade startState (opcional).
+
+Quando um ponto de verificação é acionado/solicitado, ele gravará o estado do componente no local fornecido (possivelmente incluindo ponteiros para arquivos pré-existentes em andamento que fazem parte de seu estado).
+
+Quando um rastreamento é iniciado, se a propriedade startState estiver configurada, uma carga adicional do disco de seu estado será executada.
 
 
 
