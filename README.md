@@ -4981,6 +4981,40 @@ Quando um ponto de verificação é acionado/solicitado, ele gravará o estado d
 
 Quando um rastreamento é iniciado, se a propriedade startState estiver configurada, uma carga adicional do disco de seu estado será executada.
 
+## Notas de design da fase B de (re)rastreamento contínuo
+
+## Notas de design da fase B: Histórico de URI e Atualizações de Fila
+
+Idéia geral: expandir os recursos principais da Frontier padrão para que ela possa fazer revisits simplesmente por meio de orientações passadas de componentes externos opcionais.
+
+Objetivo: expandir opções da estrutura já incluída
+
+* mover-se para fora da frontier, se possível
+* implementar a versão de lista de fusão estilo Mercator
+* adicionar a opção para armazenar o histórico (ou pelo menos a fila/queueKey) na lista de fusão; permite acesso aleatório e eficiente a URIs enfileirados
+
+Objetivo: aprimorar os recursos de enfileiramento:
+
+* adicionar um WorkQueue de tipo DelayedQueue com suporte a disco/BDB que pode ser misturado com filas clássicas; só libera URIs em tempos *future* configurados
+* resolução do DelayWorkQueue intencionalmente bruta (~ dia) para evitar inserções aleatórias em todos os lugares
+* cada fila clássica se torna a fila 'ASAP' para o mesmo host/etc; uma fila opcional "future" pode ser adicionada
+* implementar um processo de exclusão mútua para filas relacionadas (mesmo domínio, mesmo IP) para impedir a emissão simultânea de URIs; adquirir permissões nomeadas, esperar que a permissão fique disponível (FIFO)
+* conciliar *budget-rotation* com precedência
+* fazer com que o *session-budets* cause promoção/rebaixamento de precedência em vez de "deactivation"; ou
+* avaliar a eliminação de *budgets* em favor de políticas de precedência mais sofisticadas e de grande alcance
+
+Objetivo: introduzir heurísticas/previsões de progresso da fila
+
+* coletar estatísticas de progresso nas taxas de descoberta e conclusão
+* criar estimativas confiáveis de tempo de conclusão de fila
+
+Objetivo: implementar uma política de *naive toy revisit*
+
+* intervalo de revisita fixo como teste de capacidades de fila/frontier
+
+A fase B provavelmente gerará uma versão inicial do teste de qualidade alfa de uma eventual versão 2.4.
+
+
 
 
 
