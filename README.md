@@ -5091,7 +5091,28 @@ Podemos testar a ferramenta com todas as nossas próprias configurações de ras
 
 Não é um objetivo dos componentes não utilizados nos rastreamentos IA fazer conversões sem problemas. (Não temos o conhecimento para avaliar a conversão.) Idealmente, o mecanismo baseado em pesquisa para mapear configurações antigas para novas configurações será flexível o suficiente para que, se os autores originais ou usuários frequentes dessas ferramentas ajudarem, ele possa cobrir esses componentes também. No entanto, pelo menos até que as correções sejam contribuídas, um *error* que explique essas partes da configuração 1.14 não traduzidas é suficiente.
 
+## Configurações de rastreamento Spring
+
+O Heritrix3 agora faz uso do 'Spring Container' (e seu formato de configuração baseado em XML) para montar um rastreamento executável, escolhendo entre implementações e valores alternativos de configurações compatíveis.
 
 
+Os desenvolvedores acharão útil revisar o capítulo da documentação de referência do Spring para aprender todas as opções fornecidas pelo container e pelo formato de configuração:
+
+[Spring Framework, Chapter 3: The IoC Container] (https://docs.spring.io/spring/docs/2.5.x/reference/beans.html)
+
+Algumas informações importantes para entender esse modelo são:
+
+1. Os aplicativos são grandes agrupamentos de componentes de colaboração e, geralmente, os componentes têm implementações alternativas e intercambiáveis. (No nosso caso, um trabalho de rastreamento executável, com configurações e opções escolhidas, é um aplicativo.)
+2. Os arquivos de configuração declaram todos os componentes participantes e, quando necessário, os valores iniciais da atribuição.
+3. O 'container' usa o(s) arquivo(s) de configuração, além de outras dicas derivadas dos próprios componentes (como tipos compatíveis e nomes de configurações), para montar todos os componentes com seu estado inicial e referências diretas aos seus colaboradores. Se um componente for necessário (conforme implícito por outros componentes), mas insuficientemente declarado, erros serão lançados.
+
+## Build Box
+
+Os builds do H1 e do H3 ocorrem automaticamente logo após novos commits em nosso sistema de build baseado em [Jenkins] (https://builds.archive.org:1443/). O link para o [Heritrix 3 (pacotes de distribuição)] (https://builds.archive.org:1443/job/Heritrix-3/lastBuild/org.archive.heritrix%24heritrix/) mostra os pacotes padrões distribuíveis de um build.
+
+Builds também são carregados no nosso repositório Maven2:
+
+http://builds.archive.org:8080/maven2/org/archive/heritrix/heritrix/
 
 
+Os nomes dos artefatos da versão de build de desenvolvimento começam com o número da versão que eles estão se aproximando e terminam com "-SNAPSHOT". Os produtos reais de build de desenvolvimento começam com o número da versão e incluem um registro de data e hora. Assim, por exemplo, a versão mais recente do build de desenvolvimento do H3, no momento desta publicação, aproximando-se de uma versão final do 3.1.0, é composta dos arquivos de último registro de data e hora disponíveis no diretório 3.1.0-SNAPSHOT.
