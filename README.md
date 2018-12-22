@@ -228,7 +228,7 @@ Além dos logs, os seguintes arquivos são gerados. Algumas das informações co
 
 surts.dump
 
-Contém os formulários ﻿SURTs das URIs seed.
+Contém os formatos SURTs dos seed URIs.
 
 negative-surts.dump
 
@@ -951,7 +951,7 @@ A maioria dos processadores de extração é pré-configurada no arquivo de conf
 
 ### Configurações de processador
 
-Os processadores têm configurações que efetuam rastreamentos. Cada processador pode ser ativado ou desativado. Se desativado, o Processador não será aplicado a nenhum URI. Os seguintes processadores possuem configurações padrão configuradas pelo Heritrix.
+Os processadores têm configurações que efetuam rastreamentos. Cada processador pode ser ativado ou desativado. Se desativado, o Processador não será aplicado a nenhum URI. Os seguintes processadores possuem configurações padrões configuradas pelo Heritrix.
 
 preparer
 
@@ -1664,7 +1664,7 @@ A configuração acima garante que as informações históricas de busca sejam r
 
 No processador FetchHTTP, as propriedades sendIfNoneMatch e sendIfModifiedSince controlam se os headers HTTP If-None-Match ou If-Modified-Since são enviados em uma solicitação se as informações do histórico de URI (data de obtenção prévia ou informações etag) para suportá-los estiverem presentes.
 
-Note que ao enviar estes headers, o motor de rastreio pode receber uma resposta '304-Not Modified' do servidor, sem corpo de conteúdo. Dessa maneira, outros URIs podem não ser descobertos e os caminhos seguidos pelo rastreamento original não são reconsiderados para a recriação. Assim, se você deixar *sendIfNoneMatch* e *sendIfModifiedSince* definidos como valores 'true' padrão em um rastreamento ativado para histórico de deduplicação, poderá usar outra técnica para garantir que todos os URIs dos rastreamentos anteriores sejam reconsiderados (como fornecer todos eles ao rastreador já no começo).
+Note que ao enviar estes headers, o motor de rastreio pode receber uma resposta '304-Not Modified' do servidor, sem corpo de conteúdo. Dessa maneira, outros URIs podem não ser descobertos e os caminhos seguidos pelo rastreamento original não são reconsiderados para a recriação. Assim, se você deixar *sendIfNoneMatch* e *sendIfModifiedSince* definidos como valores 'true' padrões em um rastreamento ativado para histórico de deduplicação, poderá usar outra técnica para garantir que todos os URIs dos rastreamentos anteriores sejam reconsiderados (como fornecer todos eles ao rastreador já no começo).
 
 Tanto o ARCWriterProcessor quanto o WARCWriterProcessor possuem uma propriedade *skipIdenticalDigests* que, por padrão, é "false". Se marcada como "true", qualquer busca cujo conteúdo tenha um valor digest idêntico ao da busca anterior será ignorada completamente para fins de gravação. Para o ARCWriterProcessor, isso significa que o registro ARC não será gravado e nada mais será gravado em seu lugar. Da mesma forma para o WARCWriterProcessor, nenhum registro de qualquer tipo será gravado. Apenas o crawl.log registrará que a busca ocorreu.
 
@@ -2286,7 +2286,7 @@ O escopo de rastreamento define o conjunto de possíveis URIs que podem ser capt
 
 Um URI sob consideração começa sem status definido. Cada regra é aplicada por vez ao URI candidato. Se a regra decidir ACCEPT ou REJECT, o status do URI será definido de acordo. Depois que todas as regras forem aplicadas, o URI será determinado como "no escopo" se seu status for ACCEPT. Se seu status for REJECT, ele será descartado.
 
-Sugerimos começar as regras com nossas configurações padrões recomendadas e realizar pequenos rastreamentos de teste. Com esses testes, tente entender porque certos URIs são determinados ou descartados sob essas configurações. Em seguida, faça pequenas alterações individuais no escopo para obter efeitos desejados que não sejam padrão. Criar um novo conjunto de regras a partir do zero pode ser difícil e pode facilmente resultar em rastreamentos que não podem fazer o progresso mínimo que outras partes do rastreador esperam. Da mesma forma, fazer muitas mudanças de uma só vez pode obscurecer a importância da interação e ordenação das regras.
+Sugerimos começar as regras com nossas configurações padrões recomendadas e realizar pequenos rastreamentos de teste. Com esses testes, tente entender porque certos URIs são determinados ou descartados sob essas configurações. Em seguida, faça pequenas alterações individuais no escopo para obter efeitos desejados que não sejam padrões. Criar um novo conjunto de regras a partir do zero pode ser difícil e pode facilmente resultar em rastreamentos que não podem fazer o progresso mínimo que outras partes do rastreador esperam. Da mesma forma, fazer muitas mudanças de uma só vez pode obscurecer a importância da interação e ordenação das regras.
 
 ### DecideRules
 
@@ -2649,7 +2649,7 @@ Os códigos de status do Heritrix também estão documentados no código-fonte (
 
 ## Planilhas (sheets)
 
-As planilhas fornecem a capacidade de substituir as configurações padrão por domínio. Planilhas são coleções de substituições. Contêm valores alternativos para propriedades de objetos que devem ser aplicados em determinados contextos. O destino é especificado como um caminho de propriedade arbitrariamente longo, que é uma string descrevendo como acessar a propriedade a partir de um beanName em um BeanFactory.
+As planilhas fornecem a capacidade de substituir as configurações padrões por domínio. Planilhas são coleções de substituições. Contêm valores alternativos para propriedades de objetos que devem ser aplicados em determinados contextos. O destino é especificado como um caminho de propriedade arbitrariamente longo, que é uma string descrevendo como acessar a propriedade a partir de um beanName em um BeanFactory.
 
 planilhas permitem que as configurações sejam sobrepostas com novos valores aplicados por domínios de nível superior (com, net, org, etc), por domínios de segundo nível (yahoo.com, archive.org, etc.), por subdomínios (crawler.archive. org, tech.groups.yahoo.com, etc.) e caminhos principais do URI (directory.google.com/Top/Computers/, etc.). Não há limite de tamanho do prefixo de domínio/caminho que especifica; a sintaxe de prefixos SURT é usada.
 
@@ -4132,7 +4132,7 @@ Os analisadores devem ter acesso aos resultados de todas as solicitações, não
 
 A extração de links é, obviamente, uma forma muito importante de processamento de documentos. Extensibilidade, nesse respeito, significa que deve ser fácil adicionar módulos para lidar com Javascript, Flash e outros tipos de mídia que tenham links incorporados.
 
-Outra forma de processamento de documentos é a eliminação de arquivos duplicados. Deve ser possível para o rastreador reconhecer, durante o rastreamento, que uma duplicata foi encontrada para que etapas especiais (mais eficientes) possam ser executadas. Qualquer tratamento especial de uma duplicata deve ser observado na saída do rastreador e passível de análise por ferramentas padrão. Deve ser possível variar a definição de "duplicate" usada (de muito restrito a muito amplo).
+Outra forma de processamento de documentos é a eliminação de arquivos duplicados. Deve ser possível para o rastreador reconhecer, durante o rastreamento, que uma duplicata foi encontrada para que etapas especiais (mais eficientes) possam ser executadas. Qualquer tratamento especial de uma duplicata deve ser observado na saída do rastreador e passível de análise por ferramentas padrões. Deve ser possível variar a definição de "duplicate" usada (de muito restrito a muito amplo).
 
 A saída (output) é outra forma importante de processamento de documentos. A saída do rastreador deve ser altamente configurável tanto na seleção dos dados a serem enviados quanto no formato em que são enviados. Embora um normalmente salve as páginas de um rastreamento, os rastreamentos geralmente são executados simplesmente para coletar recursos ou estatísticas. Nesses casos, as páginas em si não são armazenadas, em vez disso, os recursos e/ou estatísticas são extraídos no rastreador e armazenados diretamente no disco, reduzindo significativamente os requisitos de espaço em disco. O rastreador deve suportar esse tipo de saída.
 
@@ -4469,7 +4469,7 @@ Agora, um painel da web estará acessível na porta 9443 no mesmo host (obtenha 
 
 Clique no link **test_config**, depois no botão azul **build**, no topo da página. Deve dizer "Job Is Ready". Depois, clique no botão azul **launch**. Ele deve exibir uma sequência de strings de status depois de "Job Is Active": `NASCENT`, depois `PREPARING` e, em seguida, `PAUSED`. Clique no botão azul `unpause` para (finalmente!) iniciar o rastreamento. 
 
-A função de pausa (pause) depende das definições de configuração padrão como `True`:
+A função de pausa (pause) depende das definições de configuração padrões como `True`:
 
 ```
 <!-- <property name="pauseAtStart" value="true" /> -->
@@ -4652,9 +4652,9 @@ Outras áreas de foco, no futuro, embora ainda não agendadas para versões espe
 
 * melhorar a usabilidade e a documentação de recursos recém-adicionados (supressão de duplicação; priorização ajustável) em fluxos de trabalho típicos do operador
 
-* melhorar a cobertura de teste automatizada com rastreamento simulado, especialmente para configurações de recursos não padrão e execuções de teste mais longas e com maior desempenho
+* melhorar a cobertura de teste automatizada com rastreamento simulado, especialmente para configurações de recursos não padrões e execuções de teste mais longas e com maior desempenho
 
-* melhor rastreamento de conteúdo de vídeo da Web com configurações padrão
+* melhor rastreamento de conteúdo de vídeo da Web com configurações padrões
 
 * uma interface de serviços da Web como alternativa ao JMX para controle remoto do rastreador
 
@@ -4732,31 +4732,31 @@ Objetivo: mudar para uma configuração baseada no Spring 2.5
 * faz com que a configuração do rastreador encaixe em um modelo padrão para conectar componentes alternativos e fornecer valores de configuração
 * fornece um formato XML bem caracterizado para configuração
 
-Problema: suporte de sobreposições
+Questão: suporte de sobreposições
 
 * Escopos personalizados e retornos de chamadas do Spring devem permitir a inserção de um nível extra de indireção (wrapper) em componentes e valores primitivos
 
 * A resolução de valores/componentes seria adiada para o tempo de execução, e a consulta de sobreposições de mapeamentos aconteceria primeiro
 
-Problema: configuração arquivável
+Questão: configuração arquivável
 
 * mapeamentos e valores sobrepostos alternativos também seriam especificados no modelo/sintaxe Spring
 * podem ser incluídos no arquivo de configuração principal; outros podem ser incluídos por referência
 * resultado: configuração de qualquer complexidade *pode* ser representada como um único arquivo grande - muito fácil de arquivar 
 * ou, pode ser representada como uma coleção de arquivos relacionados, a maioria dos quais são componentes padronizados reutilizados por um longo período
 
-Problema: mudança de definições no meio do rastreamento
+Questão: mudança de definições no meio do rastreamento
 
 * será possível, mas por manipulação direta de beans do componente do rastreador
 * implicação: a configuração inicial precisará ser alterada manualmente e separadamente
 * para investigar: maneiras de tornar isso mais fácil/menos propenso a erros
 
-Problema: interface do usuário para compor a configuração do Spring
+Questão: interface do usuário para compor a configuração do Spring
 
 * oferecer edição de texto com opção de validação de formato/dependência
 * oferecer modos de edição guiados (campos com texto de ajuda, XML como modelo)
 
-Problema: ferramenta de migração 1.x para 2.x
+Questão: ferramenta de migração 1.x para 2.x
 
 * irá aguardar até que as configurações Spring-ified estejam prontas
 * irá trabalhar por configurações simples; fornecerá lista de exceções de problemas que o operador precisa corrigir manualmente no final
@@ -5014,6 +5014,82 @@ Objetivo: implementar uma política de *naive toy revisit*
 
 A fase B provavelmente gerará uma versão inicial do teste de qualidade alfa de uma eventual versão 2.4.
 
+## Notas de design da fase C de (re)rastreamento contínuo
+
+## Notas de design da face C: Definições e atualizações de ponto de verificação
+
+A fase C é a implementação e o teste, por meio de um rastreamento realista, de heurísticas de *revisit* mais sofisticadas.
+
+Objetivo: implementar agendamento de *revisit* mais inteligente
+
+* permitir diferentes tempos mínimos e máximos de *revisit* para sites diferentes e padrões de URL
+* implementar crescimento/decaimento exponencial simples em reação à mudança observada
+* implementar heurísticas baseadas em cabeçalho HTTP adicionais
+
+Questão: Monitoramento do progresso/cobertura e ajustes do operador
+
+* estender a análise dinâmica da fila para fornecer avisos caso as taxas de visitação desejadas forem inatingíveis
+* adicionar interface do usuário para visualizar as taxas de progresso da fila/tempos de conclusão esperados
+* fornecer operações de edição/reprogramação de filas em massa
+
+Objetivo: executar 'cenário concreto' por mais 3 meses
+
+* usar para avaliar desempenho e usabilidade
+
+## Ferramenta de conversão de configurações 1.x (objetivo)
+
+* Crawl Order
+* Definições
+* Escopo de rastreamento
+* Diretórios
+* De sobreposições para H3 Overlays
+* Tarefas concluídas
+* Teste e falha 
+* Metas e não-metas
+
+Nota: o objetivo agora é oferecer uma ferramenta que tenha configurações que funcionem no 1.14.3 e as converta em 3.0.
+
+### Crawl Order
+
+Deve ser bem direto ao ponto. As configurações que passaram pela maioria das alterações no H3 foram as melhor estruturadas no 1.14 order.xml, nas configurações de CrawlOrder e nas configurações do CrawlController. Ao criar um modelo H3 para as migrações 1.14,  mover as configurações de CrawlOrder e CrawlController, por meio de um mapeamento simples, deve ser trivial.
+
+(Uma grande tabela de mapeamento de porções 1.14 order.xml para editar, que deve ser feita para um modelo H3 inicial, pode ser suficiente para lidar com quase todos os pedidos simples.)
+
+### Definições
+
+Os nomes das definições de módulo foram alterados, mas de maneira simples e fácil de entender. (Por exemplo, de traços para camelCase.) Muitas configurações novas foram adicionadas, mas quase todas são configurações "autowire" para atrair outros beans singleton. Se o modelo de migração incluir beans padrões adequados, as novas configurações não deverão causar/ter problemas.
+
+Os nomes dos pacotes das classes de módulos mudaram significativamente, mas de maneira quase algorítmica. Acho que devemos usar arquivos de propriedades externos para definir mapeamentos de nomes 1.x para nomes 3.x e permitir que os usuários finais especifiquem mapeamentos adicionais no caso de não notarmos algo.
+
+### Escopo de rastreamento
+
+Uma área de preocupação é a classe CrawlScope e suas subclasses, que não existem mais em 3.x. Foi substituído por um DecideRuleSequence genérico, que não pode ter status primário. Podemos criar conjuntos padrões de regras de decisão que se aproximam do comportamento das subclasses legadas do CrawlScope.
+
+### Diretórios
+
+O Heritrix 3 está mais próximo da abordagem 1.x, com várias camadas de relatividade, do que o Heritrix 2. Uma simples cópia de caminhos padrões para as novas configurações análogas pode ser suficiente.
+
+### De sobreposições para H3 Overlays
+
+A migração de sobresições da 1.14 para o H3 apresenta alguns desafios. Na versão 1.14, cada combinação de host/domínio + configuração tinha seu próprio arquivo. Em H3, queremos agregar valores de configuração semelhantes em planilhas e, em seguida, colocar o(s) host/domínios em associações para essa planilha. É um processo simples, supondo que podemos guardar tudo na memória, mas teremos que criar algum algoritmo sensato para nomear as planilhas criadas, já que as sobreposições 1.14 não têm nomes.
+
+As opções do H3 para sobreposições de listas, mapas e módulos devem ser um superconjunto do que era possível na 1.14, mas devemos verificar isso novamente.
+
+### Tarefas concluídas
+
+Pode haver preocupação sobre como a ferramenta de migração deve lidar com tarefas concluídas. Elas devem migrar? Os seeds, relatórios, etc. devem ser migrados? Devemos copiar diretórios de estado e arquivos arc do diretório 1.x para o diretório H3? Inicialmente, a ferramenta só deve trazer informações de configuração - de modo que um rastreamento idêntico (na medida do possível) possa ser repetido no H3. A ferramente só deve ser expandida se surgir a necessidade urgente de converter outras porções de tarefas concluídas.
+
+### Teste e falha
+
+Podemos testar a ferramenta com todas as nossas próprias configurações de rastreamento, mas, provavelmente, haverá casos que não encontraremos nesses testes. Não está claro como os erros de conversão devem ser tratados. Poderíamos apenas incluir configurações defeituosas nos arquivos da planilha de saída; a interface do usuário da web "reclamaria" sobre essas configurações e, esperamos, facilitaria a intervenção humana. Também poderíamos registrar todas as partes do order.xml/settings.xml que não resultam em uma conversão de fórmulas. (Mesmo os que o fazem podem exigir um aviso de log que o comportamento não é idêntico.)
+
+# Metas não-metas
+
+É uma meta para qualquer rastreamento com base nos padrões do pacote 1.14.x, incluindo apenas alterações superficiais (alterações em Strings/valores primitivos ou adição/remoção de componentes opcionais comumente usados) fazer conversões sem problemas.
+
+É uma meta para todas as configurações usadas em rastreamentos IA ativos - incluindo rastreamentos de contrato, rastreamentos de domínio nat'l e rastreamentos Archive-It - para fazer conversões sem problemas ou com apenas problemas triviais que são fáceis de corrigir manualmente.
+
+Não é um objetivo dos componentes não utilizados nos rastreamentos IA fazer conversões sem problemas. (Não temos o conhecimento para avaliar a conversão.) Idealmente, o mecanismo baseado em pesquisa para mapear configurações antigas para novas configurações será flexível o suficiente para que, se os autores originais ou usuários frequentes dessas ferramentas ajudarem, ele possa cobrir esses componentes também. No entanto, pelo menos até que as correções sejam contribuídas, um *error* que explique essas partes da configuração 1.14 não traduzidas é suficiente.
 
 
 
