@@ -5116,3 +5116,181 @@ http://builds.archive.org:8080/maven2/org/archive/heritrix/heritrix/
 
 
 Os nomes dos artefatos da versão de build de desenvolvimento começam com o número da versão que eles estão se aproximando e terminam com "-SNAPSHOT". Os produtos reais de build de desenvolvimento começam com o número da versão e incluem um registro de data e hora. Assim, por exemplo, a versão mais recente do build de desenvolvimento do H3, no momento desta publicação, aproximando-se de uma versão final do 3.1.0, é composta dos arquivos de último registro de data e hora disponíveis no diretório 3.1.0-SNAPSHOT.
+
+## Refatorações potenciais de limpeza
+
+### org.archive.util org.archive.crawler.util
+
+* unir as classes *util* pequenas em um número menor de classes maiores?
+* precisamos de ambos org.archive.util.IoUtils e org.archive.crawler.util.IoUtils?
+* precisamos de IoUtils e FileUtils separados?
+* o pacote deve ser reduzido ou dividido em subpacotes?
+     * mover *blooms* para um subpacote?
+     * mover classe SURT para um pacote relacionado a URI?
+
+### ALists e estruturas genéricas de dados - JSON?
+
+O CrawlURI precisa de uma estrutura de dados serializável, genérica e flexível para marcação arbitrária por extensões pouco coordenadas. Isso tem sido AList, mas nosso desconforto com isso nos levou a preterir os acessores diretos ainda úteis.
+
+### Ideias de limpeza do S
+
+* avaliar para refatorar todas as classes com >1000 linhas?
+
+### Diversos
+
+* depreciar SupplementaryLinksScoper - incluído pelos mapeadores, o log principal do LinksScoper?
+* conciliar as convenções dash-underscore_CamelCase?
+
+### Contra o toString() significativo
+
+Em alguns lugares (especificamente em torno das classes UURI/CrawlURI) nós sobrepomos o Object.toString () para retornar uma representação mais 'nua' de um objeto, e então contamos com toString() para funcionalidade.
+
+Infelizmente, dada a função especial de toString() como *string-ification* padrão de qualquer objeto e uso através de logs/interfaces de depuração, isso oculta informações úteis - como a classe de alguma coisa que relate um URI toString().
+
+Eu preferiria que qualquer versão de seqüência (string-version) de caracteres significativa de um objeto fosse acessada por outros métodos, retendo o toString() em sua implementação padrão ou alguma outra renderização centrada em depuração, que pudesse ser ajustada destemidamente sem afetar a funcionalidade do aplicativo.
+
+### Banir todas as dependências de JS da interface do usuário da web
+
+OK usar o JS, mas não deve ser necessário para a utilização da interface do usuário 
+
+### Generalizar o rastreamento de estatísticas (stats-tracking)
+
+Permitir contagens (e taxas?) de quantidades nomeadas genericamente, não apenas o conjunto estático de valores definidos em métodos de interface
+
+## Brainstorming de direções para o futuro
+
+Algumas ideias para mudanças futuras no rastreador.
+
+### Cadeias de processador (Processor Chains)
+
+A forma de agrupamento atual, por função (prefetch, fetch, extract, etc.), é um pouco restrito, especialmente quando um processador pode ser usado em vários locais ou vários processadores precisam trabalhar juntos.
+
+A cadeia do processadores poderia ser substituída por *hooks* e *callbacks*? Poderia haver uma série de *callbacks* de chamada estabelecidos: start earlyPrereqs, latPreReqs, earlyFetch, lateFetch, earlyAnalysis, middleAnalysis, lateAnalysis, earlyFinish, lateFinish end. Um módulo poderia se conectar em vários lugares - desse modo, não teríamos que usar muitos Processadores pequenos para funcionalidades simples. Por padrão, os módulos se conectariam em locais razoáveis, mas isso poderia ser substituído por operadores especialistas.
+
+Como alternativa, a cadeia de processadores pode ser unida em uma só cadeia, mas, talvez, ter classificações consultivas - seja números inteiros sugestivos de posição relativa ou uma série de pré-condições/pós-condições recomendadas, como "não dev ir atrás de nenhum *Fetch processor*".
+
+### Cadeia/escopo pré-programados vs. alreadyIncluded
+
+Um teste feito por escopo e alreadyIncluded pode ser mesclado no mesmo processo? Atualmente, fazemos o escopo primeiro e depois testamos o alreadyIncluded; em teoria, o escopo é mais barato (nunca requer ES), mas rastreamentos futuros podem se beneficiar do contrário, ou certos mecanismos eficientes do alreadyIncluded poderiam tornar a rejeição de um URI comumente encontrado mais barato do que o escopo.
+
+## Novas definições para a interface de usuário baseada na web
+
+(Brainstorming feito por Paul, Michael Magin, Vinay, and Gordon em 27 de abril)
+
+A interface do usuário refeita para operar nas novas configurações provavelmente terá uma área para compor 'planilhas' e outra para atribuição de prefixos URIs/SURT às planilhas.
+
+(Gordon questionou: pode haver mais de uma planilha de 'padrões globais', seja como um pacote ou uma substituição de prefixo vazio?)
+
+Alguns problemas com as configurações atuais da interface do usuário da web incluem:
+
+* as sobreposições às vezes não funcionam como esperado, não tendo efeito ou (em um momento, bug provavelmente corrigido) alterando as configurações globais
+
+* não está claro o que pode ser alterado de forma efetiva no meio do rastreamento e se é necessário pausar para fazer isso. Podemos documentar/impor isso melhor?  Can we make all changes 'safe' either via some way of holding settings constant for a thread until a moment to safely atomically change is possible?
+
+Embora as substituições mapeadas com prefixo SURT sejam um superconjunto da funcionalidade atual, a conveniência de ainda poder inserir um nome de host simples deve ser mantida.
+
+Visualizar/editar a frontier parece útil, mas não é útil/eficiente em escala - isso pode ser corrigido?
+
+Existe uma maneira de testar de forma interativa quais configurações se aplicariam a um URI na interface do usuário? (O mesmo vale para escopos.)
+
+Relatório de frontier é frequentemente usado, mas não é o formato ideal para tarefas comuns. Uma classificação por tamanho de fila (ou outras características salientes) ajudaria. Muitas vezes, é difícil visualizar URIs longos (logo os mais interessantes para a avaliação de armadilhas). Cor/tamanho pode ser usado para destacar dados importantes que precisam de atenção? O relatório de seeds - erros no topo, URIs clicáveis - é um modelo bom.
+
+Cross-links de relatórios para exibições *regex-filtered* de logs foram, algumas vezes, interrompidos no passado.
+
+O crawl.log pode receber destaque de sintaxe ou ser clicável?
+
+Bugs/defeitos/incomodações/comportamentos inesperados em UIs antigas e novas devem ser reportados de forma rápida e generalizada ao rastreamento de bugs. 
+
+### Lista de desejo de documentação
+
+* Revisar/corrigir/atualizar o Manual do Usuário 1.X através de alterações da 1.14.0
+* Converter o manual do usuário 1.X em páginas wiki
+* Rever/corrigir/atualizar o manual do usuário 1.X para 2.0+
+
+## Detecção de Spam da Web para o Heritrix
+
+### Detecção de Spam da Web para o Heritrix
+
+[Este projeto] (https://code.google.com/soc/2008/intarch/appinfo.html?csaid=F6D044FD6B4943FF) é um dos quatro projetos orientados pelo [Internet Archive] (http://www.archive.org/index.php) no [Google Summer of Code 2008] (http://code.google.com/soc/2008/).
+
+### Introdução
+
+Spam na Web é um grande problema para o mecanismo de pesquisa atual. Alguns sites de spam não contêm informações úteis. Rastrear esses sites é apenas um desperdício de tempo, esforço e espaço de armazenamento. O Heritrix não é, primeiramente, um rastreador de mecanismo de pesquisa, então não tem tanto problema conter um pouco de spam. No entanto, atualmente, o spam na Web utiliza muito dos recursos, proporcionalmente, portanto, é necessário que o Heritrix consiga detectar spam durante o rastreamento.
+
+Hoje em dia, sites de spam têm empregado todos os tipos de técnicas a fim de obter classificações mais elevadas do que merecem e esconder suas identidades. Essas técnicas podem ser categorizadas como *boosting* ou *hiding* [1]. Embora spam de conteúdo e link seja a técnica de *boosting* mais amplamente utilizada, redirecionamento (redirection) e camuflagem (cloaking) são técnicas *hiding*. Ao mesmo tempo, muitas técnicas de detecção de spam na Web foram propostas na literatura. Algumas delas usam recursos como a estrutura de hiperlinks entre páginas e os registros DNS de hosts, e alguns métodos baseados em conteúdo precisam de estágio de treinamento antes da detecção.  Eles não se encaixam bem na detecção de spam do Heritrix (já que o Heritrix não é um mecanismo de busca) e nas análises complexas feitas rapidamente (como analisar a estrutura de hiperlinks) e o conteúdo da página aumentaria a sobrecarga e afetaria sua funcionalidade principal - rastreamento de sites. Propomos, então, nos concentrar na detecção de spam baseado em redirecionamento e camuflagem por dois motivos: (1) Essas duas técnicas de spam são predominantes, atualmente. (2). As abordagens de detecção discutidas na próxima seção são simples e eficazes e causam menos sobrecarga. 
+
+
+Além disso, há outro motivo pelo qual este projeto é de interesse para a comunidade Heritrix. Como discutiremos na seção de metodologia, para detectar spam de redirecionamento de JavaScript e spam baseado em camuflagem, é necessário o recurso de execução de JavaScript, e esse recurso também ajudará a descobrir links externos legítimos de uma página da web.
+
+### Metodologia
+
+Nesta seção, explicamos brevemente as técnicas de redirecionamento de JavaScript e as técnicas cloaking de spam, juntamente com as abordagens de detecção correspondentes. Essas abordagens de detecção discutidas aqui foram propostas em [1, 3]. Para mais informações, consulte esses documentos.
+
+**Redirecionamente de JavaScript**
+
+Os spammers geralmente criam um número de páginas da web que serão redirecionadas para o site verdadeiro de spam. O redirecionamento pode ser obtido usando códigos de status HTTP, atualização META e JavaScript. O redirecionamento de JavaScript é amplamente usado em spam na web e é difícil de ser detectado por análise estática. O exemplo a seguir é um algoritmo simples para detectar o redirecionamento de JavaScript, se um navegador for usado.
+
+Carregue a página da Web duas vezes com o JavaScript ativado e desativado;
+se DstURL(E) = OrgURL, então
+  Sem redirecionamento;
+se DstURL(E) != DstURL(D) então
+  redirecionamento de JavaScript;
+outro
+  sem redirecionamento de JavaScript;
+  
+OrgURL, DstURL (E) e DstURL (D) representam o URL original, o URL de destino com JavaScript ativado e o URL de destino com o JavaScript desativado, respectivamente.
+
+No entanto, não precisamos carregar a página duas vezes, porque podemos saber se existe redirecionamento de JavaScript avaliando o código JavaScript na página durante a análise. Portanto, o que precisamos fazer é:
+Etapa 1: carregar a página;
+Etapa 2: analisar a página com o JavaScript ativado;
+Etapa 3: se o redirecionamento de JavaScript existir
+                  marque a página e tome as ações correspondentes;
+             ou
+                  continue o processo normal;
+
+Na Etapa 3, após a detecção do redirecionamento de JavaScript OrgURL => DstURL (E), algumas regras simples podem ser aplicadas para excluir casos de redirecionamentos comuns de não-spam, por exemplo:
+
+* www2007.com => www.2007.com/;
+* www2007.com => www.2007.com/{index, default, ...}.{htm, html, asp, aspx, php, ...};
+* Redirecionamento dentro do mesmo host.
+  O restante dos redirecionamentos é considerado como spam de redirecionamento de JavaScript.
+  
+Claro que haverá falsos positivos. Para ser mais preciso, a investigação manual ou outras detecções de spam da Web podem ser aplicadas off-line.
+
+### Cloaking
+
+A ideia básica do *cloaking* é de servir conteúdo diferente para diferentes visitantes. O servidor da Web pode decidir qual página da Web será exibida com base no campo User Agent, endereços IP do visitante, etc. As páginas da Web podem conter scripts que reescreverão o conteúdo, de modo que os usuários verão conteúdo reconfigurado usando um navegador da Web, mas um rastreador talvez não consiga ver a mesma coisa, porque, normalmente, a maioria dos rastreadores não executa scripts.
+
+*Click-through cloaking* (cloaking através de cliques) é outra técnica de cloaking. Pode ser no lado do servidor ou no lado do cliente. Uma verificação do lado do servidor do campo Referer no cabeçalho HTTP é feita se o spammer possuir o site que hospeda o URL de spam; se a URL de spam for localizada em um site de hospedagem gratuita, uma verificação do lado do cliente do objeto document.referrer do navegador é realizada e, em seguida, com base no resultado, páginas diferentes são exibidas pelo servidor de hospedagem do site (primeiro caso) ou exibidas usando o documento .write () (segundo caso).
+
+Portanto, podemos detectar sites de spam baseados em *click-through cloaking* da seguinte maneira, o que também exige que o rastreador possa interpretar os scripts:
+
+Primeiro passo. Primeira visita - acesse o site na forma normal do mecanismo de busca e obtenha o conteúdo do conteúdo da página (engine);
+Segundo passo. Segunda visita - faça com que o acesso pareça vir de um click-through de pesquisa para verificações de referência do lado do servidor e do lado do cliente e obtenha o conteúdo do conteúdo da página (click-through);
+Etapa 3. Compare a diferença de conteúdo entre as duas visitas diff(content(engine) e content(click-through)). Se houver uma grande diferença, esse site é altamente suspeito de ser um site de spam e mais investigações precisam ser feitas, caso contrário, classifique-o como benigno.
+
+Neste projeto, nos concentramos em detectar o *click-through cloaking*.
+               
+### Bibliotecas de terceiros
+
+**1. Mecanismo JavaScript incorporado**
+
+Como é discutido na seção de metodologia, ambas as abordagens de detecção para spam da Web baseado em cloaking e redirecionamento de JavaScript exigem que um rastreador da Web possa executar código JavaScript inlined/external.
+
+Rhino [4] é um mecanismo JavaScript de código aberto escrito em Java sob o MPL 1.1/GPL 2.0. Vamos incorporá-lo no Heritrix.
+
+**2. Analisador sintático de HTML**
+
+Para executar o código JavaScript em uma página da Web, um mecanismo JavaScript incorporado não é suficiente, precisamos obter todos os objetos e atributos associados a ele de uma página da Web. Em outras palavras, precisamos de um analisador sintático de HTML capaz de analisar documentos HTML e gerar o HTML Document Object Model (HTML DOM).
+
+Cobra[5] é um renderizador e analisador sintático de HTML escrito exclusivamente em Java. Seu analisador é capaz de gerar matrizes HTML DOM. O Cobra incorpora o Rhino JavaScript Engine, de tal forma que durante a análise, o código JavaScript inline e extenal pode ser executado e a modificação correspondente no DOM feita por esse código será refletida no DOM resultante.
+
+Neste projeto, escolhemos usar o Cobra como analisador sintático de HTML e também utilizaremos sua capacidade de executar código JavaScript com a ajuda do Rhino.
+
+
+
+
+
+
+
+Existe um lugar para uma cadeia de 'pré-agendamento' que todas as URIs descobertas sejam alimentadas?
