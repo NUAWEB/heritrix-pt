@@ -5287,6 +5287,128 @@ Cobra[5] é um renderizador e analisador sintático de HTML escrito exclusivamen
 
 Neste projeto, escolhemos usar o Cobra como analisador sintático de HTML e também utilizaremos sua capacidade de executar código JavaScript com a ajuda do Rhino.
 
+## Guia de estilo
+
+Essa seção wiki serve como guia de estilo de codificação e interação/processo de interface do usuário para o projeto Heritrix e projetos de arquivamento da Web de código-fonte aberto relacionados.
+
+A orientação pode, ocasionalmente, ser contraditória enquanto os tópicos estão sendo discutidos; alternativas conflitantes devem ser bem descritas (com argumentos de apoio e precedentes) para auxiliar o progresso rumo a uma expressão consensual/canônica.
+
+### Outras autoridades
+
+Referências úteis:
+
+* [Code Conventions for the Java Programming Language] (https://www.oracle.com/technetwork/java/codeconvtoc-136057.html) do Sun
+* [Java Programming Style Guidelines] (https://petroware.no/javastyle.html) do Geosoft 
+
+Na ausência de orientações ao contrário abaixo, as recomendações nas fontes acima podem ser sempre seguidas.
+
+### Estilo de código
+
+(Alguns tópicos retirados do [Manual de Desenvolvedor Heritrix 1.X] (http://crawler.archive.org/articles/developer_manual/conventions.html))
+
+* Use espaços, não guias. As guias não devem aparecer no código-fonte do projeto.
+* Recuo de 4 espaços por nível.
+* Coloque o colchete de abertura de um bloco de código na mesma linha que a declaração/teste esperando o bloco.
+* Use colchetes mesmo quando uma ramificação/bloco for apenas uma única linha de código (para fornecer uma sugestão visual adicional e para robustez, se outras linhas forem adicionadas posteriormente).
+* Prefer longs over ints anywhere a large count of artifacts or large-sized file/range is possible.
+* Prefira 'protected' em vez de 'private', a menos que uma consideração do uso de subclasses em potencial sugira que o acesso direto é perigoso.
+* (Desvio das recomendações do Sun) É permissível declarar as variáveis locais o mais próximo possível do primeiro uso (ao contrário de declarar no início do bloqueio).
+* (Desvio de algumas recomendações) Os retornos antecipados e múltiplos dos métodos são encorajados a minimizar os níveis de indentação e a lidar com casos simples ou de erro rapidamente.
+* Todas as classes e métodos públicos devem ter comentários do Javadoc. Veja o [guia de estilo do Sun para Javadoc] (https://www.oracle.com/technetwork/java/index.html#styleguide) para dicas sobre bons comentários em Javadoc.
+* Evite capturas amplas (de todas Exception ou todas Throwable) sempre que possível. (Exceto testes de código e situações de *all-or-nothing*.)
+* [Preserve toString()] (https://www.oracle.com/technetwork/java/index.html#styleguide)
+
+### Estilo de interação
+
+* [Utilizável em Lynx] (https://github.com/internetarchive/heritrix3/wiki/Usable%20in%20Lynx)
+* Recarregável (https://github.com/internetarchive/heritrix3/wiki/Reloadable)
+* Use pontos de exclamação e ALL-CAPS com moderação. (A maioria dos avisos, erros ou outros relatórios de falhas não precisam dessa ênfase.)
+
+### Estilo de desenvolvimento
+
+* [Emitir as melhores práticas] (https://github.com/internetarchive/heritrix3/wiki/Issue%20best%20practices)
+* [Cometer as melhores práticas] (https://github.com/internetarchive/heritrix3/wiki/Commit%20best%20practices)
+
+## Cometa as melhores práticas
+
+### especificar problema, arquivos modificados e resumo
+
+* especifique o número e o título do problema relacionado
+* (opcional) preceda a primeira linha com "Fix for" ou algo parecido
+* especifique o arquivo de origem alterado, precedido por *
+* resumir as alterações para cada arquivo de origem, precedido (geralmente) por 4 espaços
+
+por exemplo, changeset r6912
+
+```
+[HER-1796] H3: interval rescheduling becomes erratic after URI rescheduled more than maxRetries times
+* CrawlURI.java
+    improve comments for fetchAttempts methods
+    (resetForRescheduling) added to clear per-scheduling state
+* WorkQueueFrontier.java
+    call resetForRescheduling just before scheduling-at-specific-time
+* FrontierJournal.java, AbstractFrontier.java
+    renamings: prefer 'reenqueue' instead of 'reschedule' for describing simple (non-timed) retries
+```
+
+## Emita as melhores práticas
+
+### inclua o número de revisão ao colar os comentários commit nos problemas
+
+Isso facilita a revisão de alterações no FishEye e, em algum momento (talvez), os conjuntos de alterações podem ser [vinculados automaticamente] (http://confluence.atlassian.com/display/JIRASTUDIO/Creating+Links) ao usar o formato apropriado. Aqui está um bom exemplo do [HER-1760] (https://webarchive.jira.com/browse/HER-1760):
+
+```
+Noah Levitt added a comment - 2010-07-21 02:04
+Committed possible fix suggested by Gordon. 
+
+------------------------------------------------------------------------ 
+r6919 | nlevitt | 2010-07-20 19:03:30 -0700 (Tue, 20 Jul 2010) | 6 lines 
+Changed paths: 
+   M /trunk/heritrix/src/java/org/archive/crawler/admin/CrawlJobHandler.java 
+
+Possible fix from Gordon for [HER-1760] deadlock starting new job 
+* CrawlJobHandler.java 
+    terminateCurrentJob() - if startingNextJob thread exists, wait for it to 
+    finish, to avoid competing for the lock on 
+    CrawlController.registeredCrawlStatusListeners 
+```
+
+No [comentário do problema] (https://webarchive.jira.com/browse/HER-1760?focusedCommentId=25196&page=com.atlassian.jira.plugin.system.issuetabpanels%3Acomment-tabpanel#action_25196), "r6919" poderia/deveria estar vinculado ao conjunto de alterações FishEye, pois está, atualmente, nesta página da wiki.
+
+## Preservar toString()
+
+(Na verdade, somos muito ruins a esse respeito.)
+
+O método toString tem um papel especial na descrição de objetos, inclusive em contextos de especialistas/desenvolvedores /depuração. Ao sobrepor toString (), deve ser melhor descrever o objeto e evitar que um objeto se pareça com objetos de outros tipos. Em particular, a forma de toString () não deve ser nem simplificada nem estendida de maneira que outro código esteja dependendo da análise para entregar a funcionalidade.
+
+Em alguns lugares (especificamente em torno das classes UURI/CrawlURI) nós sobrepomos o Object.toString () para retornar uma representação mais 'nua' de um objeto, e então contamos com toString() para funcionalidade.
+
+Infelizmente,  isso oculta informações úteis - como a classe de alguma coisa que relate um URI toString().
+
+Se um objeto precisar de uma sequência de exibição de usuário leigo, um método para essa finalidade específica (por exemplo, 'toDisplayString') deve ser usado. Se um objeto precisar de uma representação de Cadeia de caracteres funcionalmente importante, digamos reduzida a um formato com sua própria lógica e talvez apenas interpretável com contexto extra, outro nome de método específico deve ser usado (por exemplo, 'toURIString' ou 'toCustomString').
+
+Isso retém o toString() em sua função descritiva, seja em sua implementação padrão ou em alguma outra renderização rica centrada em depuração. Isso também significa que toString() pode ser estendido sem medo e sem arriscar a funcionalidade do aplicativo. (Na verdade, esse é um bom teste para qualquer uso planejado de toString() - se o valor retornado for alterado arbitrariamente, qualquer funcionalidade será interrompida? Se sim, toString() está sendo usado incorretamente.)
+
+## Recarregável
+
+Páginas da Web com informações que podem mudar após o carregamento inicial devem ser seguras e fáceis de recarregar - seja por meio do botão de recarga do navegador ou de algum controle na página.
+
+Em particular, as páginas resultantes de POSTs devem, sempre que possível, redirecionar para uma versão estável de recarga no local dos resultados da ação (para a qual uma recarga não solicita rePOSTing nem duplica a ação original).
+
+## Utilizável em Lynx
+
+As interfaces de aplicativos/serviços da Web devem permanecer minimamente utilizáveis até mesmo em navegadores não-estilizados, com JavaScript desativado, dos quais o Lynx (ou Links) é um bom exemplo.
+
+
+
+
+
+
+
+
+
+
+
 
 
 
