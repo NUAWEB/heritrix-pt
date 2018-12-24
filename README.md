@@ -5472,6 +5472,62 @@ Se uma versão tiver um SUFIXO "SNAPSHOT" - por exemplo, "3.0.1-SNAPSHOT" - é u
 
 Outros sufixos de "alpha", "beta", "rc1", "rc2", etc. indicam versões de desenvolvimento específicas cada vez mais próximas de lançamento, que levam à versão nomeada. Cada sufixo (ao contrário de "SNAPSHOT") será uma construção única. Cada sufixo implica mais confiança na adequação da construção para uso em produção. Usuários avançados são encorajados a experimentar esses lançamentos, especialmente os candidatos ao lançamento do 'rc', para dar uma olhada antecipada nos novos recursos e testar aspectos únicos sobre seus rastreamentos. Dessa forma, é possível decobrir quaisquer problemas presentes antes do lançamento final.
 
+## Heritrix em Eclipse
+
+### Heritrix 3.x em Eclipse no Ubuntu
+
+Especificamente Ubuntu 11.04, mas deve funcionar para outras do do período de tempo geral (10.10, 11.10, ...).
+
+Observação importante: Há outras maneiras de fazer isso, por exemplo, usando plug-ins de eclipse adicionais para maven ou git, mas essa é uma maneira que funciona comprovadamente.
+
+**1. Obtenha o software (java, eclipse, git, maven)**
+
+```
+sudo apt-get install sun-java6-jdk eclipse git maven2
+sudo update-java-alternatives --set java-6-sun  
+sudo update-java-alternatives --list
+```
+**2. Inicie o eclipse para ele inicializar seu espaço de trabalho, por padrão em ~/workspace
+
+**3. Clone o repostório git**
+
+```
+cd ~/workspace
+git clone git://github.com/internetarchive/heritrix3.git
+```
+
+**4. Obtenha as depedency jars com o maven**
+
+```
+cd ~/workspace/heritrix3
+mvn -Dmaven.test.skip=true install
+```
+
+**5. Importe o projeto eclipse**
+
+Em eclipse: File / Import... / Existing Projects Into Workspace ... choose ~/workspace/heritrix3
+
+**6. Configurar a variável M2_REPO no Eclipse**
+
+```
+Select Project > Properties > Java Build path > 
+Select Libraries tab > Add variable > Configure variables > New
+  Name: M2_REPO
+  Path: /home/{username}/.m2/repository
+```
+
+**7. criar nova configuração Debug**
+
+* Run/Debug Configurations...
+* duplo click em Java Applications para criar um novo
+* escolha a classe principa org.archive.crawler.Heritrix
+* guia Arguments
+* Argumentos de programa: -a PASSWORD -l dist/src/main/conf/logging.properties
+* Argumentos VM: -Dheritrix.development
+
+
+
+
 
 
 
