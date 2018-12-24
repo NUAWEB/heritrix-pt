@@ -14,7 +14,7 @@ As informações desse guia referem-se a versão 3.0 do Heritrix, a não ser que
 ## Atualizações das versões 3.0 e 3.1
 
 Atualizações da versão 3.0:
-1. Possibilidade de realizar vários rastreamentos simultaneos. O único limite de número de rastreamentos realizados simultaneamente refere-se a memória alocada no Heritrix.
+1. Possibilidade de realizar vários rastreamentos simultâneos. O único limite de número de rastreamentos realizados simultaneamente refere-se a memória alocada no Heritrix.
 2. Arquivo único XML de configuração baseado no framework Spring. Esse arquivo substitui o order.xml e outros arquivos de configuração do Heritrix 1.x.
 3. Possibilidade de busca e modificação dos beans configurados por um navegador de uso simples. Olhar Bean Browser.
 4. Extensabilidade aprimorada por meio do framework Spring. Por exemplo, substituições de domínios podem ser definidas em um nível mais refinado. Olhar Planilhas.
