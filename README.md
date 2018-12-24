@@ -5287,6 +5287,144 @@ Cobra[5] é um renderizador e analisador sintático de HTML escrito exclusivamen
 
 Neste projeto, escolhemos usar o Cobra como analisador sintático de HTML e também utilizaremos sua capacidade de executar código JavaScript com a ajuda do Rhino.
 
+### Detalhes de design e implementações
+
+Execução de JavaScript(JS)
+
+Um desafio de integração foi questionado pelo Sr. Mohr: como ser compatível com o fluxo de trabalho existente do Heritrix?
+
+> "Como garantir que todos os recursos necessários sejam buscados (incluindo SCRIPTs e possível CSS) antes do Javascript ser executado, mas de uma maneira aproximadamente compatível com a descoberta/fluxo existente de URIs no rastreador. (Por exemplo, para que cada URI buscado seja escrito palavra por palavra nos arquivos W/ARC do rastreio. Ou, que regras claras sejam aplicadas quando há conflitos entre se um URI é necessário para execução JS, mas excluído pelo(a) outro(a) escopo/definição do operador do rastreador.)" Fazer o download desses recursos adicionais passa pelas etapas normais de programação, cortesia, análise etc. do Heritrix? Por um lado, queremos que os logs do rastreador e os arquivos (W)ARC sejam um registro preciso dos recursos que ele realmente recuperou. Pelo outro, não queremos ter os recursos necessários para o processamento de JS/DOM em uma única página ser planejado no futuro, ou seu carregamento ser abortado por outras configurações do rastreador. "
+
+Porque o código JS pode ser interno (embutido no documento HTML) ou externo (isto é, <script src = "location">). No analisador sintático cobra de HTML , sempre que um código JS externo é necessário, ele tentará buscar o código-fonte dentro do próprio analisador. Gostaríamos que cada busca seguisse a cadeia de processadores, ou seja, passar pelas etapas normais de agendamento, cortesia, análise, etc. do Heritrix, e isso implica que precisamos buscar recursos JS externos necessários antes da execução do JS. Além disso, não queremos iimpedir a dupla busca de um documento HTML, portanto, durante a execução do JS, precisamos recuperar o conteúdo do documento HTML e também os recursos de JS necessários. Para fazer isso, introduzimos um mecanismo de cache - o cache de busca (fetch cache), que é usado para preservar esse tipo de informação.
+  
+**. Class FetchCache**
+
+O cache de busca contém três grandes mapas: mapa de recursos, mapa dependente e mapa de localização de conteúdo ou conteúdo. No texto a seguir, "recurso" significa recurso JS requerido, por exemplo, arquivo de origem JS, e seu link é extraído de um documento HTML.
+
+Mapa de recursos: <uri de um recurso, a lista de documentos HTML que dependem deste recurso>;
+Mapa dependente: <uri de um documento HTML, a lista de recursos dos quais este documento HTML depende>;
+Mapa de localização de conteúdo ou conteúdo: <uri de um recurso ou documento HTML, conteúdo ou localização de conteúdo deste uri>.
+
+**. Class FetchCacheUpdater**
+
+O FetchCacheUpdater é um pós-processador, semelhante ao CrawlStateUpdater, mas é usado para atualizar o cache de busca após um uri ter sido processado pelo LinksScoper.
+O motivo pelo qual o FetchCacheUpdater deve ser executado após o LinksScoper é que alguns links externos de um documento podem estar fora do escopo, e pode haver alguns recursos necessários do JS; O LinksScoper, primeiro, vai lidar com esses links fora do escopo e, no FetchCacheUpdater, podemos encontrar facilmente os recursos necessários, mas fora do escopo, e registrar essas informações para o usuário.
+
+Outra tarefa do FetchCacheUpdater é criar um uri de rastreamento especial que é projetado para fins de execução do JS. Depois de atualizar o cache de busca, o FetchCacheUpdater tentará obter todas as urs do HTML que estão prontas para avaliação do JS, e criar um uri de rastreamento cujo esquema é "x-jseval" para cada um deles, ou seja, se um uri normal for http://www.uri.com, o uri especial seria x-jseval: http://www.uri.com) e, em seguida, adicioná-los aos outCandidates do uri atual para agendamento posterior.
+
+**. Class ExecuteJS**
+
+Esse processador é usado para analisar um documento HTML com o JS ativado e também simular eventos HTML no documento e tentar descobrir novos links criados pelo código JS. Só aceita uris com o esquema de "x-jseval".
+
+O conteúdo do HTML uri sendo processado e seus recursos necessários de JS podem ser recuperados do cache de busca.
+
+Em relação aos eventos HTML, o onload é simulado durante a análise, onclick, onmouseover e onmouseout são simulados após a análise. Esses três tipos de eventos HTML podem ser simulados de forma acumulativa ou a partir de um novo DOM (criado após a análise) toda as vezes.
+
+A descoberta de novos links é realizada após a análise e após cada simulação de evento HTML. Novos links serão adicionados aos outLinks do HTML uri.
+
+### Detecção de redirecionamento de JavaScript
+
+Detectar o redirecionamento de JS é fácil. Só precisamos verificar se o local do documento no HTML DOM resultante, após a análise ou a simulação de eventos HTML, é diferente do local original (o local onde buscamos o documento).
+
+**. Class DetectJSRedirection**
+
+Essa funcionalidade é implementada no processador DetectJSRedirection.
+
+Se o processador ExecuteJS estiver incluído no perfil da tarefa e executado antes de DetectJSRedirection (o que normalmente acontece), precisamos apenas verificar se existe um novo link cujo contexto é "JSRedirection" em outCandidates do uri atual. Se assim, ocorreu o redirecionamento JS, caso contrário, nenhum redirecionamento de JS, porque no processador ExecuteJS, o contexto do link de redirecionamento de JS é definido como "JSRedirection".
+
+O Processor DetectJSRedirection também pode funcionar sem o processador ExecuteJS. Nesse caso, o código JS precisa ser avaliado para detectar o redirecionamento de JS, portanto, todos os recursos necessários de JS devem estar disponíveis antes da detecção.
+
+Não importa qual seja o caso, o DetectJSRedirection só pode aceitar rastreamento de uri com o esquema de "x-jseval".
+
+### Detecção de cloaking
+
+**. Class DetectCloaking**
+
+A detecção de cloaking é implementada no processador DetectCloaking que, atualmente, foca apenas em *click-through cloaking*. Como mencionado na seção de metodologia, para detectar *click-through cloaking* do lado do cliente, precisamos comparar os documentos resultantes obtidos após a execução do código JS, com o document.referrer definido como empty e com o document.referrer definido como someting; se forem diferentes, cloaking do lado do cliente aconteceu. Para detectar *click-through cloaking* do lado do servidor, precisamos comparar os documentos buscados com o campo referenciador no cabeçalho HTTP definido como null ou something; se forem diferentes, ocorreu o cloaking do lado do servidor.
+
+Portanto, algumas informações devem estar disponíveis para detectar *clich-through cloaking*:
+Para detecção de cloaking do lado do cliente
+  - referrer
+  - recursos: a lista de recursos requeridos pela execução do JavaScript.
+  
+  Para detecção de cloaking do lado do servidor
+  - content-with-referrer: conteúdo obtido com o campo referrer definido como non null no cabeçalho HTTP.
+  - content-without-referrer: conteúdo obtido com o campo referrer definido como null no cabeçalho HTTP.
+  
+Como podemos ver, a fim de detectar *click-through cloaking* no lado do servidor, precisamos buscar a mesma página duas vezes com configurações de cabeçalho HTTP diferentes (claro que gostaríamos que as duas buscas passassem pela cadeia de processadores do Heritrix); também precisamos preservar as informações necessárias mencionadas acima. Então, para resolver esse problema, usamos o mesmo caminho que fizemos para a execução de JS, introduzimos outro cache - cache de cloaking, que possui um mapa, contendo todas as informações necessárias.
+
+**. Class Cache4CloakingDetection**
+
+Mapa: <uri de um documento HTML, pré-requisitos necessários>
+
+Pré-requisitos necessários: "referrer", "js-required-resources", "content-with-referrer", and "content-without-referrer".
+
+A tarefa de atualizar o cache de cloaking é executada dentro do DetectCloaking.
+
+### Algoritmos principais
+
+### Execução de JS
+
+**. Processor chains:
+
+Preprocesses -> fetcher -> extractors -> ExecuteJS -> ARCWriter -> CrawlStateUpdater -> LinksScoper -> FetchCacheUpdater -> FrontierScheduler
+
+**. Algoritmo implementado no FetchCacheUpdater:**
+
+Para obter explicações detalhadas sobre os mapas no FetchCache, consulte FetchCache em designs e na seção de detalhes de implementação.
+
+```
+curi é o uri atual sendo processado.
+
+se o curi não for buscado com sucesso e seu script for um recurso, remova todas as informações relacionados a ele do cache de busca;
+se o curi for buscado com sucesso, então {
+
+    se o cursi é um recurso de script, então {
+
+        ee o curi estiver no mapa de recursos, {
+            para cada HTML uri dependendo dele {
+                encontre o HTML uri no mapa dependente;
+                atualize sua lista de recursos, ou seja, remova o curi de sua lista;
+
+                encontre o HTML uri no mapa candidato;
+                atualize sua lista de recursos, ou seja, adicione o curi à sua lista;
+
+                e todos os recursos estiverem disponíveis {
+                    adicione o curi à lista waitToSchedule;
+                    remova a entrada correspondente no mapa dependente e candidato;
+                }
+            }
+            remova a entrada do curi no mapa de recursos;
+        }
+        adicione uma entrada no mapa disponível (curi, conteúdo/localização de conteúdo);
+   }
+
+  se o curi é um uri em HTML, então {
+      crie uma coleção de urls de recursos necessários da coleção outCandidate;
+      para cada recurso uri na coleção de uris de recursos necessários JS {
+          se estiver no mapa disponível, então {
+              remova-o da coleção
+          }
+          ou {
+               se estiver no mapa de recursos, adicione o curi à sua lista de dependentes;
+             ou adicione uma entrada no map1 (recurso uri, curi);
+          }
+      }
+            se a coleção necessária de recursos uris estiver vazia, então
+          adicione o curi à lista waitToSchedule;
+      ou {
+          adicione uma entrada no mapa dependente (curi, coleção de recursos necessários uris);
+          adicione uma entrada no mapa cadidado;
+      }
+      adicione uma entrada no mapa disponível (curi, conteúdo/localização do conteúdo);
+  }
+}
+Por fim, crie um rastreamento especial para cada membro da lista waitToSchedule e coloque-o em outCandidates do curi;
+```
+
+
+
+
 ## Guia de estilo
 
 Essa seção wiki serve como guia de estilo de codificação e interação/processo de interface do usuário para o projeto Heritrix e projetos de arquivamento da Web de código-fonte aberto relacionados.
@@ -5526,20 +5664,3 @@ Select Libraries tab > Add variable > Configure variables > New
 * Argumentos VM: -Dheritrix.development
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Existe um lugar para uma cadeia de 'pré-agendamento' que todas as URIs descobertas sejam alimentadas?
