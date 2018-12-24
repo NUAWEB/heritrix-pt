@@ -5399,7 +5399,78 @@ Em particular, as páginas resultantes de POSTs devem, sempre que possível, red
 
 As interfaces de aplicativos/serviços da Web devem permanecer minimamente utilizáveis até mesmo em navegadores não-estilizados, com JavaScript desativado, dos quais o Lynx (ou Links) é um bom exemplo.
 
+## Como enviar uma versão Heritrix
 
+### Heritrix 1.X
+
+**Antecedentes**
+
+A caixa de construção contínua (CruiseControl) está em:
+
+http://builds.archive.org:8080/cruisecontrol/buildresults/HEAD-heritrix
+
+O rastreador de problemas do Heritrix está em:
+
+http://webteam.archive.org/jira/browse/HER
+
+O projeto Sourceforge está em:
+
+http://sourceforge.net/projects/archive-crawler/
+
+A página inicial do projeto está em:
+
+http://crawler.archive.org
+
+A página de entrada dessa wiki está em:
+
+http://webteam.archive.org/confluence/display/Heritrix
+
+Em um número de lançamento X.Y.Z, X é o número de lançamento 'principal', Y é o número de lançamento 'secundário' e 'Z' é o número de lançamento 'micro'.
+
+Todos os lançamentos oficiais têm um número de lançamento "menor"; qualquer compilação com um número de lançamento 'secundário' ímpar pode ser considerado como uma compilação do desenvolvedor ou algo fora da caixa de construção contínua.
+
+### Começando
+
+Antes de qualquer lançamento, verifique se:
+
+* todas as emissões rastreadas segmentadas para esse lançamentos são resolvidas ou reprogramadas para uma versão posterior
+* a caixa de construção contínua constroi com êxito e todos os testes de unidade automática são aprovados, tanto em uma caixa de desenvolvedor local quanto na caixa de construção
+* o desenvolvedor principal concorda que o código está pronto para ser lançado e analisou os logs de confirmação recentes para áreas de interesse
+* os committers estão cientes de que o lançamento está previsto para um período razoável (dias para lançamentos "micro"; uma semana+ para lançamentos "secundários") e se absteve de fazer mudanças desestabilizadoras
+
+(Para versões "secundárias" e "principais", outros rastreamentos de teste em escala de produção já devem ter ocorrido, e um "congelamento de código" anunciado no tronco relevante pode ter entrado em vigor por uma semana ou mais.)
+
+Usando as Notas de Lançamento anteriores da página wiki como modelo, crie uma página wiki esqueleto "Notas de Lançamento" para a versão planejada. Deixe a área onde uma data de lançamento é declarada com uma notação 'planejada' ou 'TK'/'TBD' ('no futuro' ou 'a ser determinado').
+
+Adicione notas sobre mudanças significativas que qualquer pessoa que esteja atualizando deve saber, com links para outras páginas wiki ou problemas do JIRA com mais informações.
+
+Use os links de inclusão dinâmica para extrair uma cópia ativa da lista de ocorrências de 'notas de lançamento' do JIRA.
+
+Dê crédidito a todos os colaboradores novos, ou de fora, deste lançamento.
+
+## Numeração de versão
+
+### Numeração de versões Heritrix
+
+Essa página mostra a convenção de numeração de versão a ser usada, começando logo antes da versão 3.0.1.
+
+Os números de versão H3 e superior são da forma X.Y.Z ou X.Y.Z-SUFIXO.
+
+### Números
+
+X é um número inteiro de versão principal (major). A partir de 2010, o último número da versão principal é '3'. Se o número da versão principal mudar, significa que ocorreram grandes mudanças na funcionalidade e na operação, o que pode exigir uma adaptação significativa dos processos e de outros softwares relacionados que usam o Heritrix ou suas saídas. 
+
+Y é um número inteiro de versão secundária. A partir de outubro de 2010, sob a versão principal "3", o maior número de versão secundária é "0". (Embora algumas compilações de desenvolvimento sob o esquema de numeração de versão antiga fossem numeradas como "3.1.1-SNAPSHOT".) Adições ao número de versão secundária ocorrem quando uma nova funcionalidade notável é adicionada, mas processos e software anteriores devem continuar a funcionar, com apenas pequenas alterações, conforme detalhado nas notas de lançamento.
+
+Z é um número inteiro de versão micro/patch. Antes do lançamento 3.0.1, o maior número de versão micro sob "3.0", em uma versão oficial, era "0" (para "3.0.0"). (Trabalho em andamento foi nomeado com um número "1" micro, originalmente "3.1.1-SNAPSHOT" sob as convenções mais antigas, mas agora simplesmente "3.0.1-SNAPSHOT".) Adições ao número de versão micro ocorrem quando uma versão oficial inclui correções de bugs e novas funcionalidades menores. Tentamos manter a compatibilidade dos formatos de configuração e até mesmo dos pontos de verificação entre adições de lançamento micro, embora algumas adaptações possam ser necessárias, conforme descrito nas notas de versão.
+
+(Nenhum desses números X, Y, Z está limitado ao intervalo 0-9, e a ordem é baseada no número completo, não no dígito inicial. Portanto, "8.10.0" vem depois de "8.9.99" - porque o "10" no meio é maior que "9".)
+
+### Sufixos
+
+Se uma versão tiver um SUFIXO "SNAPSHOT" - por exemplo, "3.0.1-SNAPSHOT" - é um dos builds de desenvolvimento do nosso serviço de construção contínua automática, em preparação para a versão listada. (Isto é, muitos builds "3.0.1-SNAPSHOT" precedem o lançamento "3.0.1" único oficial.) Um build "-SNAPSHOT" recebeu apenas o mínimo de testes automáticos e pode ter vários bugs reconhecidos. Essas compilações são recomendadas apenas para especialistas e desenvolvedores que podem solucionar muitos problemas. (TODO: determina como as construções de -SNAPSHOT são diferenciadas depois de descompactadas do registro de data/hora/número de compilação que aparece no pacote de distribuição.)
+
+Outros sufixos de "alpha", "beta", "rc1", "rc2", etc. indicam versões de desenvolvimento específicas cada vez mais próximas de lançamento, que levam à versão nomeada. Cada sufixo (ao contrário de "SNAPSHOT") será uma construção única. Cada sufixo implica mais confiança na adequação da construção para uso em produção. Usuários avançados são encorajados a experimentar esses lançamentos, especialmente os candidatos ao lançamento do 'rc', para dar uma olhada antecipada nos novos recursos e testar aspectos únicos sobre seus rastreamentos. Dessa forma, é possível decobrir quaisquer problemas presentes antes do lançamento final.
 
 
 
