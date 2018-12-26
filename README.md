@@ -5106,16 +5106,16 @@ Algumas informações importantes para entender esse modelo são:
 2. Os arquivos de configuração declaram todos os componentes participantes e, quando necessário, os valores iniciais da atribuição.
 3. O 'container' usa o(s) arquivo(s) de configuração, além de outras dicas derivadas dos próprios componentes (como tipos compatíveis e nomes de configurações), para montar todos os componentes com seu estado inicial e referências diretas aos seus colaboradores. Se um componente for necessário (conforme implícito por outros componentes), mas insuficientemente declarado, erros serão lançados.
 
-## Build Box
+## Caixa de compilação
 
-Os builds do H1 e do H3 ocorrem automaticamente logo após novos commits em nosso sistema de build baseado em [Jenkins] (https://builds.archive.org:1443/). O link para o [Heritrix 3 (pacotes de distribuição)] (https://builds.archive.org:1443/job/Heritrix-3/lastBuild/org.archive.heritrix%24heritrix/) mostra os pacotes padrões distribuíveis de um build.
+As compilações do H1 e do H3 ocorrem automaticamente logo após novos commits em nosso sistema de compilação baseado em [Jenkins] (https://builds.archive.org:1443/). O link para o [Heritrix 3 (pacotes de distribuição)] (https://builds.archive.org:1443/job/Heritrix-3/lastBuild/org.archive.heritrix%24heritrix/) mostra os pacotes padrões distribuíveis de um build.
 
-Builds também são carregados no nosso repositório Maven2:
+Compilações também são carregadas no nosso repositório Maven2:
 
 http://builds.archive.org:8080/maven2/org/archive/heritrix/heritrix/
 
 
-Os nomes dos artefatos da versão de build de desenvolvimento começam com o número da versão que eles estão se aproximando e terminam com "-SNAPSHOT". Os produtos reais de build de desenvolvimento começam com o número da versão e incluem um registro de data e hora. Assim, por exemplo, a versão mais recente do build de desenvolvimento do H3, no momento desta publicação, aproximando-se de uma versão final do 3.1.0, é composta dos arquivos de último registro de data e hora disponíveis no diretório 3.1.0-SNAPSHOT.
+Os nomes dos artefatos da versão de compilação de desenvolvimento começam com o número da versão que eles estão se aproximando e terminam com "-SNAPSHOT". Os produtos reais de compilação de desenvolvimento começam com o número da versão e incluem um registro de data e hora. Assim, por exemplo, a versão mais recente da compiação de desenvolvimento do H3, no momento desta publicação, aproximando-se de uma versão final do 3.1.0, é composta dos arquivos de último registro de data e hora disponíveis no diretório 3.1.0-SNAPSHOT.
 
 ## Refatorações potenciais de limpeza
 
@@ -5422,6 +5422,140 @@ se o curi for buscado com sucesso, então {
 Por fim, crie um rastreamento especial para cada membro da lista waitToSchedule e coloque-o em outCandidates do curi;
 ```
 
+### Detecção de redirecionamento de JS
+
+**. Cadeias de processadores:**
+
+Preprocesses -> fetcher -> extractors -> ARCWriter -> CrawlStateUpdater -> DetectJSRedirection -> LinksScoper -> FetchCacheUpdater -> FrontierScheduler
+
+. Algoritmo implementado em DetectJSRedirection
+
+```
+if (ExecuteJS module is added in the profile) then {
+    check if JS redirection happened;
+    if yes, return true for JS redirection;
+    else return false;
+} else {  // Similar to the procedure in ExecuteJS, but only to check JS redirection, not find new links
+
+    DOM dom = parse(HTML document referred by x-jseval crawl uri);
+    check if JS redirection happened;
+    if yes, return true for JS redirection
+    if no, then simulate HTML event one by one from a fresh DOM:
+
+    for every HTML event (onmouseover, onmouseout or onclick) do {
+         get a fresh DOM (parse the document again);
+         simulate the event;
+         check if JS redirection happened;
+         if yes, return true for JS redirection;
+         else continue;
+    }
+
+    return false for JS redirection;
+}
+```
+
+### Detecção de *click-through cloaking*
+
+Para o significado desses pré-requisitos, consulte a seção DetectCloaking em detalhes de design e implementação.
+
+**. Cadeias de processadores:**
+
+Preprocesses -> fetcher -> extractors -> ARCWriter -> CrawlStateUpdater -> DetectCloaking -> LinksScoper -> FetchCacheUpdater -> FrontierScheduler
+
+**. Algoritmo implementado no DetectCloaking**
+
+```
+if uri is an HTML document then {
+    if (context of uri is not null) {
+        update Cache4CloakingDetection with (uri, data) and data.put("content-with-referrer", content);
+        update Cache4CloakingDetection with (uri, data) and data.put("referrer", context);
+        if (! data.containKey("content-without-referrer") {
+            create a new crawl uri with context set to null, and force it to be crawled;
+        }
+   } esle {
+       update Cache4CloakingDetection with (uri, data) and data.put("content-without-referrer", content);
+       if (! data.containKey("content-with-referrer") {
+           create a new crawl uri with context set to itself, and force it to be crawled;
+       }
+   }
+}
+
+if uri is an x-jseval uri {
+    get required resources;
+    update Cache4CloakingDetection with (uri, data) and data.put("resources", content);
+}
+
+check if all fields (referrer,resources, content-with-referrer and content-without-referrer) are available;
+if yes {
+    withReferrerDom = parse(uri document with null referrer);
+    withoutReferrerDom = parse(uri document with referrer (itself));
+    if (withoutReferrerDom == withReferrerDom) {
+        no client side cloaking;
+    } else {client side cloaking}
+
+   withoutReferrer = get value of "content-without-referrer" from Cache4CloakingDetection for current uri;
+   withReferrer = get value of "content-with-referrer" from Cache4CloakingDetection for current uri;
+
+   if (withoutReferrer == withReferrer) {
+       no server side cloaking;
+   } else {server side cloaking}
+
+} else {
+   return;
+}
+```
+
+### Modificações na biblioteca Cobra
+
+**HTMLParser**
+
+No Cobra, a classe que executa a análise sintática é a HtmlParser. Como mencionamos acima, quando o analisador vê uma tag <script>, ele tentará avaliar o código do script. Se o script estiver embutido, o analisador poderá ler facilmente o código do fluxo de entrada do documento, mas, se o script for um arquivo externo, ele tentará primeiro buscar o arquivo de script e, em seguida, fará a avaliação, ou seja, a busca é feita durante a análise. Neste projeto, introduzimos o mecanismo de cache de busca para garantir que todos os scripts externos sejam buscados antes da análise - por isso modificamos o analisador para obter o conteúdo de um arquivo de script externo localmente (já buscado) em vez de iniciar uma nova extração a partir da cadeia de processamento do Heritrix. 
+  
+As principais modificações são:
+
+* A classe é renomeada como HTMLParser em vez de HtmlParser e colocada no pacote org.archive.modules.extractor.jsexecutor em vez de org.lobobrowser.html.parser.
+* Um novo construtor é adicionado. Recebe um parâmetro a mais do que o usado originalmente. O parâmetro é um HashMap no qual o conteúdo dos arquivos de script externos são armazenados e as chaves são as URLs dos scripts.
+* Durante a análise, quando uma tag <script> associada a um arquivo de origem externo é vista, o analisador tentará localizar o conteúdo do arquivo chamando a função de membro fillInSourceCode em vez de buscar o script.
+* Como no HTMLParser, classes ElementInfo, LocatorImpl e StopException no pacote org.lobobrowser.html.parser são necessárias. Originalmente, essas classes eram protegidas, mas nós as mudamos para públicas a fim de poder usá-las no HTMLParser.
+  
+### Tag Archor
+
+O código a seguir é permitido no documento HTML, onde o valor do atributo href é o código JavaScript.
+
+```
+<body>
+  <script>
+  var rootUri = 'cas'+'e2-success';
+  function navigate() {
+    document.location.href=rootUri;
+  }
+  </script>
+  <a href="javascript:document.location.href=rootUri">href</a><br/>
+</body>
+```
+
+No Cobra, eles consideram apenas o caso comum em que o valor de href é um URL. Portanto, para que o analisador HTML Cobra suporte o caso acima, foram feitas modificações na classe HtmlController e no HTMLAbstractUIElement.
+
+### Funcionalidade JavaScript
+
+**Redirecionamento de JS**
+
+No Cobra, quando ocorre um redirecionamento de JS, a função de membro setHref na classe Location será invocada. Se um renderizador de HTML estiver associado ao aplicativo atual, um novo documento HTML será criado, buscado e analisado. Nesse projeto, não precisamos renderizar o documento HTML, só precisamos saber se o redirecionamento de JS acontece ou não, então pequenas modificações foram feitas na classe Location.
+
+**setTimeout e setInterval em JS*
+
+setTimeout e setInterval, duas funções JS, são implementadas no Cobra invocando a função de membro setTimeout e setInterval na classe Window. Neste projeto, precisamos apenas simular o que vai acontecer quando um evento HTML é acionado, o tempo exato não é necessário, portanto, essas funções de membro foram modificadas para essa finalidade.
+
+### Discussão e trabalho futuro
+
+### Execução de JS**
+
+**. Localização de conteúdo em FetchCache**
+
+
+
+
+
 
 
 
@@ -5467,7 +5601,7 @@ Na ausência de orientações ao contrário abaixo, as recomendações nas fonte
 * [Emitir as melhores práticas] (https://github.com/internetarchive/heritrix3/wiki/Issue%20best%20practices)
 * [Cometer as melhores práticas] (https://github.com/internetarchive/heritrix3/wiki/Commit%20best%20practices)
 
-## Cometa as melhores práticas
+## Commit best practices
 
 ### especificar problema, arquivos modificados e resumo
 
@@ -5489,7 +5623,7 @@ por exemplo, changeset r6912
     renamings: prefer 'reenqueue' instead of 'reschedule' for describing simple (non-timed) retries
 ```
 
-## Emita as melhores práticas
+## Issue best practices
 
 ### inclua o número de revisão ao colar os comentários commit nos problemas
 
@@ -5543,7 +5677,7 @@ As interfaces de aplicativos/serviços da Web devem permanecer minimamente utili
 
 **Antecedentes**
 
-A caixa de construção contínua (CruiseControl) está em:
+A caixa de compilação contínua (CruiseControl) está em:
 
 http://builds.archive.org:8080/cruisecontrol/buildresults/HEAD-heritrix
 
@@ -5565,14 +5699,14 @@ http://webteam.archive.org/confluence/display/Heritrix
 
 Em um número de lançamento X.Y.Z, X é o número de lançamento 'principal', Y é o número de lançamento 'secundário' e 'Z' é o número de lançamento 'micro'.
 
-Todos os lançamentos oficiais têm um número de lançamento "menor"; qualquer compilação com um número de lançamento 'secundário' ímpar pode ser considerado como uma compilação do desenvolvedor ou algo fora da caixa de construção contínua.
+Todos os lançamentos oficiais têm um número de lançamento "menor"; qualquer compilação com um número de lançamento 'secundário' ímpar pode ser considerado como uma compilação do desenvolvedor ou algo fora da caixa de compilação contínua.
 
 ### Começando
 
 Antes de qualquer lançamento, verifique se:
 
 * todas as emissões rastreadas segmentadas para esse lançamentos são resolvidas ou reprogramadas para uma versão posterior
-* a caixa de construção contínua constroi com êxito e todos os testes de unidade automática são aprovados, tanto em uma caixa de desenvolvedor local quanto na caixa de construção
+* a caixa de compilação contínua constroi com êxito e todos os testes de unidade automática são aprovados, tanto em uma caixa de desenvolvedor local quanto na caixa de compilação
 * o desenvolvedor principal concorda que o código está pronto para ser lançado e analisou os logs de confirmação recentes para áreas de interesse
 * os committers estão cientes de que o lançamento está previsto para um período razoável (dias para lançamentos "micro"; uma semana+ para lançamentos "secundários") e se absteve de fazer mudanças desestabilizadoras
 
@@ -5585,6 +5719,111 @@ Adicione notas sobre mudanças significativas que qualquer pessoa que esteja atu
 Use os links de inclusão dinâmica para extrair uma cópia ativa da lista de ocorrências de 'notas de lançamento' do JIRA.
 
 Dê crédidito a todos os colaboradores novos, ou de fora, deste lançamento.
+
+### Roll to Official Release Version Numbers
+
+Faça um commit no trunk que define o número da versão oficial e vincula as 'notas de lançamento' na distribuição às notas completas da versão do wiki.
+
+Especificamente no H1, isso afeta os arquivos 'src/articles/releasenotes.xml' e 'project.xml'. Em 'project.xml', a string:
+
+```
+<currentVersion>1.YODD.Z${version.build.suffix}</currentVersion>
+```
+
+deve ser alterada para...
+
+```
+<currentVersion>1.YEVEN.Z</currentVersion>
+```
+
+Quando o lançamento é um lançamento de patch "micro", YEVEN será o número antes do YODD. (Por exemplo, 1.15.3 em desenvolvimento dará origem ao lançamento micro 1.14.3.) Quando o lançamento for um lançamento 'secundário' novo, o número YEVEN será maior. (Por exemplo, se o trabalho que ocorre enquanto o trunk de desenvolvimento está rotulado como '1.15.4' é lançado como lançamento 'secundário' em vez de um lançamento 'micro', ele se tornará '1.16.0'.). 
+
+Aguarde o término da compilação e do teste automáticos da caixa de compilação após o *commit*. Depois, verifique nos logs de *commit* se nenhum commit não intecional foi incluído.
+
+### 'Teste de fumaça'
+
+Verifique se todos os artefatos esperados (.tar.gz, .zip, -src.tar.gz, -src.zip) foram criados e possuem seus nomes de distribuição oficiais.
+
+Faça o download dos artefatos para um diretório remoto e confirme que eles se expandem sem erros e criem as árvores de diretório esperadas.
+
+Pelo menos para o .tar.gz, inicie o rastreador com um webui. Conecte-se ao webui e verifique se os identificadores de versão visíveis são os esperados.
+
+Usando o perfil padrão, configure um rastreamento mínimo de teste de um site com várias páginas (> 1 página, <100). Inicie o rastreamento, verifique a saída esperada no crawl.log e a finalização normal do rastreamento quando terminar.
+
+### Criar ramificação com nome de release no SVN
+
+No repositório SVN, copie o branch 'trunk/heritrix' para release-'branches/heritrix-1.YEVEN.Z/heritrix'. Isso fornece uma ramificação nomeada de acordo com o que foi inserido na compilação.
+
+### Roll to Development Version Number
+
+Commit back to the trunk a version of 'project.xml' with an updated development version number:
+
+```
+<currentVersion>1.YODD.Z${version.build.suffix}</currentVersion>
+```
+
+(Após um lançamento "micro", o YODD retorna ao seu valor anterior, mas Z deve ser maior. Após um lançamento "secundário" completo, o YODD aumenta para um YODD novo mais alto.)
+
+### Fazer carregamento (upload) para o Sourceforge
+
+As instruções da Sourceforge estão em:
+
+http://apps.sourceforge.net/trac/sitedocs/wiki/Release%20files%20for%20download
+
+O 'pacote' já existirá. Os arquivos são carregados (geralmente via SFTP para frs.sourceforge.net usando sua conta no Sourceforge) e depois reivindicados em um 'lançamento' através de seu aplicativo da web.
+
+Siga as convenções de versões anteriores. Normalmente, incluímos apenas links para as listas wiki/issue nos campos release-notes/change-list do Sourceforge. Verificamos a opção "enviar notificação" para as pessoas acompanhando o projeto.
+
+Por exemplo, fazendo o upload do Heritrix 1.14.4:
+
+```
+# ache a última versão do Build Artifacts na caixa de construção
+  http://builds.archive.org:8080/cruisecontrol/buildresults/HEAD-heritrix
+  05/06/2010 06:14:55 (build.420)
+  /0/builds/artifacts/HEAD-heritrix/20100506061455
+# visiste build artifacts como ${admin_user}
+  ${user}@home$ ssh webteam
+  ${user}@webteam$ sudo su ${admin_user}
+  ${admin_user}@webteam$ cd /0/builds/artifacts/HEAD-heritrix/20100506061455
+# faça o upload da mesma forma que os build artifacts anteriores para o SourceForge via SFTP
+  ${admin_user}@webteam$ sftp iasf-admin,archive-crawler@frs.sourceforge.net
+  sftp> cd /home/frs/project/a/ar/archive-crawler/
+  sftp> mkdir 1.14.4
+  sftp> put heritrix-1.14.4-src.zip
+  sftp> put heritrix-1.14.4-src.tar.gz
+  sftp> put heritrix-1.14.4.zip
+  sftp> put heritrix-1.14.4.tar.gz
+# definir arquivos de lançamento via SourceForge File Manager
+  select Project Admin > File Manager
+    /archive-crawler (heritrix 1.x)/
+      1.14.4/
+  Platform set as default download check boxes
+  (select "gear" icon, then Properties for each file)
+        heritrix-1.14.4.tar.gz  =>  linux, mac
+        heritrix-1.14.4.zip     =>  windows
+```
+
+### Atualizar o JIRA
+
+Em "Administer Project", "Manage Versions", marque a versão de lançamento de destino como lançada, com a data atual.
+
+Se um lançamento 'micro' de continuação for planejado antes da próxima versão 'secundária', e ele ainda não existir nas versões do JIRA, inclua-o. (Não se preocupe; é fácil alterar, reorganizar e varrer os problemas de um para o outro.)
+
+### Anunciar
+
+Atualize as notas de lançamento da wiki com a data de lançamento real.
+
+Atualize a página principal da wiki do projeto para listar a nova versão como a mais recente e atualize de acordo as páginas sobre lançamentos futuros.
+
+Envie um email para a lista de projetos do rastreador de arquivos anunciando o lançamento, com links para as notas de lançamento e área de download.
+
+Commit a change to the 'xdocs/index.xml' file in heritrix trunk que gera, automaticamente, a página inicial do http://crawler.archive.org para incluir um item de notícias no local apropriado anunciando a última versão. (PROBLEMAS PRECISAM DE SOLUÇÕES: Atualmente, as compilações automáticas não estão fazendo o upload do site alterado automaticamente para crawler.archive.org.)
+
+### Heritrix 3
+
+TK
+
+Muito semelhante, mas: a numeração de versão segue as convenções de [Numeração de Versão] (https://github.com/internetarchive/heritrix3/wiki/Version%20Numbering) - arquivos para alterar para refletir o novo número de versão são diferentes; caixa de compilação (Continuum) é uma máquina diferente; a nomenclatura da nota de lançamento da wiki é um pouco diferente.
 
 ## Numeração de versão
 
@@ -5606,7 +5845,7 @@ Z é um número inteiro de versão micro/patch. Antes do lançamento 3.0.1, o ma
 
 ### Sufixos
 
-Se uma versão tiver um SUFIXO "SNAPSHOT" - por exemplo, "3.0.1-SNAPSHOT" - é um dos builds de desenvolvimento do nosso serviço de construção contínua automática, em preparação para a versão listada. (Isto é, muitos builds "3.0.1-SNAPSHOT" precedem o lançamento "3.0.1" único oficial.) Um build "-SNAPSHOT" recebeu apenas o mínimo de testes automáticos e pode ter vários bugs reconhecidos. Essas compilações são recomendadas apenas para especialistas e desenvolvedores que podem solucionar muitos problemas. (TODO: determina como as construções de -SNAPSHOT são diferenciadas depois de descompactadas do registro de data/hora/número de compilação que aparece no pacote de distribuição.)
+Se uma versão tiver um SUFIXO "SNAPSHOT" - por exemplo, "3.0.1-SNAPSHOT" -, é uma das compilações de desenvolvimento do nosso serviço de construção contínua automática, em preparação para a versão listada. (Isto é, muitas compilações "3.0.1-SNAPSHOT" precedem o lançamento "3.0.1" único e oficial.) Uma compilação "-SNAPSHOT" recebeu apenas o mínimo de testes automáticos e pode ter vários bugs reconhecidos. Essas compilações são recomendadas apenas para especialistas e desenvolvedores que podem solucionar muitos problemas. (TODO: determina como as construções de -SNAPSHOT são diferenciadas depois de descompactadas do registro de data/hora/número de compilação que aparece no pacote de distribuição.)
 
 Outros sufixos de "alpha", "beta", "rc1", "rc2", etc. indicam versões de desenvolvimento específicas cada vez mais próximas de lançamento, que levam à versão nomeada. Cada sufixo (ao contrário de "SNAPSHOT") será uma construção única. Cada sufixo implica mais confiança na adequação da construção para uso em produção. Usuários avançados são encorajados a experimentar esses lançamentos, especialmente os candidatos ao lançamento do 'rc', para dar uma olhada antecipada nos novos recursos e testar aspectos únicos sobre seus rastreamentos. Dessa forma, é possível decobrir quaisquer problemas presentes antes do lançamento final.
 
