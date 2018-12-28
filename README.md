@@ -5552,9 +5552,84 @@ setTimeout e setInterval, duas funções JS, são implementadas no Cobra invocan
 
 **. Localização de conteúdo em FetchCache**
 
+Atualmente, no cache de busca, o que é salvo no mapa disponível é o conteúdo de cada documento, e todos eles estão na memória. Obviamente, se uma tafera de rastreamento muito grande estiver em execução, mais cedo ou mais tarde o cache ficará sem memória se continuarmos adicionando conteúdos novos nele. Para resolver esse problema, um mecanismo de "idade" pode ser projetado, ou seja, cada documento disponível no cache de busca tem uma propriedade de idade. Basicamente, um limite de idade é predeterminado e, quando um documento está disponível, não apenas o conteúdo, mas também a localização do conteúdo (por exemplo, nome do arquivo arc e deslocamento dentro do arquivo arc) serão armazenados no mapa disponível. Conforme o tempo passa, a "idade" do documento aumenta. Quando a idade do documento passar do limite determinado, o conteúdo deste documento é apagado da memória e apenas sua localização é apresentada. Quando o documento for necessário novamente, seu conteúdo pode ser recuperado a partir do local especificado.
 
+**. Use JavaScript para importar outro JavaScript**
 
+No ExecuteJS, um documento HTML só será analisado uma vez com o JS ativado, gerará o DOM correspondente e não será processado novamente. Portanto, no caso a seguir, não poderemos obter o DOM final correto.
 
+test.html
+
+```
+<html>
+<head>
+<script id="jsfile1" src="code1.js"></script>
+<script id="jsfile2"></script>
+</head>
+<body>
+<P>Header</P>
+
+<div id=DataContainer>
+<script type="text/JavaScript">
+DoRoutine('code2');
+</script>
+</div>
+
+<P>Footer</P>
+</body>
+</html>
+```
+
+code1.js
+
+```
+function DoRoutine(routineID) {
+    document.getElementById('jsfile2').src = routineID + ".js";
+}
+```
+
+code2.js
+
+```
+function getDATA () {
+    var data = new Array(3);
+    data [1] = "This is DATA 1, ";
+    data [2] = "This is DATA 2, ";
+    data [3] = "This is DATA 3";
+
+document.getElementById("DataContainer").innerHTML = data[1] + data[2] + data[3];
+
+}
+
+getDATA ();
+```
+
+Logo, para tornar o comportamento do ExecuteJS muito mais parecido com um navegador da Web, uma avaliação repetida do JS é necessária. No entanto, há problemas que precisam ser resolvidos:
+
+* Como agendar e buscar novos recursos que aparecem no DOM resultante?
+* Mesmo quando conseguimos extrair novos recursos, como podemos preservar o status de análise sintática atual e continuar a avaliação do JS quando os novos recursos estão disponíveis?
+
+**. Simule eventos HTML de forma acumulativa ou de um estado recém carregado (um DOM novo criado após a análise)**
+
+Neste projeto, as duas formas foram implementadas (no código, o primeiro foi comentado). A simulação de eventos HTML de forma acumulativa é mais eficiente do que a outra maneira, já que para a última o documento original é analisado todas as vezes antes de uma simulação de um evento (pode haver uma maneira melhor de implementar isso). No entanto, como não podemos prever o comportamento do usuário, a maneira antiga pode não ser muito precisa. Eu não tenho uma boa ideia de como comparar as duas meneiras para ver qual é a melhor.
+
+###### Detecção de cloaking
+
+**. Técnicas de cloaking**
+
+Existem várias técnicas de cloaking:
+
+* Cloaking por cliques: cloaking pelolado do cliente e cloaking pelo lado do servidor;
+* Cloaking por User-Agent ou IP Delivery;
+* Reescreve a página da web usando scripts, já que os rastreadores geralmente não executam scripts;
+* ... (não estou ciente)
+* Uma mistura dessas técnicas.
+
+Neste projeto, apenas implementamos cloaking por cliques. O algoritmo é apresentado na seção principal de algoritmos. A detecção das outras duas técnicas de cloaking pode ser implementada facilmente com base no projeto atual.
+
+Para as duas segundas técnicas de cloaking, ainda precisamos buscar a mesma página da Web duas vezes, mas com o campo User Agent ou o endereço de IP diferentes. Se houver uma grande diferença de conteúdo entre as duas buscas, será detectado cloaking do lado do servidor. O CrawlURI fornece a interface para definir o campo User Agent. Além disso, o conteúdo pode ser armazenado em cache de cloaking.
+
+Para a terceira técnica de cloaking, já que nesse projeto o Heritrix é capaz de executar o código JS, o que podemos fazer é comparar a página da web original, buscada pelo processador fetchHTTP, com a página da Web resultante criada com o JS ativado. Apenas uma busca nesta página da Web é suficiente. Simulação de eventos HTML na página da web é opcional.
 
 
 
