@@ -963,7 +963,7 @@ preparer
 
 * queueAssignmentPolicy - Define como atribuir URIs a filas. Pode atribuir por host, por IP, pela autoridade ordenada por SURT, pela autoridade ordenada por SURT truncada em um domínio atribuível mais alto e em um de um conjunto fixo de buckets (1k).
 
-* uriPrecedencePolicy - Sets an integer precedence value on individual URIs when they are first submitted to a frontier for scheduling.  A URI's precedence directly affects which URI queue it is placed in, but does not affect a queue's precedence relative to other queues unless a queue-precedence-policy that consults URI precedence values is chosen.
+* uriPrecedencePolicy - Define um valor de precedência inteiro em URIs individuais quando eles são submetidos pela primeira vez a uma frontier para agendamento. A precedência de um URI afeta diretamente a fila de URI em que ele é colocado, mas não afeta a precedência de uma fila em relação a outras filas, a menos que seja escolhida uma política de precedência de fila que consulte valores de precedência de URI.
 
 * costAssignmentPolicy - Calcula um valor de 'custo' total para o CrawlURI fornecido.
 preselector
@@ -3906,7 +3906,8 @@ URL<sp>IP-address<sp>Archive-date<sp>Content-type<sp>Result-code<sp>Checksum<sp>
 A linha "filedesc" é um registro de URL de caso especial (veja abaixo). "path" é o nome do caminho original do arquivo archive, "IP-address" é o endereço (IP) da máquina que criou o arquivo, "date" é a data em que o arquivo archive foi criado. O tipo de conteúdo "text/plain" refere-se simplesmente ao restante do *version block*. "Lenght" especifica o tamanho, em bytes, do resto do *version block*.
 
 ```
-version-number == integer in ascii
+version-number == 
+in ascii
 reserved == string with no white space
 origin-code == Name of gathering organization with no white space
 URL-record-definition == names of fields in URL records
@@ -5687,10 +5688,33 @@ No **testExecuteJS**, os testes também são usados para testar as funcionalidad
 case1.html - case6.html são usados para testar a capacidade simples de execução de JS, incluindo a simulação de eventos em HTML. Em cada caso, um link out (uri terminado com "caseX-success", onde X é o número que aparece o nome do caso de teste), que não pode ser extraído com a versão atual liberada do Heritrix, pode ser descoberto por este Heritrix com capacidade de execução de JS.
 mytest1.html - mytest3.html devem testar mais a execução de JS, e o código JS nesse documento é mais complexo.
 
+Defina o seed como o alltests.html, o rastreador buscará todos os casos de teste. Depois que a tarefa de rastreamento for concluída, se você verificar o crawl.log e ver os uris terminarem com "caseX-success", isso significa que todos os módulos funcionaram.
 
+Como quase todos os testes em testFetchCache e testExecuteJS envolvem o redirecionamento de JS, eles também podem ser usados para testar o DetectJSRedirection.
 
+Em testDetectCloaking, os testes são usados para testar o DetectCloaking. O test9.html testa cloaking por cliques no lado do cliente e o testcloaking2.php implementa cloaking do lado do servidor.
 
+Observação: como não há arquivo de log de saída para DetectJSRedirection e testDetectCloaking, os resultados da detecção são apresentados como mensagens de aviso e só podem ser vistos no modo de depuração.
 
+## Agradecimentos
+
+Gostaria de agradecer ao Google e ao Internet Archive por me dar essa oportunidade e agradecer a Gordon Mohr por suas grandes ideias (o design da pasta de busca foi proposto por ele), valiosos comentários, conselhos e seu valioso tempo.
+
+Também gostaria de agradecer às pessoas no projeto Lobo por desenvolverem um analisador de DOM HTML tão bom quanto Javascript e CSS, o Cobra, e agradeço o Mozilla pelo JavaScript Engine - Rhino.
+
+## Referências
+
+[1] K. Chellapilla, and A. Maykov. A taxonomy of JavaScript redirection spam. In Proceedings of the 3rd international workshop on Adversarial information retrieval on the web, Banff, Alberta, Canada, 2007.
+[2] Z. Gyöngyi and H. Garcia-Molina. Web Spam Taxonomy. In 1st International Workshop on Adversarial Information Retrieval on the Web, May 2005.
+[3] Y. Niu, Y. M. Wang, H. Chen, M. Ma, and F. Hsu. A Quantitative Study of Forum Spamming Using Context-based Analysis. In Proceedings of Network and Distributed System Security (NDSS) Symposium, February 2007.
+[4] Rhino, http://www.mozilla.org/rhino/
+[5] Cobra, http://lobobrowser.org/cobra.jsp
+
+## Um pouco sobre mim
+
+Meu nome é Ping Wang, estudante de doutorado em Ciência da Computação na University of Central Florida.
+
+Meu endereço de e-mail é pwang@cs.ucf.edu. Por favor, sinta-se à vontade para entrar em contato comigo se tiver algum comentário ou pergunta sobre este projeto.
 
 ## Guia de estilo
 
@@ -5968,11 +5992,11 @@ Os números de versão H3 e superior são da forma X.Y.Z ou X.Y.Z-SUFIXO.
 
 ### Números
 
-X é um número inteiro de versão principal (major). A partir de 2010, o último número da versão principal é '3'. Se o número da versão principal mudar, significa que ocorreram grandes mudanças na funcionalidade e na operação, o que pode exigir uma adaptação significativa dos processos e de outros softwares relacionados que usam o Heritrix ou suas saídas. 
+X é um  inteiro de versão principal (major). A partir de 2010, o último número da versão principal é '3'. Se o número da versão principal mudar, significa que ocorreram grandes mudanças na funcionalidade e na operação, o que pode exigir uma adaptação significativa dos processos e de outros softwares relacionados que usam o Heritrix ou suas saídas. 
 
-Y é um número inteiro de versão secundária. A partir de outubro de 2010, sob a versão principal "3", o maior número de versão secundária é "0". (Embora algumas compilações de desenvolvimento sob o esquema de numeração de versão antiga fossem numeradas como "3.1.1-SNAPSHOT".) Adições ao número de versão secundária ocorrem quando uma nova funcionalidade notável é adicionada, mas processos e software anteriores devem continuar a funcionar, com apenas pequenas alterações, conforme detalhado nas notas de lançamento.
+Y é um inteiro de versão secundária. A partir de outubro de 2010, sob a versão principal "3", o maior número de versão secundária é "0". (Embora algumas compilações de desenvolvimento sob o esquema de numeração de versão antiga fossem numeradas como "3.1.1-SNAPSHOT".) Adições ao número de versão secundária ocorrem quando uma nova funcionalidade notável é adicionada, mas processos e software anteriores devem continuar a funcionar, com apenas pequenas alterações, conforme detalhado nas notas de lançamento.
 
-Z é um número inteiro de versão micro/patch. Antes do lançamento 3.0.1, o maior número de versão micro sob "3.0", em uma versão oficial, era "0" (para "3.0.0"). (Trabalho em andamento foi nomeado com um número "1" micro, originalmente "3.1.1-SNAPSHOT" sob as convenções mais antigas, mas agora simplesmente "3.0.1-SNAPSHOT".) Adições ao número de versão micro ocorrem quando uma versão oficial inclui correções de bugs e novas funcionalidades menores. Tentamos manter a compatibilidade dos formatos de configuração e até mesmo dos pontos de verificação entre adições de lançamento micro, embora algumas adaptações possam ser necessárias, conforme descrito nas notas de versão.
+Z é um inteiro de versão micro/patch. Antes do lançamento 3.0.1, o maior número de versão micro sob "3.0", em uma versão oficial, era "0" (para "3.0.0"). (Trabalho em andamento foi nomeado com um número "1" micro, originalmente "3.1.1-SNAPSHOT" sob as convenções mais antigas, mas agora simplesmente "3.0.1-SNAPSHOT".) Adições ao número de versão micro ocorrem quando uma versão oficial inclui correções de bugs e novas funcionalidades menores. Tentamos manter a compatibilidade dos formatos de configuração e até mesmo dos pontos de verificação entre adições de lançamento micro, embora algumas adaptações possam ser necessárias, conforme descrito nas notas de versão.
 
 (Nenhum desses números X, Y, Z está limitado ao intervalo 0-9, e a ordem é baseada no número completo, não no dígito inicial. Portanto, "8.10.0" vem depois de "8.9.99" - porque o "10" no meio é maior que "9".)
 
