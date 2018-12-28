@@ -5655,7 +5655,42 @@ Não tive a chance de escrever testes JUnit para este projeto.
 
 **Sincronização em FetchCache e Cache4CloakingDetection**
 
-Há vários toeThread para processar uris diferentes, ao mesmo tempo, no Heritrix. É possível que o cache de busca ou o cache de cloaking sejam acessados por vários threads e a sincronização incorreta pode resultar na leitura de dados incorretos ou em conflito. Nesse projeto, eu uso o shtable para todos os dados compartilhados dentro desses dois caches, e a sincronização de granularidade aproximada é implementada. No futuro, talvez o HashMap possa ser usado e a sincronização de granularidade precisa ser feita.
+Há vários toeThreads para processar uris diferentes, ao mesmo tempo, no Heritrix. É possível que o cache de busca ou o cache de cloaking sejam acessados por vários threads e a sincronização incorreta pode resultar na leitura de dados incorretos ou em conflito. Nesse projeto, eu uso uma tabela *hash* para todos os dados compartilhados dentro desses dois caches, e a sincronização de granularidade aproximada é implementada. No futuro, talvez um HashMap possa ser usado e uma boa sincronização de granularidade pode ser feita.
+
+### Uso e Teste
+
+###### Código
+
+O código fonte deste projeto está disponível no repositório Heritrxi SVN sob branches / jenniful_gsoc08 / no sourceforge, e pode ser verificado em http://archive-crawler.svn.sourceforge.net/svnroot/archive-crawler/branches/jenniful_gsoc08/heritrix2 /.
+
+###### Perfil da tarefa de rastreamento
+
+Para testar os módulos que desenvolvi, é necessário criar um novo perfil de tarefa.
+
+
+O perfil da tarefa - profile-js-cache-rule-spamdetection (ver anexo) é um exemplo pronto para uso. É criado com base em profile-basic_seed_sites, com dois caches: FetchCache e Cache4CloakingDetection, quatro processadores: FetchCacheUpdater, ExecuteJS, DetectJSRedirection e DetectCloaking e um MatchesListRegExpDecideRule adicionado.
+
+FetchCache, FetchCacheUpdater e MatchesListRegExpDecideRule são necessários para o ExecuteJS; DetectJSRedirection, DetectCloaking e Cache4CloakingDetection são necessários para o DetectCloaking; mas DetectJSRedirection, DetectCloaking e Cache4CloakingDetection não dependem um do outro, então eles podem ser adicionados ao perfil individualmente; e MatchesListRegExpDecideRule é usado para garantir que o crawl uri com o esquema de x-jseval esteja dentro do escopo do link.
+
+###### Casos de teste
+
+Alguns casos de teste estão anexados. Existem três subdiretórios: testFetchCache, testExecuteJS e testDetectCloaking. Todos os casos de teste são documentos HTML simples, testes complexos não são realizados.
+
+No **testFetchCache**, os testes são usados para testar as funcionalidades do FetchCache, FetchCache e ExecuteJS. Depois de rastrear os casos de teste, verifique o arquivo crawl.log - você verá que todos os arquivos .html são buscados primeiro e, em seguida, os arquivos .js externos. Depois, uris com esquema de x-jseval são processados e, finalmente, novos links criados por código JS são rastreados.
+
+test1.html, test2.html, test3.html, test4.html e test5.html são usados para testar habilidades simples de execução de JS, incluindo simulação de eventos HTML.
+test6.html e test7.html são usados para testar o método setTimeout no JS.
+test8.html é usado para testar o tratamento de erros quando um recurso é necessário, mas fora do escopo. No projeto atual, uma mensagem de aviso registrada pode ser vista no modo de depuração.
+
+No **testExecuteJS**, os testes também são usados para testar as funcionalidades do FetchCache, FetchCache e ExecuteJS. Esses testes foram criados durante a avaliação intermediária e modificados pelo Sr. Mohr.
+
+case1.html - case6.html são usados para testar a capacidade simples de execução de JS, incluindo a simulação de eventos em HTML. Em cada caso, um link out (uri terminado com "caseX-success", onde X é o número que aparece o nome do caso de teste), que não pode ser extraído com a versão atual liberada do Heritrix, pode ser descoberto por este Heritrix com capacidade de execução de JS.
+mytest1.html - mytest3.html devem testar mais a execução de JS, e o código JS nesse documento é mais complexo.
+
+
+
+
+
 
 ## Guia de estilo
 
