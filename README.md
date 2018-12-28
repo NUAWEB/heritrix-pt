@@ -5631,8 +5631,31 @@ Para as duas segundas técnicas de cloaking, ainda precisamos buscar a mesma pá
 
 Para a terceira técnica de cloaking, já que nesse projeto o Heritrix é capaz de executar o código JS, o que podemos fazer é comparar a página da web original, buscada pelo processador fetchHTTP, com a página da Web resultante criada com o JS ativado. Apenas uma busca nesta página da Web é suficiente. Simulação de eventos HTML na página da web é opcional.
 
+Os métodos de modificação/Modificando o método updatePrerequisitesCache e cloakingDetection na classe DetectCloaking devem ser capaz de implementar as duas técnicas de cloaking.
 
+No entanto, a detecção individual de cada técnica de cloaking pode não funcionar se o site de spam usar duas ou mais técnicas ao mesmo tempo. Por exemplo, um servidor da Web pode fornecer conteúdo diferente não apenas com base no User Agent, mas também com base no valor do campo referenciador no cabeçalho HTTP, provavelmente mos impedindo de conseguir obter uma página da Web diferente se alterarmos apenas um deles. E, caso apenas uma técnica de cloaking seja usada, nossa detecção ainda assim pode falhar, já que o servidor da Web pode esperar um valor específico e fornecer conteúdo diferente, por exemplo, somente quando o referrer for "www.specificvalue.com" o site retorna o conteúdo real. Como só conseguimos adivinhar esse valor, a chance de acerto é muito pequena. O que poderíamos fazer é nos concentrarmos nas técnicas de cloaking mais comuns. No entanto, atualmente, ainda não encontramos informações sobre a prevalência de técnicas de cloaking. Espero que encontremos no futuro.
 
+**. Comparação de conteúdo**
+
+Como podemos ver, a comparação de conteúdo é um passo obrigatório na detecção de cloaking, não importa como obtemos o conteúdo. Nesse projeto, apenas uso o método de comparação de strings, o que significa que, se houver apenas uma diferença de caractere ou dígito, o cloaking será detectado. Obviamente, essa comparação simples não é apropriada para a detecção de cloaking. Portanto, um método de comparação mais sofisticado deve ser projetado. Precisamos definir quanta diferença ou diferença em qual parte da página da Web deve ser considerada como cloaking. Atualmente, as pessoas propuseram hashing difuso (mencionado pelo Sr. Mohr). No hash difuso, pequenas diferenças podem ser ignoradas. Para mais informações, consulte http://ssdeep.sourceforge.net/ e o artigo acadêmico completo em http://dfrws.org/2006/proceedings/12-Kornblum.pdf.
+
+**. Busca dupla**
+
+A busca dupla é necessária para a detecção de cloaking pelo lado do servidor. Fazer uma dupla busca para cada página da web não só diminuirá o desempenho do Heritrix, mas também afetará muito os sites que estão sendo rastreados. Além disso, o spammer pode facilmente perceber esse comportamento "anormal". Até agora, não tenho conhecimento de nenhum método heurístico para prever se um site é spam ou não antes de buscar conteúdo e fazer mais processamento. O que poderíamos fazer é amostrar o site e realizar apenas buscas duplas em um número limitado de páginas da Web em um site. Uma boa estratégia de amostragem pode ser um trabalho futuro.
+
+###### Após a detecção de spam
+
+Atualmente, o módulo de detecção de spam da Web - processador DetectJSRedirection e DetectCloaking - retorna "true" quando o redirecionamento de JS ou cloaking é detectado (uma mensagem de aviso é registrada no modo de depuração), mas nenhuma outra ação é executada. Registrar essas informações em um arquivo de log como crawl.log pode ser útil.
+
+###### Problemas não resolvidos
+
+**Testes de JUnit**
+
+Não tive a chance de escrever testes JUnit para este projeto.
+
+**Sincronização em FetchCache e Cache4CloakingDetection**
+
+Há vários toeThread para processar uris diferentes, ao mesmo tempo, no Heritrix. É possível que o cache de busca ou o cache de cloaking sejam acessados por vários threads e a sincronização incorreta pode resultar na leitura de dados incorretos ou em conflito. Nesse projeto, eu uso o shtable para todos os dados compartilhados dentro desses dois caches, e a sincronização de granularidade aproximada é implementada. No futuro, talvez o HashMap possa ser usado e a sincronização de granularidade precisa ser feita.
 
 ## Guia de estilo
 
@@ -5976,5 +5999,4 @@ Select Libraries tab > Add variable > Configure variables > New
 * guia Arguments
 * Argumentos de programa: -a PASSWORD -l dist/src/main/conf/logging.properties
 * Argumentos VM: -Dheritrix.development
-
 
