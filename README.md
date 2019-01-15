@@ -26,7 +26,7 @@ Atualizações da versão 3.0:
 
 Atualizações da versão 3.1 podem ser encontradas aqui.
 
-## Instação do Heritrix
+## Instalação do Heritrix
 Uma distribuição binária do Heritrix pode ser baixada pelo link http://builds.archive.org:8080/maven2/org/archive/heritrix/heritrix/3.1.1/heritrix-3.1.1-dist.zip. Depois de baixado, expandir o arquivo. Esse processo funciona em algumas plataformas.
 
 ## Configuração do Heritrix
@@ -44,7 +44,7 @@ Depois de abrir o Heritrix, a interface do usuário baseada na web torna-se aces
 A URI de acesso da Web IU normalmente é
 https://(heritrixhost):8443
 
-A IUW é protegida por senha. Não há nenhum login de acesso padrão. Um nome de usuário e uma senha devem ser fornecidos usando as opções de linha de comando -a ou -web-admin fornecidas no startup ou definindo a propriedade do sistema heritrix.cmdline.admin. O nome de usuário e a senha ficarão salvas (printed) no controle (console) no startup. A partir da versão 3.1, o nome de usuário do administrador e a senha não ficarão salvas no controle no startup. Também, a partir da versão 3.1, se o parâmetro fornecido para a opção de linhas de comando -a -web-admin é uma string começando com "@", o resto da string será interpretada como um arquivo local de nome contendo o login e a senha do operador, adicionando mais uma medida de proteção ao nome de usuário e senha do administrador.
+A IUW é protegida por senha. Não há nenhum login de acesso padrão. Um nome de usuário e uma senha devem ser fornecidos usando as opções de linha de comando -a ou -web-admin fornecidas no startup, ou definindo a propriedade do sistema heritrix.cmdline.admin. O nome de usuário e a senha ficarão salvas (printed) no console no startup. A partir da versão 3.1, o nome de usuário do administrador e a senha não ficarão salvas no controle no startup. Também, a partir da versão 3.1, se o parâmetro fornecido para a opção de linhas de comando -a -web-admin é uma string começando com "@", o resto da string será interpretada como um arquivo local de nome contendo o login e a senha do operador, adicionando mais uma medida de proteção ao nome de usuário e senha do administrador.
 
 A página inicial de login solicita o nome de usuário e a senha. Depois de feito o login, a sessão será encerrada após um período sem uso.
 
@@ -52,96 +52,94 @@ O acesso da IUW é por HTTPS. O Heritrix é instalado com uma chave de acesso qu
 
 ## Questões de segurança
 
-O Heritrix é um aplicativo ativo e de grande rede que apresenta implicações de segurança tanto na máquina principal, onde ele roda, quanto remotamente, nas máquinas conectadas. 
+O Heritrix é um aplicativo de rete grande e ativo que apresenta implicações de segurança tanto na máquina principal, onde ele roda, quanto remotamente, nas máquinas conectadas. 
 
-### Entendendo os riscos
+###### Entendendo os riscos
 É importante entender que a IU da Web permite o acesso remoto do rastreador de maneiras que poderiam, potencialmente, interromper o rastreamento, mudar seu comportamento, ler ou criar arquivos de acesso local e fazer ou ativar outras ações no Java VM ou na máquina local pela execução de scripts arbitrários fornecidos pelo operador.
 
 Um acesso não autorizado da IU da Web pode encerrar ou corromper um rastreamento. Também pode alterar o comportamento do rastreador fazendo com que ele seja um problema para os outros hosts da rede. Os arquivos acessíveis ao processo do rastreador podem ser excluídos, corrompidos ou substituídos, o que pode causar problemas extensos na máquina de rastreamento. 
 
-Outro risco possível é que conteúdos worst-case ou mal-intencionados, em conjunto com os problemas do rastreador, podem interromper o rastreamento ou outros arquivos e operações no sistema local. Por exemplo, no passado, sem má intencão, alguns conteúdos de mídia avançada causaram o uso descontrolado de memória em bibliotecas de terceiros usadas pelo rastreador. Isso causou uma exaustão de memória que interrompeu e corrompeu o rastreamento em andamento. De forma parecida, padrões atípicos de inputs causaram  uso indevido da CPU pelas expressões regulares de extração de links do rastreador, causando rastreamentos extremamente lentos. Operadores de rastreamento devem monitorar seus rastreamentos de perto e usar a lista de discussão do projeto e o banco de dados de problemas para se manter atualizado sobre os problemas do rastreador.
+Outro risco possível é que conteúdos mal-intencionados, em conjunto com os problemas do rastreador, podem interromper o rastreamento ou outros arquivos e operações no sistema local. Por exemplo, no passado, sem má intencão, alguns conteúdos de mídia avançada causaram o uso descontrolado de memória em bibliotecas de terceiros usadas pelo rastreador. Isso causou uma exaustão de memória que interrompeu e corrompeu o rastreamento em andamento. De forma parecida, padrões atípicos de inputs causaram  uso indevido da CPU pelas expressões regulares de extração de links do rastreador, causando rastreamentos extremamente lentos. Operadores de rastreamento devem monitorar de perto seus rastreamentos e usar a lista de discussão do projeto e o banco de dados de problemas para se manter atualizado sobre os problemas do rastreador.
 
-### Controle de acesso à rede
+###### Controle de acesso à rede
 
-Lançado sem nenhum bind-adress específico ('-b' flag), a IU da Web do rastreador vincula-se apenas ao endereço de localhost/loopback (127.0.0.1),  e, portanto, só é acessível pela rede na mesma máquina em que foi lançado.
+Lançada sem nenhum bind-adress específico ('-b' flag), a IU da Web do rastreador vincula-se apenas ao endereço de localhost/loopback (127.0.0.1),  e, portanto, só é acessível pela rede na mesma máquina em que foi lançada.
 
-Se prático, esta configuração padrão deve ser mantida. Uma técnica como o tunelamento SSH poderia ser usada por usuários autorizados da máquina de rastreamento para permitir o acesso à Web de sua máquina local à máquina de rastreamento. Por exemplo, imagine o Heritrix rodando numa máquina 'crawler.example.com', com sua IU da Web apenas ouvindo/ligado ao seu endereço de host local. Supondo que um usuário chamado 'crawloperator' tenha acesso SSH a 'crawler.example.com', ele pode emitir o seguinte comando SSH em sua máquina local:
+Se prático, essa configuração padrão deve ser mantida. Uma técnica como o tunelamento SSH poderia ser usada por usuários autorizados da máquina de rastreamento para permitir o acesso à Web de sua máquina local à máquina de rastreamento. Por exemplo, imagine o Heritrix rodando numa máquina 'crawler.example.com', com sua IU da Web apenas ouvindo/ligado ao seu endereço de host local. Supondo que um usuário chamado 'crawloperator' tenha acesso SSH a 'crawler.example.com', ele pode emitir o seguinte comando SSH em sua máquina local:
 ```
 ssh -L localhost:9999:localhost:8443 crawloperator@crawler.example.com -N
 ```
-Isso diz ao SSH para abrir um túnel que encaminha conexões para "localhost: 9999" (na máquina local) para a própria ideia de "localhost: 8443" das máquinas remotas. Como resultado, a IU da Web do rastreador estará disponível por meio de "https: // localhost: 9999 /" enquanto o túnel existir (até que o comando ssh ou a conexão sejam interrompidos). Ninguém mais na rede pode conectar-se diretamente à porta 8443 em 'crawler.example.com' (já que está ouvindo apenas no endereço de loopback local), e ninguém em outro lugar na rede pode se conectar diretamente à porta 9999 do operador (já que também só está ouvindo o endereço de loopback local). 
+Isso diz ao SSH para abrir um túnel que encaminha conexões para "localhost: 9999" (na máquina local) para o "localhost: 8443" das máquinas remotas. Como resultado, a IU da Web do rastreador estará disponível por meio de "https: // localhost: 9999 /" enquanto o túnel existir (até que o comando ssh ou a conexão sejam interrompidos). Ninguém mais na rede pode conectar-se diretamente à porta 8443 em 'crawler.example.com' (since it is only listening on the local loopback address), e ninguém em outro lugar na rede pode se conectar diretamente à porta 9999 do operador (since it also is only listening on the local loopback address). 
 
 Se você precisar da porta de escuta do Heritrix vinculada a um endereço público, o sinalizador de linha de comando '-b' poderá ser usado.  Esse sinalizador usa (como argumento) o nome do host/endereço a ser usado. O caractere '/' pode ser usado para indicar todos os endereços.
 
-Se essa opção for usada, um conjunto de credenciais de login ainda mais unique/unguessable/brute-force-search-resistant devem ser escolhidas. Talvez ainda deva ser considerado o uso de outras políticas de rede/firewall para bloquear o acesso de origens não autorizadas.
+Se essa opção for usada, um conjunto de credenciais de login ainda mais único e difícil deve ser escolhido. Talvez ainda deva ser considerado o uso de outras políticas de rede/firewall para bloquear o acesso de origens não autorizadas.
 
 ### Controle de acesso de autenticação de login 
 
 O usuário e a senha administrativos proporcionam uma segurança rudimentar contra acessos não autorizados. Para mais segurança, você deve: 
-1. Usar um nome de usuário e senha únicos e difíceis de adivinhar para proteger a IU da Web. O Heritrix usa HTTPS para criptografar comunicações entre os clientes e a IU da Web. Tenha em mente que definir o nome de usuário e senha na linha de comando pode causar que eles fiquem visíveis para outros usuários da máquina de rastreamento - por exemplo, através do output de uma ferramenta como 'ps' que mostra as linhas de comando usadas para processos de lançamento. Tenha em mente também que essas informações são ecoadas em texto simples no heritrix_out.log para referência do operador. A partir da versão 3.1, o nome de usuário e senha administrativos não são ecoados no heritrix_out.logl.  Ainda a partir da versão 3.1, se o parâmetro fornecido para a opção de linhas de comando -a -web-admin é uma string começando com "@", o resto da string será interpretada como um arquivo local de nome contendo o login e a senha do operador. Assim, as credenciais não são visíveis para as outras máquinas que usam o comando listar processos (ps).
-  2. Inicie a VM Java de hospedagem do Heritrix com uma conta de usuário que tenha os privilégios mínimos necessários para operar o rastreador. Isso limitará os danos no caso de a IU da Web ser acessada de maneira maliciosa.
+1. Usar um nome de usuário e senha únicos e difíceis de adivinhar para proteger a IU da Web. O Heritrix usa HTTPS para criptografar comunicações entre os clientes e a IU da Web. Tenha em mente que definir o nome de usuário e senha na linha de comando pode causarfazer com que eles fiquem visíveis para outros usuários da máquina de rastreamento - por exemplo, através do output de uma ferramenta como 'ps' que mostra as linhas de comando usadas para processos de lançamento. Tenha em mente também que essas informações são ecoadas em texto simples no heritrix_out.log para referência do operador. A partir da versão 3.1, o nome de usuário e senha administrativos não são ecoados no heritrix_out.logl.  Ainda a partir da versão 3.1, se o parâmetro fornecido para a opção de linhas de comando -a -web-admin é uma string começando com "@", o resto da string será interpretada como um arquivo local de nome contendo o login e a senha do operador. Assim, as credenciais não são visíveis para as outras máquinas que usam o comando listar processos (ps).
+  2. Inicie a VM Java de hospedagem do Heritrix com uma conta de usuário que tenha os privilégios mínimos necessários para operar o rastreador. Isso limitará os danos no caso da IU da Web ser acessada de maneira maliciosa.
   
 ## Guia rápido para executar seu primeiro rastreamento
 
-A página do Controle Principal aparece depois da instalação do Heritrix e do acesso da IUW.
+A página do Console Principal aparece depois da instalação do Heritrix e do acesso da IUW.
 
 1. Insira o nome da nova tarefa (job) na caixa de texto abaixo de "Create new job with recommended starting configuration". Depois clique em "create".
 
-A tarefa recém criada aparecerá na lista de tarefas na página do Controle Principal. No Heritrix 3.0, a tarefa será baseada no perfil profile-defaults. A partir da versão 3.1, esse perfil foi eliminado. Ver Perfis para mais informações.
+A tarefa recém criada aparecerá na lista de tarefas na página do Console Principal. No Heritrix 3.0, a tarefa será baseada no perfil profile-defaults. A partir da versão 3.1, esse perfil foi eliminado. Ver Perfis para mais informações.
 
 2. Clique no nome da nova tarefa e você será redirecionado para a página da tarefa.
-O nome do arquivo de configuração, crawler-beans.cxml, aparecerá no topo da página. Ao lado, encontra-se a opção de "editar".
+O nome do arquivo de configuração, crawler-beans.cxml, aparecerá no topo da página. Ao lado, encontra-se a opção de "edit".
 
 3. CLique em "edit" e os conteúdos do arquivo de configuração aparecerão em uma área de texto editável.
 
 4. Nesse passo, várias propriedades devem ser inseridas para a tarefa tornar-se executável.
-i. Primeiro, adicione um value válido na propriedade metadata.operatorContactUrl, como http://www.archive.org. 
+i. Primeiro, adicione um valor válido na propriedade metadata.operatorContactUrl, como http://www.archive.org. 
 ii. Em seguida, preencha o elemento `<prop>` do bean `longOverrides` com os valores do seed para o rastreamento.  Um seed de teste é configurado para referência. Quando terminar, clique em "save changes" no topo da página. Para mais informações sobre configuração de tarefas ver Configurando Tarefas e Perfis. 
   
 5. Na página da tarefa, clique em "build". Esse comando montará a infraestrutura necessária para executar a tarefa. A seguinte mensagem será exibida no registro de tarefas: "INFO JOB instantiated."
 
 6. Em seguida, clique no botão "launch". Este comando inicia a tarefa no modo "paused". Nesse passo, a tarefa está pronta para ser executada.
 
-7. Para executar a tarefa, clique no botão "unpause". A tarefa, então, começará a enviar solicitações para as sementes do seu rastreamento. O status da tarefa será definido como "Running". Atualize a página para acompanhar as atualizações das estatísticas.
+7. Para executar a tarefa, clique no botão "unpause". A tarefa, então, começará a enviar solicitações para os seeds do seu rastreamento. O status da tarefa será definido como "Running". Atualize a página para acompanhar as atualizações das estatísticas.
 
 ### Observação
 
-* Uma tarefa não será modificada se o perfil ou a tarefa em que foi baseado for alterado.
+* Uma tarefa não será modificada se o perfil ou a tarefa em que foi baseada for alterado.
 * Tarefas baseadas no perfil padrão não estão prontas para serem executadas. O metadata.operatorContactUrl deve ser definido com um valor válido.
 
 Mais informações sobre a avaliação do progresso de uma tarefa podem ser encontradas em Análise de Tarefas.
 
-### Anexos
-
 ## Sair do Heritrix
 
-Para sair do Heritrix, envie a combinação de teclas para o controle (console), o que forçará o processo a sair (como o Control-C). Para sair de um processo em segundo plano no qual o Heritrix está em execução, use o comando kill.
+Para sair do Heritrix, envie a combinação de teclas para o console, o que forçará o processo a sair (como o Control-C). Para sair de um processo em segundo plano no qual o Heritrix está em execução, use o comando kill.
 
 Para sair da versão 3.1, clique no botão "Exit Java process" depois de marcar a caixa "I'm sure".
 
 ## Editar uma tarefa em andamento
 
-A configuração de uma tarefa pode ser editada enquanto ela ainda está em andamento. Isso pode ser feito pelo Bean Browser ou pelo link do Controle de Script na página da tarefa. O Bean Browser permite que as propriedades de tempo de execução sejam editadas.
+A configuração de uma tarefa pode ser editada enquanto ela ainda está em andamento. Isso pode ser feito pelo Bean Browser ou pelo link do Console de Script na página da tarefa. O Bean Browser permite que as propriedades de tempo de execução sejam editadas.
 
-O controle de script também pode ser usado para editar programaticamente tarefas em execução.
+O console de script também pode ser usado para editar, de forma programada, tarefas em execução.
 
-Se um valor não atômico for alterado, é recomendável pausar o rastreamento antes de fazer a alteração, pois algumas modificações nas entidades de configuração composta podem não ocorrer de maneira segura. Um exemplo de uma mudança não atômica é a adição de uma nova planilha.
+Se for alterar um valor não atômico, é recomendável pausar o rastreamento antes de fazer a alteração, pois algumas modificações nas entidades de configuração composta podem não ocorrer de maneira segura. Um exemplo de uma mudança não atômica é a adição de uma nova planilha.
 
-A partir da versão 3.1, o tratamento de operações de orçamento de fila e de rotação/retirada foi refatorado para garantir que alterações feitas  durante o rastreamento (por meio de novas planilhas sobrepostas ou edição direta com a ferramenta Bean Browser ou controle de script) entrem em vigor imediatamente. O DispositionProcessor possui configuração de sobreposição de planilhas para aplicar essa marcação. Em geral, as alterações de configurações por meio de novas planilhas e associações de planilhas durante um rastreamento (conforme inserido via script) agora entram em vigor em todos os URIs que estão sendo retirados para processamento, em vez de apenas URIs recém-descobertos. Portanto, alterações feitas via bean-browse/scripting /new-sheet-overlays entram em vigor imediatamente.
+A partir da versão 3.1, o tratamento de operações de orçamento de fila e de rotação/retirada foi refatorado para garantir que alterações feitas  durante o rastreamento (por meio de novas planilhas sobrepostas ou edição direta feita com a ferramenta Bean Browser ou com o console de script) entrem em vigor imediatamente. O DispositionProcessor possui configuração de sobreposição de planilhas para aplicar essa marcação. Em geral, as alterações de configurações por meio de novas planilhas e associações de planilhas durante um rastreamento (conforme inserido via script) agora entram em vigor em todos os URIs que estão sendo retirados para processamento, em vez de apenas URIs recém-descobertos. Portanto, alterações feitas via bean-browse/scripting /new-sheet-overlays entram em vigor imediatamente.
 
 ## FTP
 
-Heritrix suporta rastreamento de sites FTP. Seeds devem ser adicionados no seguinte formato: ftp://ftphostname.org/ftpdirectory.
+O Heritrix suporta rastreamento de sites FTP. Seeds devem ser adicionados no seguinte formato: ftp://ftphostname.org/ftpdirectory.
 
 ## Ponto de verificação (Checkpoint)
 
 O ponto de verificação de uma tarefa de rastreamento salva uma representação do estado atual da tarefa em um diretório no `checkpointsPath`, que recebe o nome do ponto de verificação. Essa representação inclui a serialização dos principais objetos da tarefa de rastreamento, cópias do conjunto atual de arquivos de log de bdbje e outros arquivos do estado do rastreamento.  O diretório do ponto de verificação contém tudo o que é necessário para recuperar um rastreamento. O ponto de verificação também roda os logs de rastreamento, incluindo o log `recover.gz`, se ativado. Arquivos Log não são copiados para o diretório do ponto de verificação e permanecem no diretógio de `logs`, sendo diferenciados através de sufixos. O sufixo é o nome do ponto de verificação; por exemplo, para o ponto `000031` o log do rastreamento será `crawl.log.000031`.
 
-Para executar um ponto de verificação, clique no botão do ponto de verificação na página de tarefas da IUW ou invoque a funcionalidade do ponto de verificação pelo REST API. O ponto de verificação pode levar mais tempo em rastreamentos maiores (a partir da versão 3.1 esse processo é muito mais rápido). Enquanto o ponto de verificação estiver sendo feito, o status do rastreamento ficará como CHECKPOINTING. Após o término, o rastreador continuará o rastreamento, a não ser que ele estivesse pausado anteriormente. Nesse caso, o rastreamento continuará pausado.
+Para executar um ponto de verificação, clique no botão do ponto de verificação (checkpointin) na página de tarefas da IUW ou invoque a funcionalidade do ponto de verificação pelo REST API. O ponto de verificação pode levar mais tempo em rastreamentos maiores (a partir da versão 3.1 esse processo é muito mais rápido). Enquanto o ponto de verificação estiver sendo feito, o status do rastreamento ficará como CHECKPOINTING. Após o término, o rastreador continuará o rastreamento, a não ser que ele estivesse pausado anteriormente. Nesse caso, o rastreamento continuará pausado.
 
 A recuperação de um ponto de verificação é parecida com a recuperação de um rastreamento usando o `frontier.recovery.log`.
 
-Ponto de verificação automático
+###### Ponto de verificação automático
 
 Para configurar o Heritrix para executar pontos de verificação automaticamente, remova ou adicione a seguinte linha no arquivo `logging.properties`.
 
@@ -157,22 +155,22 @@ A partir da versão 3.1, a IUW fornece a opção de recomeçar um rastreamento a
 
 1. Faça um ponto de verificação do rastreamento em execução clicando em "checkpoint".
 2. Quando o checkpoint terminar (uma mensagem aparecerá avisando o operador), encerre o rastreamento clicando no botão "terminate".
-3. Desmonte a tarefa clicando no botão "teardown". 
+3. Destrua a tarefa clicando no botão "teardown". 
 4. Reconstrua a tarefa clicando no botão "build". Agora, uma caixa deve aparecer em cima dos botões de comando. A caixa tem os nomes dos pontos de verificação invocados anteriormente.
-5. Selecione um ponto de verificação da caixa. O ponto de verificação selecionado será usado para iniciar a tarefa recém-construída.
+5. Selecione um ponto de verificação na caixa. O ponto de verificação selecionado será usado para iniciar a tarefa recém construída.
 6. Clique em "launch".
 7. Clique em "unpause".
 A tarefa iniciará a partir do ponto de verificação escolhido.
 
-## Página do Controle Principal
+## Página do Console Principal
 
-A página do controle principal aparece logo após o login. Esse página lista todas as tarefas e perfis.
+A página do console principal aparece logo após o login. Esse página lista todas as tarefas e perfis.
 
 ### Elementos e operações de dados do controle principal
 
 rescan
 
-Faz com que o Heritrix examine o sistema de arquivos procurando qualquer mudança no diretório "tarefas". A exibição é, então, sincronizada com o sistema de arquivos
+Faz com que o Heritrix examine o sistema de arquivos procurando qualquer mudança no diretório "tarefas". A exibição é, então, sincronizada com o sistema de arquivos.
 
 create
 
@@ -180,21 +178,21 @@ Permite que um nome seja inserido e uma nova tarefa de rastreamento seja criada.
 
 add
 
-Permite que um diretório de tarefa não gerenciado pelo Heritrix seja especificado. Após inserir o caminho para o novo diretório e clicar "adicionar", o Heritrix permitirá que você administre o diretório. Por exemplo, será possível configurar a tarefa usando o arquivo crawler-beans.cxml.
+Permite que um diretório de tarefa não gerenciado pelo Heritrix seja especificado. Após inserir o caminho para o novo diretório e clicar em "add", o Heritrix permitirá que você administre o diretório. Por exemplo, será possível configurar a tarefa usando o arquivo crawler-beans.cxml.
 
 status
 
-O status das tarefas em andamento, o número de vezes que uma tarefa foi iniciada e o caminho para o arquivo de configuração das tarefas aparecem na página do Controle Principal. Também aparecem as estatísticas de memória do Heritrix e se a tarefa é um perfil ou não.
+O status das tarefas em andamento, o número de vezes que uma tarefa foi iniciada e o caminho para o arquivo de configuração das tarefas aparecem na página do Console Principal. Também aparecem as estatísticas de memória do Heritrix e se a tarefa é um perfil ou não.
 
 Exit Java Process
 
-A partir da versão 3.1, existe o botão "Exit Java Process". Após ser selecionado juntamente com a seleção da opção "I'm sure", esse botão fará com que o Heritrix seja encerrado e fechado.
+A partir da versão 3.1, existe o botão "Exit Java Process". Após ser selecionado juntamente com a opção "I'm sure", fará com que o Heritrix seja encerrado e fechado.
 
-## Beans Browser
+## Nevegar pelos beans
 
-A IUW fornece uma maneira de visualizar e editar os beans Spring que formam a configuração de um rastreamento. É importante notar que mudar a configuração de um rastreamento usando o Bean Browser não fará com que o arquivo crawler-beans.cxml seja atualizado. Portanto, mudanças de definições feitas com o Beans Browser não são permanente. O Bean Browser deve ser usado apenas para mudar as definições de um rastreamento em andamento.  Para acessar o navegador, clique no link do Bean Browser na página de tarefas. A hierarquia dos beans Spring aparecerá.
+A IUW fornece uma maneira de visualizar e editar os beans Spring que formam a configuração de um rastreamento. É importante notar que mudar a configuração de um rastreamento usando o Bean Browser não fará com que o arquivo crawler-beans.cxml seja atualizado. Portanto, mudanças de definições feitas com o Bean Browser não são permanente. O Bean Browser deve ser usado apenas para mudar as definições de um rastreamento em andamento.  Para acessar o navegador, clique no link do Bean Browser na página de tarefas. A hierarquia dos beans Spring aparecerá.
 
-Os beans individuais podem ser detalhados ao clilcar neles. O exemplo abaixo mostra a exibição depois de clicar nos seeds beans. 
+Os beans individuais podem ser detalhados clicando neles. O exemplo abaixo mostra a exibição depois de clicar nos seeds beans. 
 
 ## Perfis
 
@@ -202,13 +200,13 @@ Perfis são modelos para a criação de tarefas de rastreamento. Contêm todas a
 
 Um exemplo comum de uma configuração de perfil é deixar a propriedade `metadata.operatorContactUrl` indefinida, forçando o operador a inserir um valor válido.
 
-Os perfis podem ser usados como modelos ao deixar suas definições de configuração inválidas. Dessa meneira, o operador é obrigado a escolher suas configurações ao criar uma tarefa a partir de um perfil. Isso pode ser vantajoso quando um administrador precisar configurar várias tarefas de rastreamento diferentes para acomodar sua política de rastreamento.
+Os perfis podem ser usados como modelos ao deixar suas definições de configuração inválidas. Dessa meneira, o operador é obrigado a escolher suas configurações ao criar uma tarefa a partir de um perfil. Isso pode ser vantajoso quando um administrador precisa configurar várias tarefas de rastreamento diferentes para acomodar sua política de rastreamento.
 
-Se uma tarefa de rastreamento é um perfil ou uma tarefa que pode ser iniciada é determinado por um nome de arquivo do arquivo de configuração principal. Se começar com "profile-", é um perfil. Tenha cuidado ao alterar o nome de um arquivo de configuração principal ao copiar manualmente o perfil para criar uma tarefa de rastreamento possível de incialização.
+Se uma tarefa de rastreamento é um perfil ou uma tarefa executável é determinado pelo nome de arquivo do arquivo de configuração principal. Se começar com "profile-", é um perfil. Tenha cuidado ao alterar o nome de um arquivo de configuração principal ao copiar manualmente o perfil para criar uma tarefa de rastreamento possível de incialização.
 
 A partir da versã 3.1, a marca "profile-" foi eliminada. Não há mais restrições em nomes de perfis.
 
-## Heritrix Output
+## Saídas do Heritrix
 
 Além dos logs, os seguintes arquivos são gerados. Algumas das informações contidas neles também estão presentes na IUW.
 
@@ -235,9 +233,10 @@ negative-surts.dump
 Contém o formulário SUR de URIs que devem ser excluídos do rastreamento.
 
 heritrix_out.log
-This file captures output to standard out and standard error.  Most of the output consists of low-level exceptions and logging information.
 
-Esse arquivo é criado no mesmo diretório do arquivo jar do Heritrix. Não é associado com nenhuma tarefa específica, mas contém outputs de todos as tarefas executadas pelo rastreador.
+Captura a saída para saída padrão e erro padrão. A maior parte da saída consiste em exceções de baixo nível e informações de registro.
+
+Esse arquivo é criado no mesmo diretório do arquivo jar do Heritrix. Não é associado com nenhuma tarefa específica, mas contém saídas de todas as tarefas executadas pelo rastreador.
 
 Exemplo de um output desse arquivo:
 
@@ -264,7 +263,7 @@ crawl-report.txt
 
 Contém métricas úteis sobre tarefas terminadas. O relatório é criado pelo bean StatisticsTracker e é escrito no fim do rastreamento.  
 
-Exemplo de um output desse arquivo:
+Exemplo de uma saída desse arquivo:
 
 ```
 Crawl Name: basic
@@ -285,7 +284,7 @@ Novel Bytes: 23877375 (23 MB)
 
 hosts-report.txt
 
-Contém uma visão geral dos hosts que foram rastreadas. Também mostra o número de documentos rastreados e a quantidade de bytes baixados por cada host.
+Contém uma visão geral dos hosts que foram rastreados. Também mostra o número de documentos rastreados e a quantidade de bytes baixados por cada host.
 
 O arquivo é criado pelo bean StatisticsTracker e é escrito no fim do rastreamento. 
 
@@ -299,11 +298,11 @@ Exemplo de um output desse arquivo:
 
 mimetype-report.txt
 
-Contém um relatório mostrando o número de documentos e dados baixados per mime type is displayed.
+Contém um relatório mostrando o número de documentos e dados baixados por tipo mime.
 
 O arquivo é criado pelo bean StatisticsTracker e é escrito no fim do rastreamento. 
 
-Exemplo de um output desse arquivo:
+Exemplo de uma saída desse arquivo:
 
 ```
 624 13248443 image/jpeg
@@ -315,9 +314,9 @@ Exemplo de um output desse arquivo:
 processors-report.txt
 ```
 
-Contém o relatório dos processadores, que mostra a atividade de cada processador do Heritrix. Para mais informações, ver Processing Chains.  É escrito no fim do rastreamento. 
+Contém o relatório dos processadores, que mostra a atividade de cada processador do Heritrix. Para mais informações, ver Cadeias de Processamento. É escrito no fim do rastreamento. 
 
-Exemplo de um output desse arquivo:
+Exemplo de uma saída desse arquivo:
 
 ```
 CandidateChain - Processors report - 200910300032
@@ -379,11 +378,11 @@ Processor: org.archive.crawler.postprocessor.DispositionProcessor
 
 responsecode-report.txt
 
-Contém um relatório que exibe o número de documentos baixados per successful status code.  For failure codes see the crawl.log file.
+Contém um relatório que exibe o número de documentos baixados por código de status por código de status bem-sucedido. Para códigos de falha, consulte o arquivo crawl.log.
 
 O arquivo é criado pelo bean StatisticsTracker e é escrito no fim do rastreamento. 
 
-Exemplo de um output desse relatório:
+Exemplo de uma saída desse relatório:
 
 ```
 [#urls] [rescode]
@@ -398,7 +397,7 @@ Contém o status de rastreamento de cada seed.
 
 O arquivo é criado pelo bean StatisticsTracker e é escrito no fim do rastreamento. 
 
-Exemplo de um output desse relatório:
+Exemplo de uma saída desse relatório:
 
 ```
 [code] [status] [seed] [redirect]
@@ -407,9 +406,9 @@ Exemplo de um output desse relatório:
 
 frontier-summary-report.txt
 
-Este relatório contém um detalhamento da atividade de fronteira por thread. Para cada encadeamento em execução, o status da fila de fronteira pode ser examinado.
+Este relatório contém um detalhamento da atividade de frontier por thread. Para cada encadeamento em execução, o status da fila frontier pode ser examinado.
 
-Exemplo de um output desse relatório:
+Exemplo de uma saída desse relatório:
 
 ```
 -----===== RETIRED QUEUES =====-----
@@ -504,8 +503,7 @@ source-report.txt
 
 Contém uma linha de item para cada host, que inclui o seed por qual o host foi alcançado.
 
-Exemplo de uma 
-desse relatório:
+Exemplo de uma saída desse relatório:
 
 ```
 [source] [host] [#urls]
@@ -541,7 +539,7 @@ Contém a lista de encadeamentos ainda ativos no final do rastreamento, com info
 
 arquivos WARC 
 
-Assuming you are using the WARC writer that comes with Heritrix, vários arquivos WARC contendo conteúdo rastreado serão gerados.
+Supondo que você esteja usando o escritor WARC que acompanha o Heritrix, vários arquivos WARC contendo conteúdo rastreado serão gerados.
 
 O local de armazenamento de arquivos WARC pode ser especificado definindo o valor do `diretório` do bean `WARCWriterProcessor`.
 
@@ -553,7 +551,7 @@ O WARCWriterProcessor contém a configuração de prefixo padrão IAH.
 
 Arquivos WARC com o sufixo `.open` estão no processo de serem escritos pelo Heritrix. Pode haver vários WARCs abertos a qualquer momento.
 
-Arquivos WARC com o sufixo `.invalid` indicam problemas ao gravar no arquivo. Isso pode ser causado por um disco danificado ou um disco sem espaço. Em um problema de I/O, o Heritrix fecha o arquivo WARC problemático e adiciona o sufixo `.invalid`. Esses arquivos devem ser verificados quanto à coerência.
+Arquivos WARC com o sufixo `.invalid` indicam problemas de gravação do arquivo. Isso pode ser causado por um disco danificado ou um disco sem espaço. Em um problema de I/O, o Heritrix fecha o arquivo WARC problemático e adiciona o sufixo `.invalid`. Esses arquivos devem ser verificados quanto à coerência.
 
 A partir da versão 3.1, o bean "LowDiskPauseProcessor" foi substituido pelo bean "DiskSpaceMonitor". Ao gravar arquivos WARC, o DiskSpaceMonitor verifica o espaço disponível dos caminhos configurados. Se o espaço livre estiver abaixo do limite definido, o rastreamento será pausado. No exemplo abaixo, o caminho `/warcs` é monitorado. Se o espaço livre for inferior a 500MB, os rastreamentos sendo gravados no diretório `/warcs` serão pausado.
 ```
@@ -566,7 +564,7 @@ A partir da versão 3.1, a nomenclatura de arquivos WARC foi alterada. Em vez de
 ${prefix}-${timestamp17}-${serialno}-${heritrix.pid}~${heritrix.hostname}~${heritrix.port}
 ```
 
-O modelo adiciona o processo de ID local e a data e hora de 17 digitos. O registro de data e hora é fornecido por um serviço que assegura que cada registro seja pelo menos 1 milissegundo após os valores anteriores em milissegundos. A nova convenção padrão também minimiza as chances de colisões de nomes ARC/WARD, mesmo quando vários rastreamentos estão sendo iniciados ou executados simultaneamente na mesma máquina local, usando o mesmo prexifo de nome de arquivo. Apesar dos nomes gerados serem longos, eles provavelmente serão únicos sob condiçoes normais. Não é recomendado que o modelo seja alterado, a menos que seja certo que a nomenclatura alternativa fornecerá nomes únicos. Isso é importante porque as ferramentas downstream que indexam ARCs/WARCs geralmente pressupõem a exclusividade do nome do arquivo e podem se beneficiar de sua geração exclusiva.
+O modelo adiciona o processo de ID local e a data e hora de 17 digitos. O registro de data e hora é fornecido por um serviço que assegura que cada registro é feito pelo menos 1 milissegundo após os valores anteriores em milissegundos. A nova convenção padrão também minimiza as chances de colisões de nomes ARC/WARD, mesmo quando vários rastreamentos estão sendo iniciados ou executados simultaneamente na mesma máquina local, usando o mesmo prexifo de nome de arquivo. Apesar dos nomes gerados serem longos, eles provavelmente serão únicos sob condiçoes normais. Não é recomendado que o modelo seja alterado, a menos que seja certo que a nomenclatura alternativa fornecerá nomes únicos. Isso é importante porque as ferramentas downstream que indexam ARCs/WARCs geralmente pressupõem a exclusividade do nome do arquivo e podem se beneficiar de sua geração exclusiva.
 
 ## Casos comuns de uso do Heritrix
 
@@ -580,7 +578,7 @@ Mídia avançada abrange diferentes tipos de conteúdo da web que proporcionam a
 
 * Arquivos de grande tamanho
 
-Conteúdos de mídia avançada, como o Flash e vídeos, normalmente são muito maiores do que páginas `text/html` normais. O rastreamento desse tipo de conteúdo requer grandes investimentos em armazenamento e largura de banda (bandwidht). Para diminuir esses problemas, é recomendada a desduplicação para rastreamentos desse tipo de conteúdo. A desduplicação identifica conteúdos coletados anteriormente que são redundantes e pula seus downloads. Pointers em conteúdos duplicados permitem que eles apareçam em rastreamentos subsequentes. Para mais detalhes ver Configurando o Heritrix para Desduplicação.
+Conteúdos de mídia avançada, como o Flash e vídeos, normalmente são muito maiores do que páginas `text/html` normais. O rastreamento desse tipo de conteúdo requer grandes investimentos em armazenamento e largura de banda (bandwidth). Para diminuir esses problemas, é recomendada a desduplicação em rastreamentos desse tipo de conteúdo. A desduplicação identifica conteúdos coletados anteriormente que são redundantes e pula seus downloads. Pointers em conteúdos duplicados permitem que eles apareçam em rastreamentos subsequentes. Para mais detalhes ver Configurando o Heritrix para Desduplicação.
 
 * Links incorporados em mídia avançada
 
@@ -607,7 +605,7 @@ Vários sites de redes sociais utilizam mídia avançada para melhorar a experi�
 
 ### Como evitar solicitações falsas ao processar certos tipos de conteúdos
 
-A partir da versão 3.1, melhorias foram feitas na capacidade do rastreador de determinar se uma string é um URI válido. Essas melhorias proporcionam uma melhor extração de links de conteúdos como o JavaScript não analisado/não interpretado. No entanto, essa técnica pode ser propensa a erros, causando problemas ou incomodações no website alvo. Na versão 3.1, essa funcionalidade pode ser desativada para rastreamentos completos ou site-por-site. Para desativar, é necessário remover a referência bean "extractorJs" do bean "fetchProcessors" e definir as propriedades "extractJavascript" e "extractValueAttributes" do "extractionHtml" como falsas.
+A partir da versão 3.1, melhorias foram feitas na capacidade do rastreador de determinar se uma string é um URI válido. Essas melhorias proporcionam uma extração melhor de links de conteúdos como o JavaScript não analisado/não interpretado. No entanto, essa técnica pode ser propensa a erros, causando problemas ou incomodações no website alvo. Na versão 3.1, essa funcionalidade pode ser desativada para rastreamentos completos ou site-por-site. Para desativá-la, é necessário remover a referência bean "extractorJs" do bean "fetchProcessors" e definir as propriedades "extractJavascript" e "extractValueAttributes" do "extractionHtml" como "false".
 
 1. Remova a referência do bean "fetchProcessors" para "extractorJs".
 
@@ -653,11 +651,11 @@ A partir da versão 3.1, melhorias foram feitas na capacidade do rastreador de d
 
 ```
 
-### Como evitar grande números de conteúdos dinâmicos
+### Como evitar grandes quantidades de conteúdos dinâmicos
 
-Suponha que você queira apenas rastrear páginas de um determinado host (http://www.foo.org/) e também evitar o rastreamento de muitas páginas de um calendário gerado dinamicamente. Vamos supor que o calendário é acessado ao fornecer um ano, um mês e um dia para o diretório do calendário. Por exemplo, .
+Suponha que você queira apenas rastrear páginas de um determinado host (http://www.foo.org/) e também evitar o rastreamento de muitas páginas de um calendário gerado dinamicamente. Vamos supor que o calendário é acessado ao fornecer um ano, mês e dia para o diretório do calendário. 
 
-Quando você cria uma tarefa de rastreamento você especifica apenas um seed: http://www.foo.org/.  Por padrão, a nova tarefa de rastreamento usará a DecideRuleSequence, que irá conter um conjunto padrão de DecideRules. Uma das regras padrão é a SurtPrefixedDecideRule, que informa ao Heritrix para aceitar qualquer URI que corresponda ao prefixo SURT do URI de origem: http://(org,foo,www,)/. Se a URI http://foo.org/ for encontrada, será rejeitada, já que seu prefixo SURT http://(org,foo,) não corresponte ao prefixo SURT do seed.  Para permitir que ambos foo.org e www.foo.org sejam capturados, você pode adicionar dois seeds: http://www.foo.org/ and http://foo.org/. Para permitir que todo subdomínio de foo.org seja rastreado, você pode adicionar a semente http://foo.org. Observe a ausência de uma barra à direita.
+Quando você cria uma tarefa de rastreamento, apenas um seed é especificado: http://www.foo.org/.  Por padrão, a nova tarefa de rastreamento usará a DecideRuleSequence, que irá conter um conjunto padrão de DecideRules. Uma das regras padrão é a SurtPrefixedDecideRule, que informa ao Heritrix para aceitar qualquer URI que corresponda ao prefixo SURT do URI de origem: http://(org,foo,www,)/. Se a URI http://foo.org/ for encontrada, será rejeitada, já que seu prefixo SURT http://(org,foo,) não corresponte ao prefixo SURT do seed.  Para permitir que ambos foo.org e www.foo.org sejam capturados, você pode adicionar dois seeds: http://www.foo.org/ and http://foo.org/. Para permitir que todo subdomínio de foo.org seja rastreado, você pode adicionar a semente http://foo.org. Observe a ausência de uma barra à direita.
 
 Apague o TranclusionDecideRule, pois essa regra tem o potencial de levar o Heritrix para outro host. Por exemplo, se um URI retornar um código de resposta 301 (mover permanentemente) ou 302 (encontrado), bem como um URI que contenha um nome de host diferente do que os seeds, o Heritrix aceitaria esse URI usando o TransclusionDecideRule. Remover essa regra fará com que o Heritrix não se afaste do nosso host www.foo.org.
 
@@ -669,13 +667,13 @@ Como alternativa, você pode adicionar o MatchesFilePatternDecideRule. Defina us
 
 Suponha que você queira apenas rastrear URIs que correspondam a http://foo.org/bar/\*.html e salvar os arquivos rastreados em um formato de arquivo/diretório em vez de arquivos WARC. Além disso, suponha que o servidor da Web faz distinção entre maiúsculas e minúsculas.  Por exemplo, http://foo.org/bar/abc.html e http://foo.org/bar/ABC.HTML estão apontando para dois recursos diferentes.
 
-Primeiro, crie uma tarefa com apenas um seed, http://foo.org/bar/. Configure o bean warcWriter para que sua classe seja org.archive.modules.writer.MirrorWriterProcessor. Esse Processador armazenará arquivos em uma estrutura de diretórios que corresponda aos URIs rastreadas. Os arquivos serão armanezados na cópia do diretório da tarefa de rastreamento.  
+Primeiro, crie uma tarefa com apenas um seed, http://foo.org/bar/. Configure o bean warcWriter para que sua classe seja org.archive.modules.writer.MirrorWriterProcessor. Esse Processador armazenará arquivos em uma estrutura de diretórios que corresponda aos URIs rastreados. Os arquivos serão armanezados na cópia do diretório da tarefa de rastreamento.  
 
 ### Armazenamento de páginas HTML bem-sucedidas
 
-Suponha que você queira capturar as primeiras 50 páginas encontradas de um conjunto de seeds e arquivar apenas as páginas que retornam um código de resposta 200 e text/html de tipo mime.  Além disso, você quer procurar links somente em recursos HTML.
+Suponha que você queira capturar as primeiras 50 páginas encontradas de um conjunto de seeds e arquivar apenas as páginas que retornam código de resposta 200 e text/html de tipo mime.  Além disso, você quer procurar links somente em recursos HTML.
 
-Para verificar links apenas em documentos HTML, você precisará remover os seguintes extratores que informam ao Heritrix para procurar links em folhas de estilo, JavaScript e arquivos Flash:
+Para verificar links apenas em documentos HTML, você precisará remover os seguintes *extractors* que informam ao Heritrix para procurar links em planilhas de estilo, JavaScript e arquivos Flash:
 
 * ExtractorCss
 * ExtractorJs
@@ -703,15 +701,15 @@ No Heritrix, uma tarefa é baseada no Framework Spring. Beans Spring representam
 
 ## Análise da tarefa
 
-O Heritrix oferece várias facilidades para examinar os detalhes de um rastreamento. Esses relatórios e logs também estão disponíveis durante o tempo de execução.
+O Heritrix oferece várias opções para examinar os detalhes de um rastreamento. Esses relatórios e logs também estão disponíveis durante o tempo de execução.
 
 ### Logs
 
 Cada tarefa de rastreamento tem seu próprio conjunto de arquivos de logs.
 
-Os logs podem sem encontrados no diretório "logs", que existe sob o diretório de uma tarefa específica. A localização de arquivos logs específicos é fornecida na seção "Caminhos referenciados à configuração" da página da tarefa.
+Os logs podem sem encontrados no diretório "logs", que existe sob o diretório de uma tarefa específica. A localização de arquivos logs específicos é fornecida na seção "Configuration-referenced paths" da página da tarefa.
 
-Propriedades logs
+Propriedades de logs
 
 As propriedades de log podem ser configuradas modificando o arquivo logging.properties localizado no diretório ./conf. Para obter informações sobre como usar propriedades de log, visite http://logging.apache.org/log4j/.
 
@@ -784,7 +782,7 @@ O arquivo frontier.recover.gz é um log gzipado de eventos Frontier que pode ser
 
 A criação de tarefas (Creating a Job) e perfis (Creating a Profile) é o primeiro passo no processo de usar o Heritrix para rastrear a web. Configurar tarefas e perfis é um trabalho um pouco mais complicado. A seção a seguir se aplica para a configuração tanto de tarefas quanto de perfis.
 
-### Note
+###### Note
 
 * Para editar um rastreamento em andamento, ver Editing a Running Job para mais informações.
 
@@ -792,7 +790,7 @@ Configurar uma tarefa ou um perfil involve a edição do arquivo `crawler-beans.
 
 A primeira seção do arquivo `crawler-beans-cxml` permite que o operador altere qualquer propriedade simples do bean, como a `metadata.operatorContactUrl`. Por exemplo, o Heritrix pode ser configurado para ignorar cookies com a seguinte substituição de configuração: 
 
-### Alterar propriedade para ignorar cookies
+###### Sobreposição da propriedade de ignorar cookies
 
 ```
 <!-- overrides from a text property list -->
@@ -815,9 +813,9 @@ ignoreCookies=true
 </bean>
 ```
 
-O bean "longerOverrides" está disponível para substituições mais longas ou complicadas. É usado para substituir propriedades que contêm múltiplos valores ou que podem ser alteradas com um bean. Por exemplo, vários seeds podem ser configurados com a seguinte configuração:
+O bean "longerOverrides" está disponível para sobreposições mais longas ou complicadas. É usado para substituir propriedades que contêm múltiplos valores ou que podem ser alteradas com um bean. Por exemplo, vários seeds podem ser configurados com a seguinte configuração:
 
-### Substituição dos valores dos seeds
+### Sobreposição dos valores dos seeds
 
 ```
 <bean id="longerOverrides" class="org.springframework.beans.factory.config.PropertyOverrideConfigurer">
@@ -863,7 +861,7 @@ No nível de tarefa, uma tarefa de rastreamento do Heritrix possui três pipelin
 
 - Ver Fetch Chain Processors
 
-* Cadeia de disposição (Disposition Chain):
+* Disposition Chain:
 
 - Trata de pós-processamentos necessários após o termino da cadeia de busca.
 
@@ -872,7 +870,6 @@ No nível de tarefa, uma tarefa de rastreamento do Heritrix possui três pipelin
 - Ver Disposition Chain Processors
 
 Todo URI retirado da fila Frontier é executado pelas cadeias de processamento. Os URIs são sempre processados na ordem mostrada no diagrama abaixo, a menos que um processador em particular exiba um erro fatal ou decida interromper o processamento do URI atual.
-
 
 Cada cadeia de processamento é composta de zero ou mais processadores individuais. Por exemplo, o FetchChain pode incluir os processadores extractorCss e extractorJs. Em uma etapa de processamento, a ordem em que os processadores são executados é a ordem em que eles são listados no arquivo crawler-beans.cxml.
 
@@ -890,7 +887,8 @@ Cada cadeia de processamento é composta de zero ou mais processadores individua
 | preparer | Prepara os URIs aceitos para enfileirar na Frontier.  | |
 | preconditions | E  | |
 | fetchDns | Busca DNS URIs.  | |
-| fetchHttp |   | |
+| fetchHttp | This processor fetches HTTP URIs.  As of Heritrix 3.1, the crawler will now properly decode 'chunked' Transfer-Encoding -- even if encountered when it should not be used, as in a response to an HTTP/1.0 request. Additionally, the fetchHttp processor now includes the parameter 'useHTTP11', which if true, will cause Heritrix to report its requests as 'HTTP/1.1'.  This allows sites to use the 'chunked' Transfer-Encoding. (The default for this parameter is false for now, and Heritrix still does not reuse a persistent connection for more than one request to a site.)
+fetchHttp also includes the parameter 'acceptCompression', which if true, will cause Heritrix requests to include an "Accept-Encoding: gzip,deflate" header, which offers to receive compressed responses. (The default for this parameter is false for now.)  | |
 | extractorHttp |   | org.archive.modules.extractor.ExtractorHTTP |
 | extractorHtml | Extrai links de conteúdos HTML.  | org.archive.modules.extractor.ExtractorHTML |
 | extractorCss | Extrai links de conteúdos CSS.  | org.archive.modules.extractor.ExtractorCSS |
@@ -1097,7 +1095,7 @@ disposition
 
 ### Rastreamento de estatíticas 
 
-Há vários módulos de rastreamento de estatísticas que podem ser anexado a um rastreamento. Atualmente, apenas um é fornecido pelo Heritrix. O Spring bean `statisticsTracker` que vem com o Heritrix cria o arquivo `progress-statistics.log` e fornece a IUW com dados para exibir informações de progresso sobre o rastreamento. É altamente recomendável que qualquer rastreamento executado pela IUW use esse bean.
+Há vários módulos de rastreamento de estatísticas que podem ser anexados a um rastreamento. Atualmente, apenas um é fornecido pelo Heritrix. O Spring bean `statisticsTracker` que vem com o Heritrix cria o arquivo `progress-statistics.log` e fornece a IUW com dados para exibir informações de progresso sobre o rastreamento. É altamente recomendável que qualquer rastreamento executado pela IUW use esse bean.
 
 ### Regras de canonização da URI
 
@@ -1191,7 +1189,7 @@ Isso já está no cxml padrão:
  </bean>
  ```
  
-Para ver a regra em operação, defina o nível de logging para `org.archive.crawler.url.Canonicalizer` em `logging.properties`. Estude o output e ajuste seu regex de acordo.
+Para ver a regra em operação, defina o nível de logging para `org.archive.crawler.url.Canonicalizer` em `logging.properties`. Estude a saída e ajuste seu regex de acordo.
 
 ## Credenciais 
 
@@ -1228,7 +1226,7 @@ Credenciais podem ser adicionadas para que o Heritrix consiga obter acesso a ár
  </bean>
  ```
  
-Uma das configurações de uma credencial é seu domínio. Portanto, é possível criar todas as credenciais em nível global. No entanto, como isso pode causar um excesso de verificações desnecessárias de credenciais, recomenda-se que as credenciais sejam adicionadas a uma substituição de domínio. Dessa forma, a credencial só é verificada quando o domínio relevante está sendo rastreado.
+Uma das configurações de uma credencial é seu domínio. Portanto, é possível criar todas as credenciais em nível global. No entanto, como isso pode causar excesso de verificações desnecessárias de credenciais, recomenda-se que as credenciais sejam adicionadas a uma substituição de domínio. Dessa forma, a credencial só é verificada quando o domínio relevante está sendo rastreado.
 
 O Heritrix oferece dois tipos de autenticação: RFC2617 (Autenticação BASIC e DIGEST) e POST e GET de um formulário HTML.
 
