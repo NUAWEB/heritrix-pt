@@ -1042,10 +1042,10 @@ Cada cadeia de processamento é composta de zero ou mais processadores individua
 | Nome do processador  | Descrição | Nome da classe |
 | ------------- | ------------- | ------------- |
 | preparer | Prepara os URIs aceitos para enfileirar na Frontier.  | |
-| preconditions | E  | |
+| preconditions | Verifica ou aciona a busca de URIs de pré-requisito.  | |
 | fetchDns | Busca DNS URIs.  | |
-| fetchHttp | This processor fetches HTTP URIs.  As of Heritrix 3.1, the crawler will now properly decode 'chunked' Transfer-Encoding -- even if encountered when it should not be used, as in a response to an HTTP/1.0 request. Additionally, the fetchHttp processor now includes the parameter 'useHTTP11', which if true, will cause Heritrix to report its requests as 'HTTP/1.1'.  This allows sites to use the 'chunked' Transfer-Encoding. (The default for this parameter is false for now, and Heritrix still does not reuse a persistent connection for more than one request to a site.)
-fetchHttp also includes the parameter 'acceptCompression', which if true, will cause Heritrix requests to include an "Accept-Encoding: gzip,deflate" header, which offers to receive compressed responses. (The default for this parameter is false for now.)  | |
+| fetchHttp | Busca os URIs HTTP.  A partir da versão 3.1, o rastreador decodificará corretamente a codificação de transferência 'em partes' ('chunked' transfer-encoding) - mesmo se encontrada quando não deveria ser usada, como em uma resposta a uma solicitação HTTP/1.0. Além disso, o processador fetchHttp agora inclui o parâmetro 'useHTTP11', que, se true, fará com que o Heritrix relate suas solicitações como 'HTTP/1.1'. Isso permite que os sites utilizem a codificação de transferência 'em partes'. (O padrão para esse parâmetro é, no momento, false, e o Heritrix ainda não reutiliza conexões persistentes para mais de uma solicitação para um site.)
+O fetchHttp também inclui o parâmetro 'acceptCompression', que, se for true, fará com que os pedidos do Heritrix incluam um cabeçalho "Accept-Encoding:gzip,deflate", que se oferece para receber respostas compactadas. (O padrão para este parâmetro, no momento, é false.)  | |
 | extractorHttp |   | org.archive.modules.extractor.ExtractorHTTP |
 | extractorHtml | Extrai links de conteúdos HTML.  | org.archive.modules.extractor.ExtractorHTML |
 | extractorCss | Extrai links de conteúdos CSS.  | org.archive.modules.extractor.ExtractorCSS |
@@ -1137,7 +1137,7 @@ preconditions
 
 * robotsValidityDurationSeconds- O tempo em segundos que as informações obtidas do robots.txt são consideradas válidas. Se o valor estiver definido como '0', as informações do robots.txt nunca irão expirar.
 
-* calculateRobotsOnly - Whether to calculate the robot's status of a URI, without actually applying any exclusions found. If true, excluded URIs will only be annotated in the crawl.log, but still fetched.
+* calculateRobotsOnly - Se deve calcular o status *robot* de um URI, sem aplicar quaisquer exclusões encontradas. Se for true, os URIs excluídos serão apenas anotados no arquivo crawl.log, mas ainda assim obtidos.
 
 fetchDns
 
@@ -1160,13 +1160,15 @@ fetchHttp
 
 * shouldFetchBodyRule- DecideRules aplicado após o recebimento dos cabeçalhos de resposta HTTP, mas antes do download do corpo HTTP. Se alguma regra retornar FALSE, a busca será cancelada. Pré-requisitos, como o robots.txt, são excluídos da filtragem, ou seja, não podem ser interrompidos pelo midfetch.
 
-* soTimeoutMs - If the socket is unresponsive for this number of milliseconds, the request is cancelled.  Setting the value to zero (no timeout) is not recommended as it could hang a thread on an unresponsive server. This timeout is used to time out socket opens and socket reads. Make sure this value is less than timeoutSeconds for optimal configuration.  This ensures at least one retry read.
-sendIfModifiedSince - Send If-Modified-Since header, if previous Last-Modified fetch history information is available in URI history.
-sendIfNoneMatch - Send If-None-Match header, if previous Etag fetch history information is available in URI history.
+* soTimeoutMs - Se o *socket* não responder por esse determinado número de milissegundos, a solicitação será cancelada. Definir o valor como zero (sem tempo limite) não é recomendado, pois poderia travar um thread em um servidor que não responde. Esse tempo limite é usado para limitar o tempo de abertura e leituras de *socket*. Certifique-se de que esse valor seja menor que timeoutSegundos para a configuração ideal. Isso garante pelo menos uma nova tentativa de leitura.
+
+* sendIfModifiedSince - Send If-Modified-Since header, if previous Last-Modified fetch history information is available in URI history.
+
+* sendIfNoneMatch - Send If-None-Match header, if previous Etag fetch history information is available in URI history.
 
 * sendConnectionClose - Send Connection: close header with every request. - w3.org connection header documentation
 
-* sendReferer- The Referer header contains the location the crawler came from.  This is the page the current URI was discovered in. The Referer is usually logged on the remote server and can be of assistance to webmasters trying to figure out how a crawler got to a particular area on a site.
+* sendReferer- O cabeçalho do Referer contém o local de onde o rastreador veio. Esta é a página em que o URI atual foi descoberto. O Referer geralmente é registrado no servidor remoto e pode ajudar os webmasters a tentar descobrir como um rastreador chegou a uma determinada área em um site.
 
 * sendRange- Send the Range header when there is a limit on the retrieved document size.  This is for politeness purposes.  The Range header states that only the first n bytes are of interest.  It is only pertinent if maxLengthBytes is greater than zero.  Sending the Range header results in a 206 Partial Content status response, which is better than cutting the response mid-download. On rare occasion, sending the Range header will generate 416 Request Range Not Satisfiable response.
 
@@ -1174,9 +1176,9 @@ sendIfNoneMatch - Send If-None-Match header, if previous Etag fetch history info
 
 * sslTrustLevel- The SSL certificate trust level. The range is from the default open (trust all certs including expired, selfsigned, and those for which we do not have a CA) through loose (trust all valid certificates including selfsigned), normal (all valid certificates not including selfsigned) and strict (Cert is valid and DN must match servername).
 
-* acceptHeaders - Accept Headers to include in each request. Each must be the complete header, e.g., Accept-Language: en.
+* acceptHeaders - Accept Headers para incluir em cada solicitação. Cada um deve ser o cabeçalho completo, por exemplo, Accept-Language: en.
 
-* httpBindAddress- Local IP address or hostname to use when making connections (binding sockets). When not specified, uses default local address(es).
+* httpBindAddress- Endereço IP local ou nome do host a ser usado ao fazer conexões (binding sockets). Quando não especificado, usa endereços locais padrão.
 
 * httpProxyHost - O endereço IP do host proxy.
 
@@ -1189,7 +1191,8 @@ sendIfNoneMatch - Send If-None-Match header, if previous Etag fetch history info
 extractorHtml
 
 * extractJavascript - If true, in-page Javascript is scanned for strings that appear to be URIs. This typically finds both valid and invalid URIs.  Attempts to fetch the invalid URIs can generate webmaster concern over odd crawler behavior. Default is true.
-extractValueAttributes- If true, strings that look like URIs found in unusual places (such as form VALUE attributes) will be extracted. This typically finds both valid and invalid URIs.  Attempts to fetch the invalid URIs may generate webmaster concerns over odd crawler behavior. Default is true.
+
+* extractValueAttributes- Se definido como "true", o Javascript in-page é verificado em busca de strings que parecem ser URIs. Esse processo normalmente encontra tanto URIs válidos quanto inválidos. As tentativas de buscar os URIs inválidos podem gerar preocupação com o webmaster em relação ao comportamento estranho do rastreador. A definição padrão é true.
 
 * ignoreFormActionUrls - Se definido como "true", os URIs que aparecem como o atributo ACTION nos FORMULÁRIOS HTML são ignorados. A definição padrão é "false"
 
@@ -1221,7 +1224,7 @@ warcWriter
 
 * skipIdenticalDigests- Whether to skip the writing of a record when URI history information is available and indicates the prior fetch had an identical content digest.  Default is false.
 
-* maxTotalBytesToWrite - Total file bytes to write to disk. Once the size of all files on disk has exceeded this limit, this processor will stop the crawler. A value of zero means no upper limit.
+* maxTotalBytesToWrite - Total de bytes de arquivo para gravar no disco. Quando o tamanho de todos os arquivos no disco exceder esse limite, esse processador interromperá o rastreador. Valor zero significa que não há limite superior.
 
 * directory - O diretório no qual os storePaths serão configurados.
 
@@ -1236,7 +1239,7 @@ warcWriter
 
 candidates
 
-* seedsRedirectNewSeeds - If enabled, any URI found because a seed redirected to it (original seed returned 301 or 302), will also be treated as a seed.
+* seedsRedirectNewSeeds - Se ativado, qualquer URI encontrado porque um seed redirecionou para ele (seed original retornou código 301 ou 302) também será tratado como um seed.
 
 disposition
 
@@ -1526,7 +1529,7 @@ mypassword
 
 Observação
 
-Apenas um realm por domain de credencial é permitido. Consulte Logon (HTTP POST, Basic Auth, etc.) para mais informações.
+Apenas um realm por domínio de credencial é permitido. Consulte Logon (HTTP POST, Basic Auth, etc.) para mais informações.
 
 ## Criação de Tarefas e Perfis
 
@@ -1596,7 +1599,7 @@ Observação: feeding the entire frontier back to the crawler is likely to produ
 
 ### split recover
 
-Uma maneira alternativa de executar o processo de recuperação é ilustrada abaixo. Eliminar linhas irrelevantes logo no início (fora do processo de recuperação) pode permitir que o processo de recuperação seja concluído mais rápido do que o processo padrão. Também permite que o processo proceda de vários arquivos, em vez de um só, portanto, pode fornecer uma indicação de progresso melhor em andamento e chances de checkpoint a recuperação.
+Uma forma alternativa de executar o processo de recuperação é ilustrada abaixo. Eliminar linhas irrelevantes logo no início (fora do processo de recuperação) pode permitir que o processo de recuperação seja concluído mais rápido do que o processo padrão. Também permite que o processo proceda de vários arquivos, em vez de um só, portanto, pode fornecer uma indicação de progresso melhor em andamento e chances de checkpoint a recuperação.
 
 Para executar o processo de recuperação alternativo:
 
@@ -1640,7 +1643,7 @@ Para configurar a deduplicação independente de URL de conteúdo idêntico, adi
   </bean>
   ```
   
-  And then insert these beans into your disposition chain, sandwiching the warcWriter:
+And then insert these beans into your disposition chain, sandwiching the warcWriter:
   
   ```
    <bean id="dispositionProcessors" class="org.archive.modules.DispositionChain">
@@ -1665,7 +1668,7 @@ Para configurar a deduplicação independente de URL de conteúdo idêntico, adi
   Legacy Duplication Reduction Configuration
   ```
   
-A partir da versão 1.12.0, vários Processadores podem cooperar para transportar o histórico de conteúdo do URI entre os rastreamentos (consulte JavaDocs do pacote `org.archive.crawler.processor.recrawl`). Isso reduz a quantidade de material duplicado baixado ou armazenado em rastreamentos posteriores. Consulte Deduplicação (Redução de Duplicação) para detalhes de configuração de desduplicação do H1. No H3, use o arquivo `crawler-beans.cxml` para configurar a deduplicação e adicione os seguintes processadores, conforme descrito abaixo.
+A partir da versão 1.12.0, vários processadores podem cooperar para transportar o histórico de conteúdo do URI entre os rastreamentos (consulte JavaDocs do pacote `org.archive.crawler.processor.recrawl`). Isso reduz a quantidade de material duplicado baixado ou armazenado em rastreamentos posteriores. Consulte Deduplicação (Redução de Duplicação) para detalhes de configuração de desduplicação do H1. No H3, use o arquivo `crawler-beans.cxml` para configurar a deduplicação e adicione os seguintes processadores, conforme descrito abaixo.
 
 ## Configurar armazenamento de histórico de URI persistente
 
