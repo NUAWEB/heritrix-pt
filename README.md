@@ -19,7 +19,7 @@ O heritrix requer os seguintes pré-requisitos:
 | Java Runtime Environment (JRE) 1.6  | O Heritrix requer o JRE 1.6. O JRE 1.6 pode ser baixado em: http://www.javasoft.com ou http://www.ibm.com/java. Observe que as atualizações 23 e 24 (e, possivelmente, posteriores) do Java 6 não podem ser usados com o Heritrix 3.0 (ou anterior) devido a um bug na funcionalidade GZIP do JRE, na qual o Heritrix depende para ler ARCs/WARCs. A partir do Hertirix 3.1, esse problema foi resolvido. |
 | Hardware |O heap Java padrão para o Heritrix é de 256 MB de RAM, que geralmente é adequado para rastreamentos que abrangem centenas de hosts. Atribua mais da sua RAM disponível ao heap se você estiver rastreando milhares de hosts ou tiver problemas de falta de memória Java. Você pode usar a variável JAVA_OPTS para configurar a memória. Ver Configuração do Heritrix. |
 
-Todas as bibliotecas gratuitas/de código aberto necessárias para executar o Heritrix estão incluídas na distribuição. Veja [*dependencies*] (http://crawler.archive.org/dependencies.html) para uma lista completa. Licenças para todas as bibliotecas são listadas na seção de dependências do project.xml ou no SourceForge. Cada versão vem em quatro versões, empacotadas como `.tar.gz` ou `.zip`, incluindo a fonte ou não.
+Todas as bibliotecas gratuitas/de código aberto necessárias para executar o Heritrix estão incluídas na distribuição. Veja [dependencies] (http://crawler.archive.org/dependencies.html) para uma lista completa. Licenças para todas as bibliotecas são listadas na seção de dependências do project.xml ou no SourceForge. Cada versão vem em quatro versões, empacotadas como `.tar.gz` ou `.zip`, incluindo a fonte ou não.
 
 ## Atualizações das versões 3.0 e 3.1
 
