@@ -869,6 +869,72 @@ Os relatórios são encontrados no diretório "reports", que existe no diretóri
 | Total Raw Data Size in Bytes | A quantidade total de dados rastreados. |
 | Novel Bytes | Novos bytes desde o último rastreamento. |
 
+###### Seeds (seeds-report.txt)
+
+| Nome do campo  | Descrição |
+| ------------- | ------------- |
+| code | | 0 = não rastreado
+1 = rastreado |
+| status | Descrição legível informando se o seed foi rastreado. Por exemplo, "CRAWLED". |
+| seed | O URI seed. |
+| redirect | O URI para o qual o seed foi redirecionado. |
+
+###### Hosts (hosts-report.txt)
+
+| Nome do campo  | Descrição |
+| ------------- | ------------- |
+| #urls | O número de URIs rastreados para o host. |
+| #bytes | O número de bytes rastreados para o host. |
+| host | O nome do host. |
+| #robots | O número de URIs, para este host, excluídos por causa das restrições do `robots.txt`. Esse número não inclui URIs vinculados aos URIs especificamente excluídos. |
+| #remaining | O número de URIs, para esse host, que ainda não foram rastreados, mas estão na fila. |
+| #novel-urls | O número de novos URIs rastreados para este host desde o último rastreamento. |
+| #novel-bytes | A quantidade de novos bytes rastreados para este host desde o último rastreamento. |
+| #dup-by-hash-urls | O número de URIs, para esse host, que tinham o mesmo hashcode e são, essencialmente, duplicados. |
+| #dup-by-hash-bytes | O número de bytes de conteúdo, para este host, com o mesmo hashcode. |
+| #not-modified-urls | O número de URIs, para esse host, que retornou um código de status 304. |
+| #not-modified-bytes | A quantidade de bytes de conteúdo, para este host, cujos URIs retornaram um código de status 304. |
+
+###### SourceTags (source-report.txt)
+
+| Nome do campo  | Descrição |
+| ------------- | ------------- |
+| source | O seed. |
+| host | O host que foi acessado pelo seed. |
+| #urls | O número de URIs rastreados para essa combinação de host de origem. |
+
+Observe que o relatório SourceTags só será gerado se a propriedade `sourceTagSeeds` do bean `TextSeedModule` estiver definida como true.
+
+###### Mimetypes (mimetype-report.txt)
+
+| Nome do campo  | Descrição |
+| ------------- | ------------- |
+| #urls | O número de URIs rastreados para um determinado tipo MIME. |
+| #bytes | O número de bytes rastreados para um determinado tipo MIME. |
+| mime-types | O tipo MIME. |
+
+###### ResponseCode (responsecode-report.txt)
+
+| Nome do campo  | Descrição |
+| ------------- | ------------- |
+| #urls | O número de URIs rastreados para um determinado código de resposta. |
+| rescode | O código de resposta. |
+
+###### Processors (processors-report.txt)
+
+Este relatório mostra a atividade de cada processador envolvido no rastreamento. Por exemplo, o processador `FetchHTTP` é incluído no relatório. Para este processador, o número de URIs buscados é exibido. O relatório é organizado para informar sobre cada cadeia (Candidadate, Fetch e Disposition) e cada processador em cada cadeia. A ordem do relatório é de acordo com a ordem de configuração no arquivo crawler-beans.cxml.
+
+###### FrontierSummary (frontier-summary-report.txt)
+
+Este link exibe um relatório mostrando os hosts que estão na fila para serem capturados. Os hosts estão contidos em várias filas. Os detalhes de cada fila Frontier são relatados.
+
+###### ToeThreads (threads-report.txt)
+
+Este link exibe um relatório mostrando a atividade de cada encadeamento usado pelo Heritrix. A quantidade de tempo que o encadeamento está sendo executado é exibida, bem como o estado e o status Blocked/Waiting do encadeamento.
+
+
+
+
 ## Configuração de Tarefas e Perfis
 
 A criação de tarefas (Creating a Job) e perfis (Creating a Profile) é o primeiro passo no processo de usar o Heritrix para rastrear a web. Configurar tarefas e perfis é um trabalho um pouco mais complicado. A seção a seguir se aplica para a configuração tanto de tarefas quanto de perfis.
