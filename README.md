@@ -9,7 +9,17 @@ Os usuários desse documento constituem-se de administradores do Heritrix e outr
 ### Versões:
 As informações desse guia referem-se a versão 3.0 do Heritrix, a não ser que o contŕário seja informado. Seções referentes à versão 3.1 estão marcadas com a nota "A partir da versão 3.1".
 
-## Requerimentos do sistema
+## Requisitos do sistema
+
+O heritrix requer os seguintes pré-requisitos: 
+
+| Requisitos do sistema | Descrição |
+| ------------- | ------------- |
+| Distribuição Linux | A execução do Heritrix requer uma distribuição do Linux. O Heritrix pode ser executado em outras plataformas, mas essa opção não é suportada. |
+| Java Runtime Environment (JRE) 1.6  | O Heritrix requer o JRE 1.6. O JRE 1.6 pode ser baixado em: http://www.javasoft.com ou http://www.ibm.com/java. Observe que as atualizações 23 e 24 (e, possivelmente, posteriores) do Java 6 não podem ser usados com o Heritrix 3.0 (ou anterior) devido a um bug na funcionalidade GZIP do JRE, na qual o Heritrix depende para ler ARCs/WARCs. A partir do Hertirix 3.1, esse problema foi resolvido. |
+| Hardware |O heap Java padrão para o Heritrix é de 256 MB de RAM, que geralmente é adequado para rastreamentos que abrangem centenas de hosts. Atribua mais da sua RAM disponível ao heap se você estiver rastreando milhares de hosts ou tiver problemas de falta de memória Java. Você pode usar a variável JAVA_OPTS para configurar a memória. Ver Configuração do Heritrix. |
+
+Todas as bibliotecas gratuitas/de código aberto necessárias para executar o Heritrix estão incluídas na distribuição. Veja *[dependencies]* (http://crawler.archive.org/dependencies.html) para uma lista completa. Licenças para todas as bibliotecas são listadas na seção de dependências do project.xml ou no SourceForge. Cada versão vem em quatro versões, empacotadas como `.tar.gz` ou `.zip`, incluindo a fonte ou não.
 
 ## Atualizações das versões 3.0 e 3.1
 
@@ -31,12 +41,62 @@ Uma distribuição binária do Heritrix pode ser baixada pelo link http://builds
 
 ## Configuração do Heritrix
 
+1. Configure a variável de ambiente `JAVA_HOME`. O valor deve apontar para a instalação do JRE 1.6 Java. Por exemplo, essa variável pode ser definida como `usr/local/java/jre`
+
+```
+export JAVA_HOME=/usr/local/java/jreP
+```
+
+2. Defina a variável de ambiente `HERITRIX_HOME`. O valor deve apontar para o diretório principal do Heritrix, que está abaixo do diretório bin.
+
+```
+export HERITRIX_HOME=/PATH/TO/HERITRIX
+```
+
+Por exemplo, uma instalação do Heritrix com um diretório `bin` localizado em `/home/user/heritrix3.1/bin` seria configurada da seguinte maneira.
+
+```
+export HERITRIX_HOME=/home/user/heritrix3.1
+```
+
+3. Configure a permissão de execução no arquivo de inicialização do Heritrix.
+
+```
+chmod u+x $HERITRIX_HOME/bin/heritrix
+```
+
+4. Para alterar a quantidade de memória alocada ao Heritrix (o tamanho de heap Java), configure a variável de ambiente `JAVA_OPTS`. O exemplo a seguir aloca 1 GB de memória ao Heritrix.
+
+```
+export JAVA_OPTS=-Xmx1024M
+```
+
 ## Execução do Heritrix 3.0 e 3.1
 O Heritrix pode ser usado a partir de diferentes linhas de comando. Insira o seguinte comando para visualizar as opções disponíveis. 
 ```
 $HERITRIX_HOME/bin/heritrix --help
 ```
 A tabela a seguir lista as opções de linhas de comando.
+
+| Opções de linha de comando | Descrição |
+| ------------- | ------------- |
+| `-a` `--web-admin` `<arg>` | Especifica o nome de usuário e senha de autorização que devem ser fornecidos para acessar a IU da Web. Este parâmetro é necessário se você ativar a interface do usuário da web. O formato do parâmetro é `<adminname>: <adminpassword>`. Por exemplo, `admin:admin`. A partir da versão 3.1, se o parâmetro fornecido para a opção de linha de comando -a for uma cadeia começando com "@", o restante da cadeia será interpretado como um nome de arquivo local contendo o login e a senha do operador. Isso adiciona uma camada adicional de proteção ao nome de usuário e senha do administrador. |
+| `-b` `--web-bind-hosts` `<arg>` | Especifica uma lista, separada por vírgulas, de nomes de host/endereços IP para vincular à IU da Web. Se nenhum for especificado, a interface do usuário da Web só estará disponível via localhost/127.0.0.1. Você pode usar '/' como um atalho para 'todos os endereços'. |
+| `-h`,`--help` `<arg>` | Exibe informações de uso. |
+| `-j`,`--jobs-dir` | Exibe o diretório de tarefas. O padrão é `./jobs.` |
+| `-l`,`--logging-properties` | Exibe o caminho completo para o arquivo de propriedades de log (por exemplo, conf/logging.properties). Se presente, esse arquivo será usado para configurar log de Java. O padrão é `./conf/logging.properties`. |
+| `-p`,`--web-port` `<arg>` | Especifica qual porta a IU da Web irá escutar. | 
+| `-r`,`--run-job` <arg> | Especifica um nome de tarefa ou perfil pronto para ser iniciado quando o Heritrix for iniciado. Se um nome de perfil for especificado, o perfil será primeiro copiado para uma nova tarefa pronta, e essa tarefa pronta será iniciada. A partir da versão 3.1, esta opção foi eliminada. |
+|`-s`,`--ssl-params` `<arg>` | Especifica um caminho de keystore, uma senha de keystore e uma senha de chave para uso de HTTPS. Separe os valores com vírgulas e não inclua espaços em branco. |
+  
+Para iniciar o Heritrix com a interface do usuário da Web ativada, digite o seguinte comando. O nome de usuário e a senha da interface do usuário da Web estão definidos como "admin" e "admin", respectivamente.
+
+```
+$HERITRIX_HOME/bin/heritrix -a admin:admin
+```
+
+Por padrão, o endereço de escuta da IU da Web é vinculado apenas ao endereço 'localhost'. Portanto, a interface do usuário da Web só pode ser acessada na mesma máquina a partir da qual foi iniciada. A opção '-b' pode ser usada para escutar endereços diferentes/adicionais. Veja as Considerações de Segurança antes de alterar esse padrão.
+
 
 ## Interface do usuário baseada na Web (IUW)
 Depois de abrir o Heritrix, a interface do usuário baseada na web torna-se acessível.
@@ -50,9 +110,17 @@ A página inicial de login solicita o nome de usuário e a senha. Depois de feit
 
 O acesso da IUW é por HTTPS. O Heritrix é instalado com uma chave de acesso que contém um certificado auto-assinado. Isso fará com que o Mozila (navegador recomendado) exiba um prompt avisando que um certificaco auto-assinado está sendo usado. Siga as instruções abaixo para realizar o login no Heritrix pela primeira vez.
 
-## Questões de segurança
+1. Clique no link "I understand the risks". Um botão que permite adicionar uma exceção de segurança será exibido. Clique no botão "Add Exception".
 
-O Heritrix é um aplicativo de rete grande e ativo que apresenta implicações de segurança tanto na máquina principal, onde ele roda, quanto remotamente, nas máquinas conectadas. 
+2. Uma caixa de diálogo será exibida permitindo que você confirme a exceção clicando em "Confirm Security Exception".
+
+3. Depois de confirmar a exceção, você será solicitado a fornecer o nome de usuário e a senha da IUW.
+
+4. Depois de digitar o nome de usuário e a senha do administrador, será concedido acessi à IUW.
+
+## Considerações de segurança
+
+O Heritrix é um aplicativo de rede grande e ativo que apresenta implicações de segurança tanto na máquina principal, onde ele roda, quanto remotamente, nas máquinas conectadas. 
 
 ###### Entendendo os riscos
 É importante entender que a IU da Web permite o acesso remoto do rastreador de maneiras que poderiam, potencialmente, interromper o rastreamento, mudar seu comportamento, ler ou criar arquivos de acesso local e fazer ou ativar outras ações no Java VM ou na máquina local pela execução de scripts arbitrários fornecidos pelo operador.
@@ -743,7 +811,7 @@ UOKDGOLGI5JYHDTXRFFQ5FF4N2EJRV - -
 | Fetch timestamp | O registro de data e hora no formato somente de dígitos condensados RFC2550/ARC, indicando quando a busca de rede foi iniciada. Se apropriado, a duração de milissegundos da busca é anexada ao registro de data e hora com um caractere "+" como separador. |
 | SHA1 Digest | The SHA1 digest of the content only (headers are not digested). |
 | Source Tag | A tag de origem herdada pelo URI, se a marcação de origem estiver ativada. |
-| Annotations | If an annotation has been set, it will be displayed.  Possible annotations include: the number of times the URI was tried, the literal "lenTrunc" if the download was truncanted due to exceeding configured size limits, the literal "timeTrunc" if the download was truncated due to exceeding configured time limits or "midFetchTrunc" if a midfetch filter determined the download should be truncated. |
+| Annotations | Se uma anotação tiver sido feita, ela será exibida. Possíveis anotações incluem: o número de vezes que o URI foi tentado, o "lenTrunc" literal se o download foi truncado devido a limites de tamanho excedidos configurados, o "timeTrunc" literal se o download foi truncado devido a limites de tempo excedidos configurados, ou "midFetchTrunc" se um filtro midfetch determinar que o download deve ser truncado. |
 | warc | Nome do arquivo WARC/ARC em que o conteúdo rastreado foi salvo. Esse valor só será salvo se a propriedade logExtraInfo do bean loggerModule está definida como true. Essa informação registrada será salva no formato JSON. |
 
 progress-statistics.log
@@ -777,6 +845,29 @@ Esse log armazena erros de tentativas de busca de URI, normalmente causados por 
 frontier.recover.gz
 
 O arquivo frontier.recover.gz é um log gzipado de eventos Frontier que pode ser usado para restaurar a Frontier após uma falha.
+
+### Relatórios
+
+Os relatórios são encontrados no diretório "reports", que existe no diretório de uma tarefa específica. A localização dos arquivos de relatório específicos é fornecida na seção "Configuration-referenced paths" da página da tarefa.
+
+###### Resumo de rastreamento (crawl-report.txt)
+
+| Nome do campo  | Descrição |
+| ------------- | ------------- |
+| Crawl Name | O nome do rastreamento, definido pelo usuário. |
+| Crawl Status | O status do rastreamento, como "Aborted" (abortado) ou "Finished" (concluído). |
+| Duration Time | A duração do rastreamento até o milissegundo mais próximo. |
+| Total Seeds Crawled | O número de seeds que foram rastreados com sucesso. |
+| Total Seeds Not Crawled | O número de seeds que não foram rastreados com sucesso. |
+| Total Hosts Crawled | O número de hosts que foram rastreados. |
+| Total URIs Processed | O número de URIs que foram processados. |
+| URIs Crawled Successfully | O número de URIs que foram rastreados com sucesso. |
+| URIs Failed to Crawl | O número de URIs que não puderam ser rastreados. |
+| URIs Disregarded | O número de URIs que não foram selecionados para rastreamento. |
+| Processed docs/sec | O número médio de documentos processados por segundo. |
+| Bandwidth in Kbytes/sec | O número médio de kilobytes processados por segundo. |
+| Total Raw Data Size in Bytes | A quantidade total de dados rastreados. |
+| Novel Bytes | Novos bytes desde o último rastreamento. |
 
 ## Configuração de Tarefas e Perfis
 
