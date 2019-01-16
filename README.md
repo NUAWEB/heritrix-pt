@@ -1798,9 +1798,9 @@ Conforme configurado aqui, as informações do histórico de URI serão carregad
 
 ### opção *preloadSource*
 
-Se você deseja extrair o histórico de URIs persistentes de uma origem não padrão, a propriedade `preloadSource` pode ser usada no PersistLoadProcessor. Seu valor deve ser o caminho para o diretório `state` de outro rastreamento anterior ou um caminho ou URI para o log de persistência de outro rastreamento anterior (`persistlog.txtser.gz`) no caso do PersistLogProcessor ser usado, o que não é recomendado no H3 e não descrito acima.
+Se você deseja extrair o histórico de URIs persistentes de uma origem não padrão, a propriedade `preloadSource` pode ser usada no PersistLoadProcessor. Seu valor deve ser o caminho para o diretório `state` de um rastreamento anterior ou um caminho ou URI para o log de persistência de um rastreamento anterior (`persistlog.txtser.gz`), no caso do PersistLogProcessor ser usado, o que não é recomendado no H3 e não descrito acima.
 
-O pré-carregamento verifica o diretório "state" antigo ou registra na inicialização, carregando o diretório "state" do rastreamento atual com as informações do histórico. Isso pode ser uma etapa demorada, o que atrasa o início do rastreamento. Observe que preloadSource *não* deve ser o diretório "state" do rastreamento atual ou ocorrerá um erro.
+O pré-carregamento verifica o diretório "state" antigo ou registra na inicialização, carregando o diretório "state" do rastreamento atual com as informações do histórico. Isso pode ser uma etapa demorada, o que atrasa o início do rastreamento. Observe que preloadSource *não* deve ser o diretório "state" do rastreamento atual ou um erro ocorrerá.
 
 ```
 <bean id="persistLoadProcessor" class="org.archive.modules.recrawl.PersistLoadProcessor">
@@ -1818,15 +1818,15 @@ OU
  
  ### Configurando outros processadores
  
-A configuração acima garante que as informações históricas de busca sejam retidas entre os rastreamentos. Se isso afeta a obtenção ou armazenamento de URIs depende das configurações em outros processadores, o mais importante é o processador FetchHTTP e o WARCWriterProcessor ou ARCWriterProcessor.
+A configuração acima garante que as informações de histórico de busca sejam retidas entre os rastreamentos. Se isso afeta a obtenção ou armazenamento de URIs depende das configurações em outros processadores, o mais importante é o processador FetchHTTP e o WARCWriterProcessor ou ARCWriterProcessor.
 
-No processador FetchHTTP, as propriedades sendIfNoneMatch e sendIfModifiedSince controlam se os headers HTTP If-None-Match ou If-Modified-Since são enviados em uma solicitação se as informações do histórico de URI (data de obtenção prévia ou informações etag) para suportá-los estiverem presentes.
+No processador FetchHTTP, as propriedades sendIfNoneMatch e sendIfModifiedSince controlam se os cabeçalhos HTTP If-None-Match ou If-Modified-Since são enviados em uma solicitação se as informações do histórico de URI (data de obtenção prévia ou informações etag) para suportá-los estiverem presentes.
 
-Note que ao enviar estes headers, o motor de rastreio pode receber uma resposta '304-Not Modified' do servidor, sem corpo de conteúdo. Dessa maneira, outros URIs podem não ser descobertos e os caminhos seguidos pelo rastreamento original não são reconsiderados para a recriação. Assim, se você deixar *sendIfNoneMatch* e *sendIfModifiedSince* definidos como valores 'true' padrões em um rastreamento ativado para histórico de deduplicação, poderá usar outra técnica para garantir que todos os URIs dos rastreamentos anteriores sejam reconsiderados (como fornecer todos eles ao rastreador já no começo).
+Note que ao enviar esses cabeçalhos, o rastreamento pode receber uma resposta '304-Not Modified' do servidor, sem conteúdo de corpo. Dessa maneira, outros URIs podem acabar não sendo descobertos e os caminhos seguidos pelo rastreamento original não serão reconsiderados para uma nova busca. Assim, se você deixar *sendIfNoneMatch* e *sendIfModifiedSince* definidos com valores 'true' padrões em um rastreamento ativado para histórico de deduplicação, poderá usar outra técnica para garantir que todos os URIs dos rastreamentos anteriores sejam reconsiderados (como fornecer todos eles ao rastreador já no começo).
 
 Tanto o ARCWriterProcessor quanto o WARCWriterProcessor possuem uma propriedade *skipIdenticalDigests* que, por padrão, é "false". Se marcada como "true", qualquer busca cujo conteúdo tenha um valor digest idêntico ao da busca anterior será ignorada completamente para fins de gravação. Para o ARCWriterProcessor, isso significa que o registro ARC não será gravado e nada mais será gravado em seu lugar. Da mesma forma para o WARCWriterProcessor, nenhum registro de qualquer tipo será gravado. Apenas o crawl.log registrará que a busca ocorreu.
 
-O WARCWriterProcessor possui propriedades adicionais para manipulação de duplicação mais sofisticada. A propriedade *writeRevisitForIdenticalDigests*, por padrão "true", gravará um registro WARC 'revisit' de tamanho reduzido (sem corpo de conteúdo) em vez de um registro de 'revisit' quando um resumo de repetição for detectado consultando as informações do histórico. (Observe que, se o skipIdenticalDigests acima for marcado como "true", nem mesmo isso será gravado - já que toda a escrita já foi ignorada.) Se "false", um registro "response" completo (com todo o conteúdo duplicado) ainda será gravado, mesmo com um valor digest repetido.
+O WARCWriterProcessor possui propriedades adicionais para manipulação de duplicação mais sofisticada. A propriedade *writeRevisitForIdenticalDigests*, por padrão "true", gravará um registro WARC 'revisit' de tamanho reduzido (sem conteúdo de corpo) em vez de um registro de 'response' quando um digest de repetição for detectado ao consultar as informações do histórico. (Observe que, se o skipIdenticalDigests acima for marcado como "true", nem mesmo isso será gravado - já que toda a escrita já foi ignorada.) Se "false", um registro "response" completo (com todo o conteúdo duplicado) ainda será gravado, mesmo com um valor digest repetido.
 
 A propriedade *writeRevisitForNotModified*, padrão "true", gravará um registro WARC 'revisit' em vez de um registro 'response' quando as respostas '304-Not Modified' forem recebidas. Se "false", um registro normal de 'response' é gravado.
 
@@ -1834,10 +1834,10 @@ A propriedade *writeRevisitForNotModified*, padrão "true", gravará um registro
 
 Os rastreamentos podem desejar armazenar informações de histórico URI persistente em um local diferente do diretório do ambiente BDB padrão ('state'). Motivações para tal escolha podem incluir:
 
-1. espalhando o disco de rastreamento IO para outro lugar
+1. espalhar o disco de rastreamento IO para outro lugar
 2. manter informações do histórico distintas de outras informações de rastreamento mais transitórias (filas, estado do rastreamento) para facilitar a análise ou a migração separadamente
 
-Para fazer isso, a primeira etapa é definir mais de um BdbModule na configuração de rastreamento e dar a este segundo BdbModule um nome de bean e um diretório de ambiente distintos. Ele também deve ser excluído da consideração da fiação automática do Spring (de modo que apenas um único BdbModule atenda a esse propósito). Por exemplo:
+Para fazer isso, a primeira etapa é definir mais de um BdbModule na configuração de rastreamento e dar a este segundo BdbModule um nome de bean e um diretório de ambiente distintos. Ele também deve estar fora de consideração para o auto-wiring do Spring (de modo que apenas um único BdbModule atenda a esse propósito). Por exemplo:
 
 ```
 <bean id="historyBdb"
@@ -1867,9 +1867,9 @@ Você também pode carregar históricos passados de um ambiente diferente do qua
 
 A redução de duplicação em seu nível atual oferece dois grandes potenciais de benefício ao repetir um rastreamento: economia de largura de banda e economia de espaço de armazenamento.
 
-Para que haja economia de largura de banda, as opções *sendIfNoneMatch* e/ou *sendIfModifiedSince* devem ser ativadas. Em seguida, os servidores podem informar que não houve alterações significativas desde a versão obtida anteriormente - economizando o tempo e o gasto de largura de banda do envio de conteúdo redundante.
+Para que haja economia de largura de banda, as opções *sendIfNoneMatch* e/ou *sendIfModifiedSince* devem ser ativadas. Em seguida, os servidores podem informar que não houve alterações significativas desde a versão obtida anteriormente - economizando o tempo e o gasto de largura de banda de envio de conteúdo redundante.
 
-No entanto, isso altera as informações disponíveis para o rastreamento de acompanhamento. Ele não verá mais o conteúdo e, portanto, não descobrirá mais os links dessa página, a serem reconsiderados por conta própria. Portanto, se o único caminho para uma página alterada for por meio de uma página inalterada que, devido a uma resposta '304-Not Modified' , nunca é extraída por link no rastreamento de acompanhamento, a página alterada nunca será considerada para rastreamento e, portanto, a mudança não será descoberta nem arquivada. Assim, é importante que, ao usar esses recursos condicionais-GET de redução de largura de banda, o operador garanta manualmente que todos os URIs de interesse do primeiro rastreamento sejam enfileirados no rastreamento de acompanhamento (seja como seeds ou alguma outra adição durante o rastreamento). Para que haja economia de largura de banda, as opções *sendIfNoneMatch* e/ou *sendIfModifiedSince* devem ser ativadas. Em seguida, os servidores podem informar que não houve alterações significativas desde a versão obtida anteriormente - economizando o tempo e o gasto de largura de banda do envio de conteúdo redundante.
+No entanto, isso altera as informações disponíveis para o rastreamento subsequente. Ele não verá mais o conteúdo e, portanto, não descobrirá mais os links dessa página, a serem reconsiderados por conta própria. Portanto, se o único caminho para uma página alterada for por meio de uma página inalterada que, devido a uma resposta '304-Not Modified', nunca é extraída via link no rastreamento subsequente, a página alterada nunca será considerada para rastreamento e, portanto, a mudança não será descoberta, nem arquivada. Assim, é importante que, ao usar esses recursos condicionais-GET de redução de largura de banda, o operador garanta manualmente que todos os URIs de interesse do primeiro rastreamento sejam enfileirados no rastreamento subsequente (seja como seeds ou alguma outra adição durante o rastreamento). 
 
 Devido a essa complicação, muitos rastreamentos podem querer usar apenas a redução de duplicação baseada em digest. Isso não oferece economia de largura de banda: todos os URIs são buscados novamente. Mas, quando o digest principal do conteúdo não é alterado, o conteúdo ou não é reescrito ou apenas reescrito de forma abreviada (como um registro WARC 'revisit'). Essa abordagem envolve a configuração das propriedades *sendIfModifiedSince* e *sendIfNoneMatch* do FetchHTTP como "false".
 
@@ -1881,7 +1881,7 @@ O Heritrix possui scripts de utilidade Unix.
 
 manifest_bundle.pl
 
-Esse script agrupará todos os recursos mencionados no arquivo de manifesto de rastreamento. Um pacote é uma tar ball não comprimida ou comprimida. A estrutura de diretórios da tar ball é:
+Esse script agrupa todos os recursos mencionados no arquivo de manifesto de rastreamento. Um pacote é um tarball não comprimido ou comprimido. A estrutura de diretórios do tarball é:
 
 * Diretório de nível superior (nome do rastreamento)
 * Três subdiretórios padrões
@@ -1902,7 +1902,7 @@ configuration, logs and reports
 manifest_bundle.pl testcrawl crawl-manifest.txt -f /0/testcrawl/manifest-bundle.tar.gz -z -F filters
 ```
 
-Para o exemplo acima, a tar ball conterá a seguinte estrutura de diretórios:
+Para o exemplo acima, o tarball conterá a seguinte estrutura de diretórios:
 | - testcrawl
 
        |- configurations
@@ -1915,7 +1915,7 @@ Para o exemplo acima, a tar ball conterá a seguinte estrutura de diretórios:
        
 hoppath.pl
 
-Esse script Perl, localizado em (HERETRIX_HOME)/bin, recria o caminho do salto para o URI especificado. O caminho do salto é o caminho dos links (URIs) que foram seguidos para chegar ao URI especificado.
+Esse script Perl, localizado em (HERETRIX_HOME)/bin, recria o caminho do salto para o URI especificado. O caminho do salto é o caminho de links (URIs) que foram seguidos para chegar ao URI especificado.
 
 Uso de script
 
@@ -1949,7 +1949,7 @@ A classe Java `org.archive.crawler.util.RecoveryLogMapper` é semelhante ao scri
 
 ## Guia rápido para criar um perfil
 
-Perfis podem ser criados a partir da página de tarefa ou da página de perfil do Heritrix. Essas páginas exibem os detalhes de uma tarefa ou um perfil, respectivamente. Para criar um novo perfil, escolha a tarefa ou o perfil que o novo perfil será baseado. Clique na tarefa ou no perfil na página do console principal. A página de tarefa/perfil será exibida. Na parte inferior da página, insira o nome do novo perfil na caixa de texto "Copy job to" ou "Copy profile to". Selecione a caixa de seleção "as profile" e clique em "copy". Um novo perfil será criado. Neste ponto, você pode configurar o perfil da mesma maneira que uma tarefa é configurada, editando o arquivo crawler-beans.cxml.
+Os perfis podem ser criados ou na página de tarefa ou na página de perfil do Heritrix. Essas páginas exibem os detalhes de uma tarefa ou de um perfil, respectivamente. Para criar um novo perfil, escolha a tarefa ou o perfil em que o novo perfil será baseado. Clique na tarefa ou no perfil na página do console principal. A página de tarefa/perfil será exibida. Na parte inferior da página, insira o nome do novo perfil na caixa de texto "Copy job to" ou "Copy profile to". Selecione a caixa de seleção "as profile" e clique em "copy". Um novo perfil será criado. Nesse ponto, você pode configurar o perfil da mesma maneira que uma tarefa é configurada, editando o arquivo crawler-beans.cxml.
 
 Observação
 
@@ -1957,97 +1957,125 @@ Observação
 
 ## Página de tarefa (Job Page)
 
-O Heritrix 3.0/3.1 introduz a capacidade de executar várias tarefas simultaneamente na mesma instância do rastreador. No Heritrix 1.x, apenas uma tarefa poderia ser executado por vez, enquanto as outras tarefas eram enfileirados atrás da tarefa em execução. O único limite que afeta o número de tarefas que podem ser executadas simultaneamente no Heritrix 3.0/3.1 é a quantidade de memória alocada para o heap Java. Se muitos rastreamentos forem executados, o heap Java poderá, em algum momento, estar esgotado. Isso resultará em um erro OutOfMemory que cancelará os rastreamentos em execução.
+O Heritrix 3.0/3.1 introduz a capacidade de executar várias tarefas simultaneamente na mesma instância do rastreador. No Heritrix 1.x, apenas uma tarefa poderia ser executada por vez, enquanto as outras tarefas eram enfileiradas atrás da tarefa em execução. O único limite que afeta o número de tarefas que podem ser executadas simultaneamente no Heritrix 3.0/3.1 é a quantidade de memória alocada para o heap Java. Se muitos rastreamentos forem executados, o heap Java poderá, em algum momento, estar esgotado. Isso resultará em um erro OutOfMemory que cancelará os rastreamentos em execução.
 
 Depois que uma tarefa de rastreamento tiver sido criada e configurada corretamente, poderá ser executada. Para iniciar um rastreamento, o usuário deve ir para a página de tarefa clicando na tarefa específica na IUW.
 
 ### Elementos de dados da página de tarefa
 
 Job name
+
 O nome da tarefa e o número de vezes que foi executada.
 
 Avaible checkpoints to recover
+
 A partir da versão 3.1, se um rastreamento tiver sido verificado, uma caixa suspensa será exibida mostrando todos os pontos de verificação que foram executados.
 
 Job Log
+
 O log da tarefa contém um registro dos comandos emitidos na página da tarefa, incluindo respostas de comando.
 
 Job Status
+
 Exibe o status da tarefa.
 
 Totals
+
 Exibe estatísticas que fornecem informações sobre o número de documentos rastreados e baixados.
 
 Alerts
+
 Lista os alertas gerados pelo rastreamento. Os alertas podem ser avisos ou problemas que abortam o rastreamento mas que não prejudicam o rastreamento, mas podem prejudicar o resultado do rastreamento.
 
 Rates
-Exibe estatísticas que fornecem as taxas nas quais os documentos e bytes de dados estão sendo baixados. O número de URIs processados por segundo, com sucesso, é mostrado. Para esta estatística, é mostrada a taxa do último intervalo de amostragem e a taxa média (entre parênteses). O intervalo de amostragem é geralmente de cerca de 20 segundos e pode ser controlado pela propriedade intervalSeconds do bean Spring do StatisticsTracker. A taxa mais recente de progresso pode flutuar consideravelmente, à medida que a carga de trabalho do rastreador varia e ocorrem a memória de manutenção e as operações de arquivo. Isso é principalmente verdadeiro se o intervalo de amostragem tiver sido definido com um valor baixo. A taxa de coleta de conteúdo bem-sucedida em KB /segundo para o intervalo de amostragem mais recente e (entre parênteses) a média desde o início do rastreamento também são exibidas.
+
+Exibe estatísticas que fornecem as taxas nas quais os documentos e bytes de dados estão sendo baixados. O número de URIs processados por segundo, com sucesso, é mostrado. Nessa estatística, é mostrada a taxa do último intervalo de amostragem e a taxa média (entre parênteses). O intervalo de amostragem é geralmente cerca de 20 segundos e pode ser controlado pela propriedade intervalSeconds do bean Spring do StatisticsTracker. A taxa mais recente de progresso pode flutuar consideravelmente à medida que a carga de trabalho do rastreador varia e ocorrem a memória de manutenção e as operações de arquivo. Isso é principalmente verdade se o intervalo de amostragem tiver sido definido com um valor baixo. A taxa de coleta de conteúdo bem-sucedida em KB /segundo para o intervalo de amostragem mais recente e (entre parênteses) a média desde o início do rastreamento também são exibidas.
 
 Load
-Exibe estatísticas que fornecem informações de carga. O número de encadeamentos ativos, comparado ao total de encadeamentos disponíveis, é mostrado. Normalmente, se apenas um pequeno número de threads estiver ativo, é porque ativar mais threads excederia as configurações de cortesia configuradas. Por exemplo, se todos os URIs restantes estiverem em um único host, apenas um encadeamento estará ativo, a menos que as filas paralelas estejam ativadas. Às vezes, nenhum tópico estará ativo devido a pausas para considerações de cortesia.
+
+Exibe estatísticas que fornecem informações de carregamento. O número de encadeamentos ativos, comparado ao total de encadeamentos disponíveis, é mostrado. Normalmente, se apenas um número pequeno de encadeamentos estiver ativo, é porque ativar mais encadeamentos excederia as configurações de cortesia configuradas. Por exemplo, se todos os URIs restantes estiverem em um único host, apenas um encadeamento estará ativo, a menos que as filas paralelas estejam ativadas. Às vezes, nenhum tópico estará ativo devido a pausas para considerações de cortesia.
 
 Congestion Ratio
+
 O índice de congestionamento é uma estimativa aproximada de quanta capacidade inicial, como um múltiplo da capacidade atual, seria necessária para rastrear a carga de tarefa atual na taxa máxima disponível em determinadas configurações de cortesia. Esse valor é calculado comparando o número de filas internas que estão progredindo em relação àquelas que estão aguardando a disponibilização de um encadeamento.
 
 Deepest Queue
+
 A estatística de fila mais profunda é a cadeia mais longa de URIs que deve ser processada sequencialmente. Essa estatística é um indicador superior do trabalho restante do que o número total de URIs pendentes. Por exemplo, 1000 URIs em 1000 filas podem ser concluídos rapidamente, mas 1000 URIs em uma única fila levarão muito mais tempo para serem concluídos. A profundidade média é a profundidade média do último URI em todas as filas seqüenciais ativas.
 
 Elapsed
+
 Exibe o tempo decorrido, em milissegundos, que uma tarefa foi executada, excluindo o tempo no estado "pausado".
 
 Threads
+
 Esta área da página do trabalho exibe o número de encadeamentos sendo usados. Clicar em "threads" para ver um relatório de detalhado.
 
 Frontier
+
 Exibe estatísticas da Frontier, como o número de URIs enfileirados. Clicar em "frontier" para ver um relatório de detalhado.
 
 Memory
-Exibe a quantidade de memória alocada para o heap Java, a quantidade de memória em uso e o tamanho máximo do heap Java.
+
+Exibe a quantidade de memória alocada ao heap Java, a quantidade de memória em uso e o tamanho máximo do heap Java.
 
 Crawl Log
+
 Exibe a saída do log de rastreamento. O log de rastreamento contém informações detalhadas sobre um rastreamento em execução, como os URIs que foram buscados.
 
 Advanced
+
 Fornece acesso a recursos avançados que podem ser usados para controlar uma tarefa.
 
 Configuration-referenced Paths
+
 Exibe os caminhos relevantes para a configuração e registro de tarefa. Por exemplo, o caminho para o arquivo `crawl.log` é exibido.
 
 ### Operações da página de trabalho
 
 Edit
+
 Permite editar o arquivo `crawler-beans.cxml`. O arquivo `crawler-beans.cxml` contém a configuração Spring da tarefa de rastreamento. A edição desse arquivo é a maneira padrão de configurar uma tarefa ou perfil.
 
 Build
-Cria as classes Java Spring configuradas por meio do arquivo `crawler-beans.cxml`. Antes de uma tarefa ser executada, ela deve ser construída.
+
+Constrói as classes Java Spring que são configuradas por meio do arquivo `crawler-beans.cxml`. Antes de uma tarefa ser executada, ela deve ser construída.
 
 Launch
+
 Inicia uma tarefa de rastreamento. Antes de ser lançada, a tarefa deve ser construída. Uma vez que a tarefa é lançada, ela estará pausada ou em execução. Se estiver pausada, o botão "unpause" deve ser clicado para iniciar o rastreamento. A partir da versão 3.1, se um ponto de verificação ou vários pontos de verificação foi/foram executados, um ponto de verificação pode ser selecionado na caixa suspensa do ponto de verificação. A tarefa pode ser reiniciada no ponto de verificação clicando em "launch".
 
 Pause
+
 Pausa o rastramento em andamento.
 
 Unpause
+
 Despausa o rastreamento.
 
 Checkpoint
+
 Salva o estado atual do rastreamento no armazenamento. Durante o tempo em que o rastreamento está sendo verificado, ele é pausado e nenhum URI será rastreado. O ponto de verificação (checkpoint) é útil se um rastreamento deve ser interrompido e, em seguida, reiniciado.
 
 Terminate
+
 Encerra um rastreamento.
 
 Teardown
+
 Descarta as classes Spring Java atuais da tarefa e permite que uma nova configuração Spring seja construída. Qualquer alteração no arquivo `crawler-beans.cxml` após o botão "Build" ter sido chamado requer uma desmontagem (teardown) e outra montagem a ser executada.
 
 Copy
-Permite a cópia da configuração da tarefa atual para uma nova tarefa ou perfil.
+
+Permite a cópia da configuração da tarefa atual para uma nova tarefa ou um novo perfil.
 
 Scripting Console
+
 Exibe um formulário de entrada que pode ser usado para inserir e executar comandos de script. Os comandos de script podem ser usados para controlar o comportamento de uma tarefa de rastreamento. Várias linguagens de script estão disponíveis, como AppleScript e ECMAScript. Exemplos de scripts podem ser encontrados aqui.
 
 
 Browse Beans
+
 Exibe a hierarquia dos beans Spring que formam uma tarefa de rastreamento. As propriedades e associações de cada bean podem ser visualizadas ou editadas clicando no bean.
 
 ## Frontier
@@ -2058,7 +2086,7 @@ Há apenas um bean Frontier por tarefa de rastreamento.
 
 Crucialmente, a frontier do Heritrix3, além de armazenar várias filas de URLs para rastreamento em ordem de prioridade, também controla as configurações de cortesia de atraso de rastreamento por filas. Ou seja, controla, também, quando CrawlURIs devem ser rastreados, não somente a prioridade de rastreamento.
 
-O Heritrix BdbFrontier também implementa a rotação de filas, para garantir que todas as filas sejam vistas, mesmo quando houver um número maior de filas do que de threads disponíveis para executar o rastreamento. Isso significa que as filas de rastreamento do Heritrix têm "orçamentos de sessão" (para manipular a rotação), além de cotas de rastreamento gerais (que são aplicadas a todo o rastreamento).
+O Heritrix BdbFrontier também implementa a rotação de filas, para garantir que todas as filas sejam vistas, mesmo quando houver um número maior de filas do que de encadeamentos disponíveis para executar o rastreamento. Isso significa que as filas de rastreamento do Heritrix têm "orçamentos de sessão" (para manipular a rotação), além de cotas de rastreamento gerais (que são aplicadas a todo o rastreamento).
 
 Nas versões 3.0 e 3.1, existe apenas um tipo de Frontier, o Heritrix BdbFrontier. Outras frontiers que foram incluídas no Heritrix 1.x não são mais suportados.
 
@@ -2070,9 +2098,9 @@ Para mais detalhes, ver:
 
 ### Configurações do Frontier
 
-Politeness
+Cortesia (Politeness)
 
-Uma combinação de várias configurações controla a politeness da Frontier. É importante observar que, a qualquer momento, apenas um URI de qualquer host é processado. As regras de cortesia a seguir impõem um tempo de espera adicional entre o final do processamento de um URI e o início do próximo.
+Uma combinação de várias configurações controla a cortesia da Frontier. É importante observar que, a qualquer momento, apenas um URI de qualquer host é processado. As regras de cortesia a seguir impõem um tempo de espera adicional entre o final do processamento de um URI e o início do próximo.
 
 * delayFactor - Essa configuração impõe um atraso entre a obtenção de URIs do mesmo host. O atraso é um múltiplo do tempo necessário para buscar o último URI baixado do host. Por exemplo, se foram necessários 800 milissegundos para buscar o último URI de um host e o delayFactor for 5 (um valor muito alto), a Frontier aguardará 4000 milissegundos (4 segundos) antes de permitir que outro URI desse host seja processado.
 
@@ -2089,9 +2117,9 @@ Uma combinação de várias configurações controla a politeness da Frontier. �
 
 Política de tentativas
 
-A Frontier pode ser usada para limitar o número de tentativas de busca para um URI. O Heritrix tentará recuperar um URI porque o erro de busca inicial pode ser uma condição transitória.
+A Frontier pode ser usada para limitar o número de tentativas de busca de um URI. O Heritrix tentará recuperar um URI porque o erro de busca inicial pode ser transitório.
 
-* maxRetries - Essa configuração limita o número de novas tentativas de busca em um URI devido a erros transitórios.
+* maxRetries - Essa configuração limita o número de novas tentativas de busca de um URI devido a erros transitórios.
 
 * retryDelaySeconds - Essa configuração determina o tempo do período de espera entre novas tentativas.
 
@@ -2105,7 +2133,7 @@ A Frontier pode ser usada para limitar o número de tentativas de busca para um 
  </bean>
  ```
  
- Limites de Largura de Banda
+Limites de Largura de Banda
  
 A Frontier permite ao usuário limitar o uso de largura de banda, retendo URIs quando o uso da largura de banda excedeu certos limites. Como as limitações de uso da largura de banda são calculadas ao longo de um período de tempo, ainda pode haver picos de uso que excedam os limites.
 
@@ -2129,7 +2157,7 @@ A partir da versão 3.1, o comportamento da Frontier em relação à extração 
 </bean>
 ```
 
-* extractIndependently - Essa configuração incentiva os processadores de extração a sempre executar a extração da melhor forma possível, mesmo que um extrator anterior tenha marcado um URI como já manipulado. Defina o valor como "true" para ativar essa configuração. O definição padrão é "false", o que mantém o comportamento pré-3.1.
+* extractIndependently - Essa configuração incentiva os processadores de extração a sempre executarem a extração da melhor forma possível, mesmo que um extrator anterior tenha marcado um URI como já manipulado. Defina o valor como "true" para ativar essa configuração. O definição padrão é "false", o que mantém o comportamento pré-3.1.
 
 ### Heritrix BdbFrontier
 
