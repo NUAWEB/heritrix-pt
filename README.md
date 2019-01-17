@@ -727,7 +727,7 @@ Quando você cria uma tarefa de rastreamento, apenas um seed é especificado: ht
 
 Apague o TranclusionDecideRule, pois essa regra tem o potencial de levar o Heritrix para outro host. Por exemplo, se um URI retornar um código de resposta 301 (mover permanentemente) ou 302 (encontrado), bem como um URI que contenha um nome de host diferente do que os seeds, o Heritrix aceitaria esse URI usando o TransclusionDecideRule. Remover essa regra fará com que o Heritrix não se afaste do nosso host www.foo.org.
 
-PathologicalPathDecideRule e TooManyPathSegmentsDecideRule permitirão que o Heritrix evite alguns tipos de armadilhas de rastreamento. TooManyHopsDecideRule fará com que o Heritrix não se distancie muito do seed. Dessa forma, o Heritrix não será preso num loop infinito pelo calendário.  Por padrão, o máximo de saltos é definido como 20, mas esse valor pode ser alterado editando o arquivo crawler-beans.cxml.
+PathologicalPathDecideRule e TooManyPathSegmentsDecideRule permitirão que o Heritrix evite alguns tipos de armadilhas de rastreamento. TooManyHopsDecideRule fará com que o Heritrix não se distancie muito do seed. Dessa forma, o Heritrix não será preso num loop infinito pelo calendário.  Por padrão, o máximo de hops é definido como 20, mas esse valor pode ser alterado editando o arquivo crawler-beans.cxml.
 
 Como alternativa, você pode adicionar o MatchesFilePatternDecideRule. Defina usePresetPattern como CUSTOM e defina o regexp como: .foo \ .org (?! / Calendar). |. * Foo \ .org / calendar? Year = 200 [56]. *
 
@@ -1915,7 +1915,7 @@ Para o exemplo acima, o tarball conterá a seguinte estrutura de diretórios:
        
 hoppath.pl
 
-Esse script Perl, localizado em (HERETRIX_HOME)/bin, recria o caminho do salto para o URI especificado. O caminho do salto é o caminho de links (URIs) que foram seguidos para chegar ao URI especificado.
+Esse script Perl, localizado em (HERETRIX_HOME)/bin, recria o caminho do hop para o URI especificado. O caminho do hop é o caminho de links (URIs) que foram seguidos para chegar ao URI especificado.
 
 Uso de script
 
@@ -2161,7 +2161,7 @@ A partir da versão 3.1, o comportamento da Frontier em relação à extração 
 
 ### Heritrix BdbFrontier
 
-O BdbFrontier visita URIs e descobre sites de uma maneira geralmente ampla. Oferece opções de configuração para controlar como ele controla a atividade em determinados hosts. Algumas configurações permitem que haja uma tendência a finalizar os hosts em andamento (rastreamento "site-first") ou que haja alternações entre todos os hosts com URIs pendentes.
+O BdbFrontier visita URIs e sites descobertos de maneira ampla. Oferece opções de configuração para controlar como ele controla a atividade em determinados hosts. Algumas configurações permitem a tendência de finalizar hosts em andamento (rastreamento "site-first") ou que haja alternações entre todos os hosts com URIs pendentes.
 
 Os URIs descobertos são rastreados apenas uma vez, com exceção às informações do robots.txt e DNS, que podem ser configuradas para serem atualizadas em intervalos específicos para cada host.
 
@@ -2172,13 +2172,13 @@ A partir da versão 3.1, há duas novas propriedades.
 | largestQueuesCount| 20 | Controla quantas, das filas maiores, são rastreadas e relatadas no "relatório frontier". |
 | maxQueuesPerReportCategory | 2000  | Controla o número máximo de filas por categoria listadas no "relatório frontier". |
 
-Quando as filas diminium do top-N ou o valor é alterado no meio do rastreamento, as informações sobre as filas maiores pode não ser exata. A lista é atualizada apenas quando uma fila passa para o grupo maior.
+Quando as filas decaem do top-N ou o valor é alterado no meio do rastreamento, as informações sobre as filas maiores pode não ser exata. A lista é atualizada apenas quando uma fila passa para o grupo maior.
 
 ### Detalhes da implementação
 
 O armazenamento da fila é gerenciado por meio de um banco de dados BDB JE incorporado. É um armazenamento simples de valor-chave, portanto, a multiplicidade de filas é implementada como prefixos-chave. Cada CrawlURI é armazenado no banco de dados BDB como um binary blob serializado usando Kryo, sob uma chave que combina o prefixo de fila (classKey) e a prioridade de rastreamento do CrawlURI.
 
-A lista de active/snoozed/etc são mantidas na memória e gravadas no disco durante o checkpoint no formato JSON. Se você continuar a partir do checkpoint, o BdbFrontier será reutilizado, mas as informações necessárias da fila serão fornecidas pelos arquivos JSON. Se o banco de dados da frontier *não* for reutilizado a partir de um ponto de verificação, o banco de dados será 'truncado' e todos os dados no BdbFrontier serão descartados.
+A lista de de filas active/snoozed/etc são mantidas na memória e gravadas no disco durante o ponto de verificação no formato JSON. Se você retomar a fila a partir do ponto de vereificação, o BdbFrontier será reutilizado, mas as informações necessárias da fila serão fornecidas pelos arquivos JSON. Se o banco de dados da frontier *não* for reutilizado a partir de um ponto de verificação, o banco de dados será 'truncado' e todos os dados no BdbFrontier serão descartados.
 
 A atualização do conteúdo da frontier a partir de vários encadeamentos exige cuidado, pois é necessário fazer alterações e confirmá-las no disco sem que ocorram conflitos. Uma vez que qualquer alteração tenha sido feita, por exemplo, um WorkQueue, a chamada `wq.makeDirty ()` é usada para iniciar um processo no qual o WorkQueue é serializado para o disco e lido novamente (para assegurar a consistência, mas descartando todos os campos temporários). Isso significa que as atualizações para cada WorkQueue devem ser sincronizadas nos encadeamentos para que não haja duas atualizações ao mesmo tempo. Por exemplo:
 
@@ -2227,7 +2227,7 @@ O software Heritrix é baseado no framework Spring para Java. O framework Spring
 </bean>
 ```
 
-Esse bean consiste em um identificador exclusivo (fetchProcessors) e uma lista de propriedades que são referências a outros beans. Um exemplo de alteração de configuração seria colocar o bean extrator XML à frente do bean extrator HTTP para que o conteúdo, como feeds RSS, possa ser rastreado. O bean fetchProcessors após essa alteração de configuração é mostrado abaixo.
+Esse bean consiste em um identificador exclusivo (fetchProcessors) e uma lista de propriedades que são referências a outros beans. Um exemplo de alteração de configuração seria colocar o bean extrator XML à frente do bean extrator HTTP para que o conteúdo, como feeds RSS, possa ser rastreado. O bean fetchProcessors, após essa alteração de configuração, é mostrado abaixo.
 
 **fetchProcessors Bean com extractorXML
 
@@ -2289,7 +2289,7 @@ Por exemplo, o seguinte arquivo pode ser movido para o diretório "action" para 
 F+ http://example.com
 ```
 
-Para usar o diretório action, o bean `ActionDirectory` deve ser configurado no arquivo `crawler-beans.cxml`, conforme ilustrado abaixo.
+Para usar o diretório action, o bean `ActionDirectory` deve ser configurado no arquivo `crawler-beans.cxml`, conforme exemplificado abaixo.
 
 ```
 <bean id="actionDirectory" class="org.archive.crawler.framework.ActionDirectory">
@@ -2301,11 +2301,37 @@ Para usar o diretório action, o bean `ActionDirectory` deve ser configurado no 
 
 A classe org.archive.crawler.frontier.FrontierJournal contém as constantes reconhecidas como diretivas possíveis em um diário de recuperação.
 
-Observe que as linhas 'F +' do formato de diário de recuperação podem incluir um 'hops-path' e 'via URI', que são preservadas quando um URI é enfileirado pelos mecanismos acima, mas isso pode não ser uma representação completa de todo o estado de URI a partir de sua descoberta em um rastreamento normal.
+Observe que as linhas 'F +' do formato de diário de recuperação podem incluir um 'hops-path' e 'via URI', que são preservados quando um URI é enfileirado pelos mecanismos acima, mas isso pode não ser uma representação completa de todo o estado de URI a partir de sua descoberta em um rastreamento normal.
 
 ## Glossário
 
-Bytes, KB and statistics
+###### Conteúdo
+
+* Conteúdo
+* Bytes, KB and statistics
+* Ponto de verificação
+* CrawlURI
+* Data e hora
+* URIs descobertos
+* Discovery Path
+* Frontier
+* Host
+* Tarefa de rastreamento
+* Contagem de hops de links
+* URIs pendentes
+* Perfil
+* Cortesia
+* Estados de fila 
+* URIs enfileirados
+* Expressões regulares
+* SHA1
+* Servidor
+* Spring
+* SURT
+* Prefixo SURT
+Toe Threads
+
+###### Bytes, KB and statistics
 
 O Heritrix adere às seguintes convenções para exibir quantidades de bytes e bits:
 
@@ -2322,29 +2348,29 @@ O Heritrix adere às seguintes convenções para exibir quantidades de bytes e b
 
 Isso também se aplica a todos os logs.
 
-Ponto de verificação (Checkpointing)
+###### Ponto de verificação (Checkpointing)
 
-O ponto de verificação do Heritrix é fortemente influenciado pela verificação do rastreador Mercator. Em um artigo sobre o Mercator, o ponto de verificação é descrito da seguinte maneira: "O ponto de verificação é uma parte importante de qualquer processo de execução longo, como um rastreamento da Web. 'Ponto de verificação' é a gravação de uma representação do estado do rastreador em um armazenamento estável. Caso aconteça uma falha, o ponto de verificação deve ser suficiente para que, ao ser lido pelo rastreador, ele consiga recuperar seu estado antes da falha e retomar o rastreamento a partir desse ponto. Por essa definição, no caso de uma falha, qualquer trabalho realizado depois do ponto de verificação mais recente é perdido, apenas o trabalho realizado antes fica salvo. No Mercator, a frequência com que o encadeamento secundário realiza um ponto de verificação é configurável pelo usuário, geralmente de 1 a 4 vezes por dia."
+O ponto de verificação do Heritrix é fortemente influenciado pelo ponto de verificação do rastreador Mercator. Em um artigo sobre o Mercator, o ponto de verificação é descrito da seguinte maneira: "O ponto de verificação é uma parte importante de qualquer processo de execução longo, como um rastreamento da Web. 'Ponto de verificação' é a gravação de uma representação do estado do rastreador em um armazenamento estável. Caso aconteça uma falha, o ponto de verificação deve ser suficiente para que, ao ser lido pelo rastreador, ele consiga recuperar seu estado antes da falha e retomar o rastreamento a partir desse ponto. Por essa definição, no caso de uma falha, qualquer trabalho realizado depois do ponto de verificação mais recente é perdido, apenas o trabalho realizado anteriormente fica salvo. No Mercator, a frequência com que o encadeamento secundário realiza um ponto de verificação é configurada pelo usuário, geralmente de 1 a 4 vezes por dia."
 
 Ver Ponto de Verificação para informações sobre a implementação do Heritrix.
 
-CrawlURI
+###### CrawlURI
 
 Um URI e seus dados associados, como o URI pai e o número de links.
 
-Data e hora
+###### Data e hora
 
 Todos os horários no Heritrix são GMT, assumindo que o relógio e o fuso horário no sistema local estão corretos. Isso significa que todas as datas/horas nos registros são GMT, todas as datas/horas mostradas na IUW são GMT, e todas as horas ou datas inseridas pelo usuário devem estar em GMT.
 
-URIs descobertos 
+###### URIs descobertos 
 
-Um URI descoberto é qualquer URI confirmado dentro do "escopo". Isso inclui os URIs que foram processados, estão sendo processados e terminaram o processamento. Não inclui URIs que foram "esquecidas". Os URIs esquecidos são URIs considerados fora do escopo durante a busca. É provável que isso aconteça pela alteração da definição do escopo pelo operador.
+Um URI descoberto é qualquer URI confirmado dentro do "escopo". Isso inclui os URIs que foram processados, estão sendo processados e terminaram o processamento. Não inclui URIs que foram "esquecidos". Os URIs esquecidos são URIs considerados fora do escopo durante a busca. É provável que isso aconteça pela alteração da definição do escopo pelo operador.
 
 Observação: Como o mesmo URI pode ser buscado várias vezes (pelo menos na maioria das Frontiers), o número de URIs descobertos pode ser um pouco menor do que os itens combinados enfileirados, em processo e finalizados. Isso ocorre porque os URIs duplicados estão sendo enfileirados e processados. É provável que a variação seja mais alta em Frontiers que estão implementando estratégias "revisit".
 
-Caminho de descoberta (Discovery Path)
+###### Discovery Path
 
-Cada URI tem um caminho de descoberta. O caminho contém um caractere para cada link ou incorporado do seed.
+Cada URI tem um discovery path. O caminho contém um caractere para cada link ou link incorporado do seed.
 
 A legenda dos caracteres é a seguinte:
 
@@ -2355,13 +2381,13 @@ A legenda dos caracteres é a seguinte:
 * P - Prerequisite (such as DNS lookup or robots.txt)
 * I - A partir da versão 3.1. Não necessariamente no material de origem, mas deduzido por convenção (como /favicon.ico)
 
-O caminho de descoberta de um seed é uma cadeia vazia.
+O disovery path de um seed é uma cadeia vazia.
 
-Frontier
+###### Frontier
 
-Módulo conectável no Heritrix que mantém o estado interno do rastreamento. Ver Frontier.
+Módulo *pluggable* do Heritrix que mantém o estado interno do rastreamento. Ver Frontier.
 
-Host
+###### Host
 
 Um host pode servir vários domínios ou um domínio pode ser servido por vários hosts. Para nossos propósitos, um host é o mesmo que o nome do host em um URI. O DNS não é considerado porque é volátil e pode estar indisponível. Por exemplo, se vários URIs apontarem para o mesmo endereço IP, eles serão considerados três hosts lógicos diferentes (no mesmo nível do protocolo URI/HTTP).
 
@@ -2369,66 +2395,66 @@ Os proxies HTTP em conformidade se comportam de maneira semelhante. Eles não co
 
 Isso não é ideal para politeness porque aplica regras de cortesia ao host físico ao invés do host lógico.
 
-Trabalho de rastreamento 
+###### Tarefa de rastreamento 
 
 Para executar um rastreamento, uma configuração deve ser criada. No Heritrix, essa configuração é chamada de tarefa de rastreamento. Uma tarefa de rastreamento é baseada no framework Spring. A tarefa usa beans Spring como objetos de configuração que definem o rastreamento.
 
-Link Hop Count
+###### Contagem de hops de links
 
-Número de links, seguidos do seed,  para alcançar um URI. Os seeds têm uma contagem de saltos de links de zero. A contagem de saltos do link é igual à contagem de `Ls` em um caminho de descoberta de URIs.
+Número de links, seguidos do seed,  para alcançar um URI. Os seeds têm uma contagem de hops de links zero. A contagem de hops de link é igual à contagem de `Ls` em um discovery path de URIs.
 
-URIs pendentes
+###### URIs pendentes
 
 Número de URIs que estão aguardando processamento detalhado. É, também, o número de URIs descobertos que não foram inspecionados quanto ao escopo ou às duplicatas. Dependendo da implementação da Frontier, isso pode sempre ser zero. Também pode ser um número ajustado que considera duplicatas.
 
-Perfil
+###### Perfil
 
-Um perfil é um modelo base para uma tarefa de rastreamento. Contém todas as configurações em uma tarefa de rastreamento, mas não é considerado "rastreável". O Heritrix não permite que você rastreie diretamente um perfil. Somente tarefas baseados em perfis podem ser rastreados.
+Um perfil é um modelo base para uma tarefa de rastreamento. Contém todas as configurações de uma tarefa de rastreamento, mas não é considerado "rastreável". O Heritrix não permite que um perfil seja diretamente rastreado, somente tarefas baseados em perfis.
 
 Um exemplo comum de uma configuração de perfil é deixar a propriedade `metadata.operatorContactUrl` indefinida para forçar o operador a inserir um valor válido. Isso se aplica ao perfil padrão que acompanha o Heritrix. Outros exemplos seriam deixar a lista de seeds vazia ou não especificar um processador obrigatório.
 
 Os perfis podem ser usados como modelos, deixando suas configurações em um estado inválido. Dessa forma, um operador é forçado a escolher suas configurações ao criar uma tarefa a partir de um perfil. Isso pode ser vantajoso quando um administrador precisa configurar muitas tarefas de rastreamento diferentes para acomodar sua política de rastreamento.
 
-Politeness
+###### Cortesia
 
-Tentativas do software de rastreador de limitar a carga do site que ele está rastreando. Sem restrições politeness, o rastreador pode sobrecarregar sites menores e até mesmo fazer com que sites de tamanhos moderados fiquem devagar. A menos que você tenha permissão expressa para rastrear um site de forma agressiva, você deve aplicar regras rígidas de cortesia a qualquer rastreamento.
+Tentativas do software do rastreador de limitar a carga do site que ele está rastreando. Sem restrições de cortesia, o rastreador pode sobrecarregar sites menores e até mesmo fazer com que sites de tamanhos moderados fiquem devagar. A menos que você tenha permissão expressa para rastrear um site de forma agressiva, você deve aplicar regras rígidas de cortesia em todos os rastreamentos.
 
-Estados de fila
+###### Estados de filas
 
 | Estado  | Significado |  
 | ------------- | ------------- |
 | ready | Filas prontas para emitir uma URL imediatamente. |
 | in-process | Filas que emitiram uma URL que está sendo processada no momento. |
-| snoozed | Devido ao atraso de rastreamento ou à ao tempo de espera entre tentativas. |
+| snoozed | Devido ao atraso de rastreamento ou ao tempo de espera entre tentativas. |
 | active | Total de in-proncess + ready + snoozed. |
 | inactive | Filas que atualmente não estão sendo consideradas (devido à rotação de filas). |
-| inegilible | Filas inativas em que a precedência da fila excede o andar de precedência. |
-| retired | Desativadas por algum motivo, ex. essa fila atingiu sua cota alocada. |
+| inegilible | Filas inativas em que a precedência de fila excede a precedência de andar. |
+| retired | Desativadas por algum motivo, ex. a fila atingiu sua cota alocada. |
 | exhausted | Filas que estão vazias. |
 
-URIs enfileirados
+###### URIs enfileirados
 
 O número de URIs enfileirados e aguardando processamento. Os URIs enfileirados incluem todos os URIs que falharam em serem buscados, mas serão tentados novamente.
 
-Expressões regulares
+###### Expressões regulares
 
-Todas as expressões regulares no Heritrix são expressões regulares do Java.
+Todas as expressões regulares no Heritrix são expressões regulares Java.
 
-As expressões regulares de Java diferem daquelas usadas em outras linguagens de programação, como o Perl. Para obter informações detalhadas sobre expressões regulares Java, consulte a descrição do Java API da classe `java.util.regex.Pattern`.
+As expressões regulares Java diferem daquelas usadas em outras linguagens de programação, como o Perl. Para obter informações detalhadas sobre expressões regulares Java, consulte a descrição do Java API da classe `java.util.regex.Pattern`.
 
-SHA1
+###### SHA1
 
 Algorítmo (Secure Hash Algorithm (SHA)) usado pelo Heritrix para criptografar arquivos.
 
-Servidor (Server)
+###### Servidor (Server)
 
 Um servidor é um serviço em um host. Pode haver mais de um serviço em um host. Diferentes serviços são geralmente diferenciados pelo número da porta (port number).
 
-Spring
+###### Spring
 
 Spring é uma estrutura de aplicativo Java usada pelo Heritrix. As tarefas de rastreamento são baseadas nos componentes Spring, conhecidos como "beans". Para visualizar os beans Spring de uma configuração de rastreamento, use a funcionalidade "Browse Beans".
 
-SURT
+###### SURT
 
 SURT significa Sort-friendly URI Reordering Transform. É uma transformação aplicada a URIs que faz com que sua representação da esquerda para a direita corresponda melhor à hierarquia natural dos nomes de domínio.
 
@@ -2436,13 +2462,13 @@ Um URI <scheme: //domain.tld/path? Query> tem uma forma SURT <scheme://(tld,doma
 
 A conversão para o formulário SURT também envolve transformar todos os caracteres em minúsculas e a alteração do esquema https para http. Além disso, o caractere "/" após um componente de autoridade de URI só aparecerá no formato SURT se estiver em formato URI simples. Um exemplo de componente de autoridade de URI é a terceira barra em um URI HTTP regular. Essa convenção se mostra importante ao usar URIs reais como uma abreviação de prefixos SURT.
 
-Os URIs de formato SURT não são normalmente usados para especificar URIs exatos para busca. Em vez disso, a forma SURT é útil ao comparar ou classificar URIs. URIs em formato SURT se classificam em grupos naturais. Por exemplo, todos os URIs "archive.org" serão adjacentes, independentemente de subdomínios como "books.archive.org" ou "movies.archive.org".
+Os URIs de formato SURT normalmente não são usados para especificar URIs exatos para busca. Em vez disso, a forma SURT é útil ao comparar ou classificar URIs. URIs de formato SURT são classificados em grupos naturais. Por exemplo, todos os URIs "archive.org" serão adjacentes, independentemente de subdomínios como "books.archive.org" ou "movies.archive.org".
 
-Mais importante, um URI de formato SURT ou uma versão truncada de um URI de formato SURT pode ser usado como um prefixo SURT. Um prefixo SURT geralmente corresponderá a todos os URIs dentro de uma área comum de interesse. Por exemplo, o prefixo http://(is será compartilhado por todos os URIs no domínio de nível superior `.is`.
+Mais importante, um URI de formato SURT ou uma versão truncada de um URI de formato SURT podem ser usados como prefixos SURT. Um prefixo SURT geralmente corresponderá a todos os URIs dentro de uma área comum de interesse. Por exemplo, o prefixo http://(is será compartilhado por todos os URIs no domínio de nível superior `.is`.
 
-Prefixo SURT
+###### Prefixo SURT
 
-Um URI em formato SURT, especialmente se truncado, pode ser útil como um "prefixo SURT", uma cadeia de prefixo compartilhado de todos os URIs de formulário SURT na mesma área de interesse. Por exemplo, o prefixo http://(is. será compartilhado por todos os URIs de formato SURT no domínio de nível superior `.is`. O prefixo http://(org, archive.www,)/movies será compartilhado por todos os URIs em www.archive.org com um caminho que comece com /movies. http://(org,archive.www,)/movies é também um URI de formato SURT completo válido.
+Um URI de  formato SURT, especialmente se truncado, pode ser útil como um "prefixo SURT"; uma cadeia de prefixos compartilhados de todos os URIs de formulário SURT na mesma área de interesse. Por exemplo, o prefixo http://(is. será compartilhado por todos os URIs de formato SURT no domínio de nível superior `.is`. O prefixo http://(org, archive.www,)/movies será compartilhado por todos os URIs em www.archive.org com um caminho que comece com /movies. http://(org,archive.www,)/movies é também um URI de formato SURT completo válido.
 
 Uma coleção de prefixos SURT classificados é uma maneira eficiente de especificar o escopo de rastreamento desejado. Por exemplo, qualquer URI cujo formato SURT comece com qualquer um dos prefixos deve ser incluído no escopo.
 
@@ -2452,13 +2478,13 @@ Um pequeno conjunto de convenções pode ser usado para calcular um "prefixo SUR
 2. Se houver pelo menos três barras ("/") no formato SURT, remova todos os caracteres após a última barra. Por exemplo, http://(org,example,www,)/main/subsection/ não é alterado. http://(org,example,www,)/main/subsection é truncado para http://(org,example,www,)/main/. http://(org.example,www,)/ não é alterado e http://(org,example,www) não é alterado.
 3. Se o formato final terminar com um parentêses fora (")", remova o parênteses. Cada um dos exemplos acima, exceto o último, permanece inalterado. O último, http://(org,example,www,) , torna-se becomes http://(org,example,www,.
 
-Isso permite que muitos URIs de seeds, em sua forma usual, indiquem os prefixos SURT mais úteis para rastrear URIs relacionados. A presença ou ausência de um "/" à direita em URIs sem informações de caminho adicionais é um indicador sutil se os subdomínios do domínio fornecido devem ser incluídos.
+Isso permite que muitos URIs de seeds, em suas formas normais, indiquem os prefixos SURT mais úteis para rastrear URIs relacionados. A presença ou ausência de um "/" à direita, em URIs sem informações de caminhos adicionais, é um indicador se os subdomínios do domínio fornecido devem ser incluídos.
 
-Por exemplo, o seed http://www.archive.org/ se tornará o formato SURT e fornecerá o prefixo SURT http://(org,archive,www,)/ e é o prefixo de todas as URIs de formato SURT em www.archive.org. No entanto, qualquer URI de subdomínio como http://homepages.www.archive.org/directory seria excluído porque seu formato SURT http://homepages.www.archive.org/directory não inicia com o prefixo SURT completo, incluindo o ")" removido do seed.
+Por exemplo, o seed http://www.archive.org/ se tornará o formato SURT e fornecerá o prefixo SURT http://(org,archive,www,)/, e é o prefixo de todas as URIs de formato SURT em www.archive.org. No entanto, qualquer URI de subdomínio como http://homepages.www.archive.org/directory seria excluído porque seu formato SURT http://homepages.www.archive.org/directory não inicia com o prefixo SURT completo, incluindo o ")" removido do seed.
 
 [Observação: esse parágrafo aplica-se apenas ao H1] Em contraste, o seed http://www.archive.org (note a falta de barra final) se tornará o formato SURT http://(org,archive,www,) e o prefixo SURT implícito http://(org,archive,www, (observe a falta de parênteses à direita). Esse será o prefixo de todos os URIs em www.archive.org, bem como quaisquer URIs de subdomínio como http://homepages.www.archive.org/directory, porque o prefixo SURT completo aparece no formato URI SURT de subdomínio.
 
-Toe Threads
+###### Toe Threads
 
 Ao rastrear, o Heritrix emprega um número configurável de Toe Threads para processar URIs. Cada um desses encadeamentos solicitará um URI da Frontier, aplicará o conjunto de processadores a ele e, finalmente, o reportará como concluído para a Frontier.
 
@@ -2510,10 +2536,10 @@ A tabela a seguir lista os DecideRules disponíveis:
 | OnHostsDecideRule | Aplica a decisão configurada a qualquer URI que esteja em um dos hosts do conjunto configurado. |
 | NotOnHostsDecideRule | Aplica a decisão configurada a qualquer URI que não esteja em um dos hosts do conjunto configurado. |
 | ScopePlusOneDecideRule | Aplica a decisão configurada a qualquer URI que seja um nível além do escopo configurado. |
-| TooManyHopsDecideRule | Rejeita qualquer URI cujo número total de saltos esteja acima do limite configurado. |
+| TooManyHopsDecideRule | Rejeita qualquer URI cujo número total de hops esteja acima do limite configurado. |
 | TooManyPathSegmentsDecideRule | Rejeita qualquer URI cujo número total de segmentos de caminho esteja acima do limite configurado. Um segmento de caminho é uma cadeia no URI separado por um caractere "/", sem incluir o primeiro "//". |
-| TransclusionDecideRule | aceita qualquer URI cujo path-from-seed termine em pelo menos um salto que não seja navlink. Um salto de navlink é representado por um "L". Além disso, o número de saltos não-navlink no path-from-seed não pode exceder o valor configurado. |
-| PrerequisiteAcceptsDecideRule | aceita todos os URIs de "pré-requisito". Os URIs de pré-requisito são aqueles cujo caminho de salto tem um "P" na última posição. |
+| TransclusionDecideRule | aceita qualquer URI cujo path-from-seed termine em pelo menos um hop que não seja navlink. Um hop de navlink é representado por um "L". Além disso, o número de hops não-navlink no path-from-seed não pode exceder o valor configurado. |
+| PrerequisiteAcceptsDecideRule | aceita todos os URIs de "pré-requisito". Os URIs de pré-requisito são aqueles cujo caminho de hop tem um "P" na última posição. |
 | RejectDecideRule | Rejeita qualquer URI. |
 | ScriptedDecideRule | Aplica a decisão configurada a qualquer URI que passe no teste das regras de um script JSR-223. A fonte do script deve ser uma função de um argumento chamada decisionFor. A função retorna o DecideResult apropriado. Variáveis disponíveis para o script incluem o objeto (o objeto a ser avaliado, como um URI), "self " (a ocorrência ScriptDecideRule), e contexto (ApplicationContext do rastreamento, do qual todos os beans de rastreamento nomeados são alcançáveis). |
 | SeedAcceptDecideRule | aceita todos os URIs "seeds" (aqueles para os quais isSeed é "true"). |
