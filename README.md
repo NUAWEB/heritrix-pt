@@ -2472,7 +2472,7 @@ Um URI de  formato SURT, especialmente se truncado, pode ser útil como um "pref
 
 Uma coleção de prefixos SURT classificados é uma maneira eficiente de especificar o escopo de rastreamento desejado. Por exemplo, qualquer URI cujo formato SURT comece com qualquer um dos prefixos deve ser incluído no escopo.
 
-Um pequeno conjunto de convenções pode ser usado para calcular um "prefixo SURT implícito" de um URI regular, como um URI fornecido como um seed de rastreamento. Essas convenções são:
+Um breve conjunto de convenções pode ser usado para calcular um "prefixo SURT implícito" de um URI normal (por exemplo, um URI fornecido como um seed de rastreamento). Essas convenções são:
 
 1. Converter o URI para seu formato SURT.
 2. Se houver pelo menos três barras ("/") no formato SURT, remova todos os caracteres após a última barra. Por exemplo, http://(org,example,www,)/main/subsection/ não é alterado. http://(org,example,www,)/main/subsection é truncado para http://(org,example,www,)/main/. http://(org.example,www,)/ não é alterado e http://(org,example,www) não é alterado.
@@ -2486,17 +2486,17 @@ Por exemplo, o seed http://www.archive.org/ se tornará o formato SURT e fornece
 
 ###### Toe Threads
 
-Ao rastrear, o Heritrix emprega um número configurável de Toe Threads para processar URIs. Cada um desses encadeamentos solicitará um URI da Frontier, aplicará o conjunto de processadores a ele e, finalmente, o reportará como concluído para a Frontier.
+Ao realizar um rastreamento, o Heritrix emprega um número configurável de Toe Threads para processar URIs. Cada um desses encadeamentos solicitará um URI da Frontier, aplicará o conjunto de processadores a ele e, finalmente, o reportará como concluído para a Frontier.
 
 ## Configurando o escopo do rastreamento usando DecideRules
 
-O escopo de rastreamento define o conjunto de possíveis URIs que podem ser capturados por um rastreamento. Esses URIs são determinados pelos DecideRules, que trabalham em conjunto para limitar ou expandir o conjunto de URIs rastreados. Cada DecideRule, quando apresentado com um objeto (na maioria das vezes um URI de alguma forma), responde com uma das três decisões:
+O escopo de rastreamento define um conjunto de possíveis URIs que podem ser capturados por um rastreamento. Esses URIs são determinados pelos DecideRules, que trabalham em conjunto para limitar ou expandir o conjunto de URIs rastreados. Cada DecideRule, quando apresentado com um objeto (na maioria das vezes algum tipo de URI), responde com uma das três decisões:
 
-* ACCEPT: O objeto é aceito
-* REJECTED: O objeto é rejeitado
-* PASS: Nenhuma decisão foi feita, mantém-se a anterior
+* ACCEPT: O objeto é aceito.
+* REJECTED: O objeto é rejeitado.
+* PASS: Nenhuma decisão foi feita, mantém-se a anterior.
 
-Um URI sob consideração começa sem status definido. Cada regra é aplicada por vez ao URI candidato. Se a regra decidir ACCEPT ou REJECT, o status do URI será definido de acordo. Depois que todas as regras forem aplicadas, o URI será determinado como "no escopo" se seu status for ACCEPT. Se seu status for REJECT, ele será descartado.
+Um URI sob consideração começa sem status definido. Cada regra é aplicada por vez ao URI candidato. Se a regra decidir ACCEPT ou REJECT, o status do URI será definido de acordo. Depois que todas as regras forem aplicadas, o URI será determinado como "no escopo" se seu status for ACCEPT. Se seu status for REJECT, será descartado.
 
 Sugerimos começar as regras com nossas configurações padrões recomendadas e realizar pequenos rastreamentos de teste. Com esses testes, tente entender porque certos URIs são determinados ou descartados sob essas configurações. Em seguida, faça pequenas alterações individuais no escopo para obter efeitos desejados que não sejam padrões. Criar um novo conjunto de regras a partir do zero pode ser difícil e pode facilmente resultar em rastreamentos que não podem fazer o progresso mínimo que outras partes do rastreador esperam. Da mesma forma, fazer muitas mudanças de uma só vez pode obscurecer a importância da interação e ordenação das regras.
 
@@ -2508,28 +2508,28 @@ A tabela a seguir lista os DecideRules disponíveis:
 | ------------- | ------------- |
 | AcceptDecideRule | Aceita qualquer URI. |
 | ContentLengthDecideRule | Aceita URIs se o comprimento do conteúdo for menor que o limite. O limite padrão é 2^63, significando que qualquer documento será aceito. |
-| PathologicalPathDecideRule | Rejeita qualquer URI que contenha um número excessivo de segmentos de caminho idênticos e consecutivos. Por exemplo, http://example.com/a/a/a/a/a/foo.html |
-| PredicatedDecideRule | Aplica uma decisão configurada somente se um teste for avaliado como "true". |
+| PathologicalPathDecideRule | Rejeita qualquer URI que contém um número excessivo de segmentos de caminho idênticos e consecutivos. Por exemplo, http://example.com/a/a/a/a/a/foo.html |
+| PredicatedDecideRule | Aplica uma decisão configurada apenas se um teste for avaliado como "true". |
 | ExternalGeoLocationDecideRule | Aceita URIs localizados em um determinado país. |
-| FetchStatusDecideRule | Aplica a decisão configurada a qualquer URI que tenha um status de busca igual à configuração "target-status". |
-| HasViaDecideRule | Aplica a decisão configurada a qualquer URI que tenha uma "via". Uma via é qualquer URI que seja um sed ou algum tipo de adição feita no meio do rastreamento. |
+| FetchStatusDecideRule | Aplica a decisão configurada a qualquer URI que tenha um status de busca igual à configuração do "target-status". |
+| HasViaDecideRule | Aplica a decisão configurada a qualquer URI que tenha uma "via". Uma via é qualquer URI que seja um seed ou algum tipo de adição feita durante o rastreamento. |
 | HopCrossesAssignmentLevelDomainDecideRule | Aplica a decisão configurada a qualquer URI que seja diferente na parte de seu nome de host/domínio que é atribuído/vendido por registradores. A parte é referida como o "assignment-level-domain" (ALD). |
-| IdenticalDigestDecideRule | This DecideRule applies the configured decision to any URI whose prior-history content-digest matches the latest fetch. |
+| IdenticalDigestDecideRule | Aplica a decisão configurada a qualquer URI cujo histórico anterior de conteúdo digest corresponda à ultima busca. |
 | MatchesListRegexDecideRule | Aplica a decisão configurada a qualquer URI que corresponda às expressões regulares fornecidas. |
 | NotMatchesListRegexDecideRule | Aplica a decisão configurada a qualquer URI que não corresponda às expressões regulares fornecidas. |
 | MatchesRegexDecideRule | Aplica a decisão configurada a qualquer URI que corresponda à expressão regular fornecida. |
-| ClassKeyMatchesRegexDecideRule | Aplica a decisão configurada a qualquer chave de classe URI que corresponda à expressão regular fornecida. Uma chave de classe URI é uma cadeia que especifica o nome da fila Frontier na qual uma URI deve ser colocada. |
+| ClassKeyMatchesRegexDecideRule | Aplica a decisão configurada a qualquer URI chave de classe que corresponda à expressão regular fornecida. Um URI chave de classe é uma cadeia que especifica o nome da fila Frontier na qual um URI deve ser colocado. |
 | ContentTypeMatchesRegexDecideRule | Aplica a decisão configurada a qualquer URI cujo tipo de conteúdo esteja presente e corresponda à expressão regular fornecida. |
-| ContentTypeNotMatchesRegexDecideRule |Aplica a decisão configurada a qualquer URI cujo tipo de conteúdo não corresponda à expressão regular fornecida. |
+| ContentTypeNotMatchesRegexDecideRule | Aplica a decisão configurada a qualquer URI cujo tipo de conteúdo não corresponda à expressão regular fornecida. |
 | FetchStatusMatchesRegexDecideRule | Aplica a decisão configurada a qualquer URI que tenha um status de busca que corresponda à expressão regular fornecida. |
 | FetchStatusNotMatchesRegexDecideRule | Aplica a decisão configurada a qualquer URI que tenha um status de busca que não corresponda à expressão regular suprida. |
 | HopsPathMatchesRegexDecideRule | Aplica a decisão configurada a qualquer URI cujo "hops-path" corresponda à expressão regular fornecida. O hops-path é uma string que consiste em caracteres que representam o caminho que foi usado para acessar o URI. Um exemplo de um hops-path é "LLXE". |
 | MatchesFilePatternDecideRule | Aplica a decisão configurada a qualquer URI cujo sufixo corresponda à expressão regular fornecida. |
 | NotMatchesFilePatternDecideRule | Aplica a decisão configurada a qualquer URI cujo sufixo não corresponda à expressão regular fornecida. |
 | NotMatchesRegexDecideRule | Aplica a decisão configurada a qualquer URI que não corresponda à expressão regular fornecida. |
-| NotExceedsDocumentLengthThresholdDecideRule | Aplica a decisão configurada a qualquer URI cujo comprimento de conteúdo não exceda o limite configurado. O tamanho do conteúdo vem do header HTTP ou do tamanho real do conteúdo baixado do URI. A partir da versão 3.1, essa regra foi renomeada para ResourceNoLongerThanDecideRule. |
-| ExceedsDocumentLengthThresholdDecideRule | Aplica a decisão configurada a qualquer URI cujo tamanho do conteúdo exceda o limite configurado. O tamanho do conteúdo vem do header HTTP ou do tamanho real do conteúdo baixado do URI. A partir da versão 3.1, essa regra foi renomeada para ResourceLongerThanDecideRule. |
-| SurtPrefixedDecideRule | aplica a decisão configurada a qualquer URI (expresso na forma SURT) que começa com um dos prefixos no conjunto configurado. Esse DecideRule retorna true quando o prefixo de um determinado URI corresponde a qualquer um dos SURTs listados. A lista de SURTs pode ser configurada de diferentes maneiras: o parâmetro surtsSourceFile especifica um arquivo para ler a lista de SURTs. Se o parâmetro seedsAsSurtPrefixes estiver definido como true, SurtPrefixedDecideRule adicionará todos os seeds à lista SURTs. Se a propriedade alsoCheckVia estiver configurada como true (padrão false), SurtPrefixedDecideRule também considerará Via URIs na correspondência. A partir da versão 3.1, o parâmetro "surtsSource" pode ser qualquer ReadSource, como um ConfigFile ou um ConfigString. Isso dá ao SurtPrefixedDecideRule a flexibilidade da propriedade "textSource" do bean TextSeedModule. |
+| NotExceedsDocumentLengthThresholdDecideRule | Aplica a decisão configurada a qualquer URI cujo comprimento de conteúdo não exceda o limite configurado. O tamanho do conteúdo vem do cabeçalho HTTP ou do tamanho do conteúdo baixado do URI. A partir da versão 3.1, essa regra foi renomeada para ResourceNoLongerThanDecideRule. |
+| ExceedsDocumentLengthThresholdDecideRule | Aplica a decisão configurada a qualquer URI cujo tamanho do conteúdo exceda o limite configurado. O tamanho do conteúdo vem do header HTTP ou do tamanho do conteúdo baixado do URI. A partir da versão 3.1, essa regra foi renomeada para ResourceLongerThanDecideRule. |
+| SurtPrefixedDecideRule | Aplica a decisão configurada a qualquer URI (expresso na forma SURT) que comece com um dos prefixos no conjunto configurado. Esse DecideRule retorna true quando o prefixo de um determinado URI corresponde a qualquer um dos SURTs listados. A lista de SURTs pode ser configurada de diferentes maneiras: o parâmetro surtsSourceFile especifica um arquivo para ler a lista de SURTs. Se o parâmetro seedsAsSurtPrefixes estiver definido como true, SurtPrefixedDecideRule adicionará todos os seeds à lista SURTs. Se a propriedade alsoCheckVia estiver configurada como true (padrão false), SurtPrefixedDecideRule também considerará Via URIs na correspondência. A partir da versão 3.1, o parâmetro "surtsSource" pode ser qualquer ReadSource, como um ConfigFile ou um ConfigString. Isso dá ao SurtPrefixedDecideRule a flexibilidade da propriedade "textSource" do bean TextSeedModule. |
 | NotSurtPrefixedDecideRule | Aplica a decisão configurada a qualquer URI (expresso na forma SURT) que não comece com um dos prefixos no conjunto configurado. | 
 | OnDomainsDecideRule | Aplica a decisão configurada a qualquer URI que esteja em um dos domínios do conjunto configurado. |
 | NotOnDomainsDecideRule | Aplica a decisão configurada a qualquer URI que não esteja em um dos domínios do conjunto configurado. |
@@ -2548,7 +2548,7 @@ DecideRules são configurados pelo bean com o id "scope" sob a propriedade denom
 
 ### DecideRuleSequence Logging
 
-Ative o log `FINEST` na classe `org.archive.crawler.deciderules.DecideRuleSequence` para observar cada avaliação de URI do DecideRule. Isso pode ser feito no arquivo `logging.properties`.
+Ative o log `FINEST` na classe `org.archive.crawler.deciderules.DecideRuleSequence` para observar todas as avaliações de URI do DecideRule. Isso pode ser feito no arquivo `logging.properties`.
 
 **logging.properties 
 
