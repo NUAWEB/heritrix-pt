@@ -2664,7 +2664,7 @@ A seção do bean de escopo do arquivo `crawler-beans.cxml` é reproduzida abaix
 
 ## Suporte Whois
 
-A partir da versão 3.1, é fornecido um fetcher opcional para dados do domínio 'whois'. Um pequeno conjunto de servidores 'whois' bem estabelecidos é pré-configurado. O fetcher usa uma interpretação ad-hoc/intuitive de um URI de esquema 'whois:'.
+A partir da versão 3.1, um fetcher opcional é fornecido para dados do domínio 'whois'. Um pequeno conjunto de servidores 'whois' bem estabelecidos é pré-configurado. O fetcher usa uma interpretação ad-hoc/intuitive de um URI de esquema 'whois:'.
 
 ```
 <bean id="fetchWhois" class="org.archive.modules.fetcher.FetchWhois">
@@ -2678,13 +2678,18 @@ A partir da versão 3.1, é fornecido um fetcher opcional para dados do domínio
 </bean>
 ```
 
-Para configurar um seed whois, insira o seed no seguinte formato: whois://hostname/path (por exemplo,  whois://archive.org.) O whois fetcher tentará resolver cada host que o rastreamento encontra usando o domínio atribuído mais acima e o endereço IP do URL rastreado. Portanto, se você rastrear http://www.archive.org/details/texts, o whois fetcher tentará resolver whois:archive.org  e whois:207.241.224.2.
+Para configurar um seed whois, insira o seed no seguinte formato: whois://hostname/path (por exemplo,  whois://archive.org.) O fetcher whois tentará resolver cada host que o rastreamento encontra usando o domínio mais atribuído e o endereço IP do URL rastreado. Portanto, se você rastrear http://www.archive.org/details/texts, o fetcher whois tentará resolver whois:archive.org  e whois:207.241.224.2.
 
 No momento, a funcionalidade whois é experimental. O bean fetchWhois é comentado no perfil padrão.
 
 ## Configurações básicas de tarefa de rastreamento
 
-As configurações de rastreamento são configuradas editando o arquivo `crawler-beans.cxml` de uma tarefa. Cada trabalho tem um `crawler-beans.cxml` que contém a configuração Spring para a tarefa.
+* Limites de rastreamento
+* maxToeThreads
+* metadata.operatorContactUrl
+* Política de honra de robots
+
+As configurações de rastreamento são configuradas editando o arquivo `crawler-beans.cxml` de uma tarefa. Cada tarefa tem um `crawler-beans.cxml` que contém a configuração Spring para a tarefa.
 
 ### Limites de rastreamento
 
@@ -2706,7 +2711,7 @@ Para definir esses valores, modifique o bean CrawlLimitEnforcer.
 
 **Observação
 
-* Estes não são limites rígidos. Quando um desses limites for atingido, uma finalização completa da tarefa de rastreamento será acionada. Os URIs já sendo rastreados serão concluídos. Consequentemente, o limite definido será excedido por algum outro valor.
+* Estes não são limites rígidos. Quando um dos limites for atingido, uma finalização completa da tarefa de rastreamento será acionada. Os URIs já sendo rastreados serão concluídos. Consequentemente, o limite definido será excedido por outro valor.
 
 ### maxToeThreads
 
@@ -2722,7 +2727,7 @@ Se estiver executando um rastreamento de domínio menor que 100 hosts, um valor 
 
 ### metadata.operatorContactUrl
 
-O URI do iniciador de rastreamento. Essa configuração fornece ao administrador de um host rastreado um URI para referência em caso de problemas.
+O URI do iniciador de rastreamento. Essa configuração fornece ao administrador de um host que foi/está sendo rastreado um URI para referência em caso de problemas.
 
 ```
 <bean id="simpleOverrides" class="org.springframework.beans.factory.config.PropertyOverrideConfigurer">
@@ -2755,9 +2760,9 @@ metadata.description=Basic crawl starting with useful defaults
 
 1. CLASSIC - Obedece todas as regras robots.txt para o user-agent configurado.
 2. IGNORE - Ignora todas as regras robots.txt.
-3. CUSTOM - Defer to a custom-robots setting.
-4. MOST_FAVORED - Crawl URIs if robots.txt allows any user-agent to crawl it. Rastreia URIs se o robots.txt permitir que qualquer agente do usuário o rastreie.
-5. MOST_FAVORED_SET- Requer que um conjunto de user-agent alternativos seja fornecido. Para cada página, se algum agente no conjunto for permitido, a página será rastreada.
+3. CUSTOM - Defere a uma definição robots customizada. 
+4. MOST_FAVORED - Rastreia URIs se o robots.txt permitir que qualquer user-agent rastreie. 
+5. MOST_FAVORED_SET- Requer que um conjunto de user-agent alternativos seja fornecido. Para cada página, se algum agent no conjunto for permitido, a página será rastreada.
 
 ```
 <bean id="robotsHonoringPolicy" class="org.archive.modules.net.RobotsHonoringPolicy">
@@ -2767,7 +2772,7 @@ metadata.description=Basic crawl starting with useful defaults
 
 A escolha de opções 3-5 requer informações adicionais sobre configurações.
 
-A partir da versão 3.1, a política de robots honoring pode ser definida no bean "metadata" usando a propriedade "robotsPolicyName".
+A partir da versão 3.1, a política de honra de robots pode ser definida no bean "metadata" usando a propriedade "robotsPolicyName".
 
 ```
 <bean id="metadata" class="org.archive.modules.CrawlMetadata" autowire="byName">
@@ -2779,20 +2784,20 @@ A partir da versão 3.1, a política de robots honoring pode ser definida no bea
 
 Valores válidos para "robotsPolicyName":
 
-obey - Obey robots.txt directives
-classic - Same as "obey"
-ignore - Ignore robots.txt directives
+obey - Obedece as diretivas do robots.txt
+classic - O mesmo que "obey"
+ignore - Ignora as diretivas do robots.txt
 
-The robots honoring policy can also be set by creating a bean that uses one of the following classes.  The bean must be linked to the "metadata" bean.
+A política de honra de robots também pode ser definida criando um bean que use uma das seguintes classes. O bean deve estar vinculado ao bean "metadados".
 
 
 | Nome da classe | Desrição |  
 | ------------- | ------------- |
-| org.archive.modules.net.FirstNamedRobotsPolicy | Use an ordered list of User-Agents.  The first User-Agent in the list is the regularly configured User-Agent.  The other User-Agents in the list are those configured in the candidateUserAgents list.  As soon as a matching set of directives is found, these directives are followed.  If none are found, the wildcard directives are used if they exist. |
+| org.archive.modules.net.FirstNamedRobotsPolicy | Usa uma lista ordenada de User-Agents. O primeiro User-Agent na lista é o User-Agent que é regularmente configurado.  Os outros User-Agents na lista são aqueles configurados na lista candidateUserAgents. Assim que um conjunto de diretivas correspondentes for encontrado, essas diretivas serão seguidas. Se nenhuma for encontrada, as diretivas "curinga" serão usadas (se existirem). |
 | org.archive.modules.net.IgnoreRobotsPolicy | Ignora as diretivas do robots.txt |
-| org.archive.modules.net.ObeyRobotsPolicy |Obedece as diretivas do robots.txt |
+| org.archive.modules.net.ObeyRobotsPolicy | Obedece as diretivas do robots.txt |
 | org.archive.modules.net.CustomRobotsPolicy | Segue uma política de robots personalizada, em vez das próprias declarações do site |
-| org.archive.modules.net.MostFavoredRobotsPolicy | Follow a most-favored robots policy that allows a URI to be crawled if either the conventionally-configured User-Agent, or any number of alternate User-Agents, are allowed. |
+| org.archive.modules.net.MostFavoredRobotsPolicy | Segue a política de robots mais favorecida que permite que um URI seja rastreado se o User-Agent configurado convencionalmente, ou qualquer número de User-Agents alternativos, forem permitidos. |
 
 
 O exemplo abaixo mostra o uso da política org.archive.modules.net.IgnoreRobotsPolicy.
@@ -2809,7 +2814,7 @@ O exemplo abaixo mostra o uso da política org.archive.modules.net.IgnoreRobotsP
 </bean>
 ```
 
-Além disso, a partir da versão 3.1, a análise do robots.txt agora tolera curingas finais nas diretivas Disallow, que é um desvio comum do padrão original. O curinga é equivalente ao mesmo prefixo de caminho sem o caractere curinga final. Além disso, o tratamento das diretivas "Allow" e "Disallow" sobrepostas corresponde ao provável entendimento intuitivo dos webmasters e de outros rastreadores. As diretivas mais específicas/mais longas têm precedência.
+Além disso, a partir da versão 3.1, a análise do robots.txt agora rastrear curingas nas diretivas Disallow, que é um desvio comum do padrão original. O curinga é equivalente ao mesmo prefixo de caminho sem o caractere do curinga de rastreamento. Além disso, o tratamento das diretivas "Allow" e "Disallow" sobrepostas corresponde ao entendimento intuitivo dos webmasters e de outros rastreadores. As diretivas mais específicas/mais longas têm precedência.
 
 ## Códigos de status
 
@@ -2817,23 +2822,23 @@ Códigos de status
 
 Cada URI rastreado recebe um código de status. Este código (ou número) indica o resultado de uma busca de URI no Heritrix.
 
-Códigos que variam de 200 a 599 são códigos de resposta HTTP padrão e informações sobre seus significados estão disponíveis na página da Web do consórcio World Wide Web.
+Códigos que variam de 200 a 599 são códigos de resposta HTTP padrão e informações sobre seus significados estão disponíveis na [página da Web do consórcio World Wide Web] (http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html).
 
 Outros códigos de status do Heritrix estão listados abaixo.
 
 | Código | Significado |  
 | ------------- | ------------- |
 | 1 | Pesquisa de DNS bem-sucedida |
-| 0 | Busca nunca iniciada (talvez protocolo não suportado ou URI ilegal) |
+| 0 | Busca nunca iniciada (protocolo não suportado ou URI ilegal) |
 | -1 | Falha na pesquisa de DNS |
 | -2 | Conexão HTTP falhou |
-| -3 | Conexão HTTP quebrada |
+| -3 | Conexão HTTP quebrou |
 | -4 | Tempo limite de HTTP |
 | -5 | Exceção de tempo de execução inesperada. Veja runtime-errors.log. |
-| -6 | A pesquisa de domínio de pré-requisito falhou, impedindo a tentativa de busca. (O pré-requisito principal é a pesquisa WHOIS. Se você ver isso, é provável que o domínio não exista mais.) |
+| -6 | A pesquisa de domínio de pré-requisito falhou, impedindo a tentativa de busca. (O pré-requisito principal é a pesquisa WHOIS. Se esse código aparecer, é provável que o domínio não exista mais.) |
 | -7 | URI reconhecida como não suportada ou ilegal. |
-| -8 | Várias tentativas falharam, limite de novas tentativas foi atingido.
-| -50 | Status temporário atribuído a URIs aguardando condições prévias. Aparência em logs pode ser um bug. |
+| -8 | Várias tentativas falharam, limite de novas tentativas foi atingido. |
+| -50 | Status temporário atribuído a URIs aguardando condições prévias. Aparecimento em logs pode ser um bug. |
 | -60 | Status de falha atribuído a URIs. Eles não puderam ser enfileirados pela Frontier e podem ser inacessíveis. |
 | -61 | A obtenção do pré-requisito robots.txt falhou, impedindo uma tentativa de busca. |
 | -62 | Algum outro pré-requisito falhou, impedindo uma tentativa de busca. |
@@ -2841,15 +2846,15 @@ Outros códigos de status do Heritrix estão listados abaixo.
 | -404 | Resposta HTTP vazia, interpretada como um 404. |
 | -3000 | Ocorrência uma condição de erro Java grave, como OutOfMemoryError ou StackOverflowError, durante o processamento de URI. |
 | -4000 | Detecção "chaff" de armadilhas/conteúdo com valor insignificante aplicado. |
-| -4001 | O URI encontra-se muitos link-hops longe da seed.
-| -4002 | The URI is too many embed/transitive hops away from the last URI in scope.
-| -5000 | O URI está fora do escopo no reexame. Isso só acontece se o escopo mudar durante o rastreamento. |
-| -5001 | Bloqueado de buscas por configuração do usuário.
+| -4001 | O URI encontra-se muitos link-hops longe do seed.
+| -4002 | O URI está a muitos hops incorporados/transitivos longe do último URI no escopo. |
+| -5000 | O URI está fora do escopo durante a segunda examinação. Isso só acontece se o escopo mudar durante o rastreamento. |
+| -5001 | Bloqueado de realizar buscas pela configuração do usuário.
 | -5002 | Bloqueado por um processador personalizado, que poderia incluir o mapeador de hash (para rastreamento de vários nós), se ativado. |
 | -5002 | Bloqueado por exceder uma cota estabelecida. |
-| -5004 | Bloqueado devido a exceder um tempo de execução estabelecido. |
+| -5004 | Bloqueado por excedor um tempo de execução estabelecido. |
 | -6000 | Excluído da Frontier pelo usuário.
-| -7000 | Thread de processamento foi morto pelo operador. Isso pode acontecer se um encadeamento for uma condição não responsiva. |
+| -7000 | Thread de processamento foi terminado pelo operador. Isso pode acontecer se um encadeamento for uma condição sem resposta. |
 | -9998 | As regras do Robots.txt impediram a busca. |
 
 **Observação:
@@ -2857,19 +2862,19 @@ Outros códigos de status do Heritrix estão listados abaixo.
 * Códigos e explicações também estão disponíveis no link "Help" na interface do usuário da web.
 * Os códigos de status estão sujeitos a alterações entre as versões do Heritrix. Novos códigos podem ser adicionados para abordar novas áreas de problemas.
 
-Os códigos de status do Heritrix também estão documentados no código-fonte (ou no FishEye para H1 e H3) e no glossário.
+Os códigos de status do Heritrix também estão documentados no (código-fonte) [http://crawler.archive.org/xref/org/archive/crawler/datamodel/FetchStatusCodes.html#38] (ou no FishEye para H1 e H3) e no (glossário) [http://crawler.archive.org/articles/user_manual/glossary.html].
 
 ## Planilhas (sheets)
 
-As planilhas fornecem a capacidade de substituir as configurações padrões por domínio. Planilhas são coleções de substituições. Contêm valores alternativos para propriedades de objetos que devem ser aplicados em determinados contextos. O destino é especificado como um caminho de propriedade arbitrariamente longo, que é uma string descrevendo como acessar a propriedade a partir de um beanName em um BeanFactory.
+As planilhas fornecem a capacidade de substituir as configurações padrões por domínio. Planilhas são coleções de substituições. Contêm valores alternativos para propriedades de objetos que devem ser aplicados em determinados contextos. O destino é especificado como um property-path arbitrariamente longo, que é uma string descrevendo como acessar a propriedade a partir de um beanName em um BeanFactory.
 
-planilhas permitem que as configurações sejam sobrepostas com novos valores aplicados por domínios de nível superior (com, net, org, etc), por domínios de segundo nível (yahoo.com, archive.org, etc.), por subdomínios (crawler.archive. org, tech.groups.yahoo.com, etc.) e caminhos principais do URI (directory.google.com/Top/Computers/, etc.). Não há limite de tamanho do prefixo de domínio/caminho que especifica; a sintaxe de prefixos SURT é usada.
+Planilhas permitem que as configurações sejam sobrepostas com novos valores aplicados por domínios de nível superior (com, net, org, etc), por domínios de segundo nível (yahoo.com, archive.org, etc.), por subdomínios (crawler.archive. org, tech.groups.yahoo.com, etc.) e caminhos principais do URI (directory.google.com/Top/Computers/, etc.). Não há limite de tamanho do prefixo de domínio/caminho que especifica; a sintaxe de prefixos SURT é usada.
 
 A criação de uma planilha envolve a configuração do arquivo `crawler-beans.cxml`, que contém a configuração Spring de uma tarefa.
 
-Por exemplo, se você tiver permissão explícita para rastrear determinados domínios sem o limite habitual de polite rate-limiting, uma planilhas poderá ser usada para criar uma política de rastreamento less polite associada a alguns desses domínios de destino. A configuração dessa planilhas para os domínios example.com e example1.com é mostrada abaixo. Este exemplo permite até 5 solicitações pendentes paralelas de cada vez (em vez do padrão 1) e elimina as pausas comuns entre as solicitações
+Por exemplo, se você tiver permissão explícita para rastrear determinados domínios sem o limite habitual de cortesia rate-limiting, uma planilha poderá ser usada para criar uma política de rastreamento menos cortês associada a alguns desses domínios de destino. A configuração dessa planilhas para os domínios example.com e example1.com é mostrada abaixo. Este exemplo permite até 5 solicitações pendentes paralelas de cada vez (em vez do padrão 1) e elimina as pausas comuns entre as solicitações
 
-**Observação importante**: A menos que um site alvo forneça permissão explícita para rastreamento extra-agressivo, os padrões típicos do Heritrix, que limitam o rastreador a não mais de um pedido pendente por vez, com esperas de vários segundos entre solicitações e esperas mais longas quando o site está respondendo mais devagar, é o caminho mais seguro. O rastreamento menos educado pode fazer com que o rastreador seja totalmente bloqueado pelos webmasters. Por fim, mesmo com permissão, certifique-se de que a string do User-Agent de seu rastreador inclui um link para informações válidas de contato do operador de rastreamento, para que você possa ser alertado e corrigir qualquer efeito colateral indesejado. 
+**Observação importante**: A menos que um site alvo forneça permissão explícita para rastreamento extra-agressivo, os padrões típicos do Heritrix, que limitam o rastreador a não mais de um pedido pendente por vez, com esperas de vários segundos entre solicitações e esperas mais longas quando o site está respondendo mais devagar, é o caminho mais seguro. O rastreamento menos cortês pode fazer com que o rastreador seja totalmente bloqueado pelos webmasters. Por fim, mesmo com permissão, certifique-se de que a string do User-Agent de seu rastreador inclui um link para informações válidas de contato do operador de rastreamento, para que você possa ser alertado e corrigir qualquer efeito colateral indesejado. 
 
 ```
 <!-- SHEETOVERLAYMANAGER: manager of sheets of contextual overlays
@@ -2941,7 +2946,7 @@ Primeiro adicione o seguinte bean:
  </bean>
  ```
  
- Chame o bean na cadeia do CandidateProcessor:
+Chame o bean na cadeia do CandidateProcessor:
  
  ```
  <bean id="candidateProcessors">
@@ -2972,7 +2977,7 @@ Os operadores de rastreamento devem configurar um processo em que os URIs contid
 
 ### REST API
 
-Este manual descreve a interface de programação de aplicativos REST (API) do rastreador da Web Heritrix. Heritrix é o rastreador de web do Internet Archive com qualidade de arquivamento extensível, escálavel e de código aberto.. Para mais informações sobre o Heritrix, visite http://crawler.archive.org/.
+Este manual descreve a interface de programação de aplicativos REST (API) do rastreador da web Heritrix. Heritrix é o rastreador de web do Internet Archive com qualidade de arquivamento extensível, escálavel e de código aberto.. Para mais informações sobre o Heritrix, visite http://crawler.archive.org/.
 
 Este documento destina-se a desenvolvedores de aplicativos e administradores interessados em controlar o rastreador da Web do Heritrix por meio de sua API REST.
 
@@ -3016,7 +3021,7 @@ Adiciona um novo diretório de tarefa à configuração do Heritrix. O diretóri
 Parâmetros do formulário:
  
 * ação - deve ser `add`
-* addpath - o diretório de tarefa para adicionar
+* addpath - adicionar o diretório de tarefa 
 
 Exemplo HTML:
 
@@ -3247,7 +3252,7 @@ Executa um script. O script pode ser escrito como Beanshell, ECMAScript, Groovy 
 Parâmetros do formulário:
 
 * engine - o mecanismo de script a ser usado: `beanshell`, `js`, `groovy` ou `AppleScriptEngine`.
-* script - o código de script para executar
+* script - o código de script a ser executado
 
 Exemplo HTML:
 
@@ -3277,13 +3282,13 @@ curl -v -T my-crawler-beans.cxml -k -u admin:admin --anyauth --location https://
 
 Códigos de status: * 200 OK - Com sucesso, o Heritrix REST API retornará um HTTP 200 sem corpo.
 
-### Convenções e Pressupostos
+### Convenções e Suposições
 
 Os seguintes parâmetros *curl* são usados ao chamar a API.
 
 | Parâmetros *curl* | Descrição |  
 | ------------- | ------------- |
-| -v | Verbose. Output a detailed account of the curl command to standard out. |
+| -v | Verboso. Saída de um relato detalhado do comando curl para uma saída padrão. |
 | -d | Dados. Estes são os pares de nome/valor que são enviados no corpo de um POST. |
 | -k | Permite conexões a sites SSL sem certificados. |
 | -u | Usuário. Permite o envio de um nome de usuário e senha para autenticar a solicitação HTTP. |
@@ -3316,7 +3321,7 @@ Principais práticas:
 
 ### Adicionar URIs no meio do rastreamento
 
-(Procedimentos para o Heritrix 1.14.x, procedimentos para H2/H3 irão variar.)
+(Procedimentos para o Heritrix 1.14.x. Procedimentos para H2/H3 irão variar.)
 
 **Via IUW do operador**
 
@@ -3328,9 +3333,9 @@ O arquivo seeds é, por padrão, relido depois de qualquer alteração de config
 
 (Você pode editar arquivos seeds menores na área de texto na parte inferior de todas as outras configurações editáveis. Arquivos grandes são difíceis ou impossíveis de editar através da área de texto da Web; nesse caso, você ainda pode editar o arquivo no disco por outros métodos.)
 
-Uma nova verificação de arquivos seeds aciona uma tentativa de reagendamento de todos os URIs contidos. No entanto, URIs que já foram agendados não serão reprogramados. Assim, somente os URIs novos no arquivo seed serão agendados recentemente. (E se, por algum motivo, esses novos URIs já estiverem programados por algum outro *discovery-path*, eles não serão reagendados.)
+Uma nova verificação de arquivos seeds aciona uma tentativa de reagendamento de todos os URIs contidos. No entanto, URIs que já foram agendados não serão reprogramados. Assim, somente os URIs novos ao arquivo seed serão reagendados. (E se, por algum motivo, esses novos URIs já estiverem programados por algum outro *discovery-path*, eles não serão reagendados.)
 
-Os escopos que são definidos em termos de seeds também são, por padrão, reconstruídos a partir de seeds em alterações de configurações. (Portanto, se estiver usando esse escopo, o recomendável é não remover as sementes originais, mesmo que elas já estejam agendadas - caso contrário, seu escopo pode ser redefinido para excluir os sites correspondentes.)
+Os escopos que são definidos em termos de seeds também são, por padrão, reconstruídos a partir de seeds em alterações de configurações. (Portanto, se estiver usando esse escopo, o recomendável é não remover os seeds originais, mesmo que eles já estejam agendados - caso contrário, seu escopo pode ser redefinido para excluir os sites correspondentes.)
 
 **Importar URIs**
 
@@ -3344,7 +3349,7 @@ Nenhuma das opções de importação de URI faz com que os URIs sejam tratados c
 
 A interface de controle remoto do JMX inclui as operações importUri e importUris no bean CrawlJob que imitam a função de importação de URIs da IUW. Um exemplo:
 
-Exemplo de importação de JMX
+[Exemplo de importação de JMX] (http://tech.groups.yahoo.com/group/archive-crawler/message/2438). 
 
 ### Parâmetros politeness
 
