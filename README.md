@@ -3349,15 +3349,43 @@ Nenhuma das opções de importação de URI faz com que os URIs sejam tratados c
 
 A interface de controle remoto do JMX inclui as operações importUri e importUris no bean CrawlJob que imitam a função de importação de URIs da IUW. Um exemplo:
 
-(Exemplo de importação de JMX) [http://tech.groups.yahoo.com/group/archive-crawler/message/2438]. 
+[Exemplo de importação de JMX] (http://tech.groups.yahoo.com/group/archive-crawler/message/2438). 
 
-### Parâmetros politeness
+### Parâmetros de cortesia
+
+A cortesia é alcançada, principalmente, pela implementação da "Frontier" do rastreador, que só programa URIs para processamento a uma taxa que não deve sobrecarregar indevidamente os servidores de origem. 
+
+(As informações aqui se aplicam à implementação atual do org.archive.crawler.basic.Frontier.)
+
+O aspecto mais básico de cortesia robot é abrir apenas uma única conexão em um servidor de cada vez. A atual Frontier do Heritrix sempre segue essa regra. (Eventualmente, quando está claro que um servidor tem a capacidade, talvez fornecida por muitas máquinas de servidores independentes, para atender a várias solicitações simultâneas robot, podemos diminuir esse comportamento.)
+
+Outras configurações podem ser especificadas para ajustar o nível de cortesia do Heritrix com os servidores visitados. Há três informações essenciais para a decisão da Heritrix sobre quando é certo visitar um servidor novamente:
+
+* Quando a última solicitação contra esse servidor foi emitida.
+* Quanto tempo essa solicitação levou para ser concluída.
+* Quanto de um intervalo (tempo desde a última solicitação emitida) ou atraso (tempo desde a última solicitação finalizada) foi especificado pelo operador.
+
+As restrições de tempo especificadas pelo operador podem ser especificadas como qualquer combinação de:
+
+* um múltiplo da última conclusão (o parâmetro "delay-factor");
+* um intervalo mínimo desde última solicitação emitida (o parâmetro "min-interval-ms");
+* um atraso mínimo desde a última conclusão da solicitação (o parâmetro "min-delay-ms");
+* um atraso máximo desde a última conclusão da solicitação (o parâmetro "max-delay-ms").
+
+Considere o comportamento pretendido de nunca emitir mais de uma solicitação em um servidor a cada 2 segundos; nunca esperar mais de 30 segundos para revisitar um servidor; mas sempre que possível, dentro dessas restrições, dar a um servidor a mesma quantidade de tempo "off" para cada momento conectado. Isso pode ser feito com a seguinte configuração:
+
+```
+min-interval-ms=2000
+max-delay-ms=30000
+delay-factor=1
+min-delay-ms=0 (irrelevant in this case because of the 'interval')
+```
 
 ### Script BeanShell para download de vídeos
 
 Aqui está um script BeanShell que pode ser usado para encontrar links de vídeo com o Heritrix. Atualmente, o script suporta apenas o youtube. Para fazer com que o script funcione, ele deve ser adicionado na fase de extração da cadeia do processador. Esse processo foi testado com o Heritrix 2.0.2 com uma planilha que limita o max-hops no youtube para 0, permitindo obter a primeira página dos vídeos do Youtube. Também é visível no modo proxy do Wayback 1.4.0. O script também funciona com vídeos do YouTube incorporados que usam "get_video_info" para recuperar tokens de vídeo.
 
-Quaisquer comentários ou sugestões para melhorias do script são bem-vindos.
+Quaisquer comentários ou sugestões para melhorias do script são bem vindos.
 
 ```
 // This is a beanshell processor that will allow downloading of vidoes in Heritrix.
@@ -3472,7 +3500,7 @@ import org.archive.modules.fetcher.FetchStatusCodes;
     }
 ```
 
-### craw manifest
+### crawl manifest
 
 Exemplo de um arquivo *crawl manifest* do Heritrix 1.15
 
@@ -3497,7 +3525,7 @@ L+: arquivos log
 C+: arquivos config
 R+: arquivos de relatório
 
-O *crawl manifest* é gerado ao clicar em "terminate" para uma tarefa na interface da Web do Heritrix. Pode levar algum tempo para criar o arquivo (20 minutos?), então seja paciente e não desligue o Heritrix muito cedo.
+O *crawl manifest* é gerado ao clicar em "terminate" em uma tarefa na interface da Web do Heritrix. Pode levar algum tempo para criar o arquivo (20 minutos?), então seja paciente e não desligue o Heritrix muito cedo.
 
 ### Opções JVM
 
@@ -3525,9 +3553,54 @@ Desativa um OOME que não é criado quando a memória está realmente esgotada, 
 
 ### Frontier queue budgets
 
-### 
+### BeanShell (Notas de Usuário)
 
-Configuração para capturar o material que é carregado quando você scroll down após o final da página no Facebook e no Twitter usando o novo ExtractorMultipleRegex:
+Stack sugeriu que deveríamos adicionar essa seção à documentação, então, por enquanto, estou escrevendo minhas notas (específicas) sobre o uso do BeanShell e, mais tarde, espero poder transformar essa anotações em algo genérico (em vez de específico):
+
+Basicamente, estou fazendo um rastreamento pseudo-inteligente onde vamos, manualmente, buscar novamente uma página de links todos os dias - esta é uma página de links para o "mais referenciados", "mais comentados", etc do youtube.
+
+```
+import org.archive.crawler.datamodel.*;
+import org.archive.net.*;
+
+String linkspage = "http://localhost:8080/docs/articles/youtubelinks.html";
+
+
+process(CrawlURI curi) {
+    // only go through the for loop in some cases, for efficency
+    if (curi.toString().matches(".*youtube\\.com/watch\\?.*") ||
+        curi.toString().equals(linkspage) ||
+        (curi.getVia()!=null && curi.getVia().toString().equals(linkspage)) ||
+        curi.getSchedulingDirective()==CrawlURI.HIGH ) {
+
+        for (final Iterator iter = curi.getOutLinks().iterator();
+                            iter.hasNext();) {
+            CandidateURI link = (CandidateURI) iter.next();
+            if (curi.toString().equals(linkspage)) {
+                    link.setSchedulingDirective(CrawlURI.HIGH);
+                link.setForceFetch(true);   // need to revisit these
+                print("youtube.bsh: " + link.toString() + " set high and forcefetch");
+            } else if (curi.getVia()!=null && curi.getVia().toString().equals(linkspage) &&
+                       link.toString().matches(".*youtube\\.com/watch\\?.*")) {
+                link.setSchedulingDirective(CrawlURI.HIGH);
+                // possibly want to revisit?
+                print("youtube.bsh: " + link.toString() + " set high");
+            } else if (link.toString().matches(".*/get_video\\?.*")) {
+                //  set all /get_video HIGH
+                link.setSchedulingDirective(CrawlURI.HIGH);
+                print("youtube.bsh: " + link.toString() + " set high");
+            }
+        }
+
+    }
+}
+```
+
+Vou adicionar algumas explicações e expandir essa página, eventualmente.
+
+### Facebook and Twitter scroll down 
+
+Configuração para capturar o material que é carregado quando você rola o mouse (scroll down) após o final da página no Facebook e no Twitter usando o novo ExtractorMultipleRegex:
 
 **Twitter**
 
