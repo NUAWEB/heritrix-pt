@@ -3349,7 +3349,7 @@ Nenhuma das opções de importação de URI faz com que os URIs sejam tratados c
 
 A interface de controle remoto do JMX inclui as operações importUri e importUris no bean CrawlJob que imitam a função de importação de URIs da IUW. Um exemplo:
 
-[Exemplo de importação de JMX] (http://tech.groups.yahoo.com/group/archive-crawler/message/2438). 
+(Exemplo de importação de JMX) [http://tech.groups.yahoo.com/group/archive-crawler/message/2438]. 
 
 ### Parâmetros politeness
 
