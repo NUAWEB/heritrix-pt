@@ -3754,7 +3754,7 @@ A partir do release 1.12.0, vários Processadores podem cooperar para transporta
 
 ### Configuração de desduplicação H1
 
-O Heritrix 1.x não suporta a execução de um mesmo rastreamento mais de uma vez, portanto, um rastreamento precisará ser configurado para *armazenar* dados de redução de duplicação, e o outro rastreamento precisará ser configurado para fazer o *carregamento* de dados de redução de duplicação. Exemplo (trecho do teste para o HER-1627):
+O Heritrix 1.x não suporta a execução de um mesmo rastreamento mais de uma vez, portanto, um rastreamento precisará ser configurado para *armazenar* dados de redução de duplicação, e o outro rastreamento precisará ser configurado para *carregar* dados de redução de duplicação. Exemplo (trecho do teste para o HER-1627):
 
 **configure persist STORE crawl**
 
@@ -3773,13 +3773,13 @@ O Heritrix 1.x não suporta a execução de um mesmo rastreamento mais de uma ve
 
 ### Configuração de desduplicação H3
 
-O Heritrix 3.x permite executar o mesmo rastreamento repetidamente, mas exige uma configuração diferente para a execução de rastreamentos que *armazenam* dados de deduplicação e a execução de rastreamento que *carregam* dados de redução de redundância conforme descrito em Processadores de Redução de Duplicação. O mesmo modelo é seguido para o H1, exceto pelo uso do beans CXML do rastreador do Spring-world (`crawler-beans.cxml`) para configuração.
+O Heritrix 3.x permite executar o mesmo rastreamento repetidamente, mas exige uma configuração diferente para a execução de rastreamentos que *armazenam* dados de deduplicação e a execução de rastreamento que *carregam* dados deduplicação, conforme descrito em Processadores de Redução de Duplicação. O mesmo modelo é seguido para o H1, exceto pelo uso do beans CXML do rastreador do Spring-world (`crawler-beans.cxml`) para configuração.
 
 ### Force speculative embed URIs into single queue
 
-O uso da configuração a seguir enviará incorporações especulativas (hoppath 'X' encontrado por meio da extração do javascript) em uma única fila separada.
+O uso da configuração a seguir enviará *embeds* especulativos (hoppath 'X' encontrado por meio da extração do javascript) em uma única fila separada.
 
-Isso é necessário devido ao extrator de javascript que enfileirava um grande número de URIs defeituosos/inexistentes.
+Isso tornou-se necessário devido ao extrator de javascript que enfileirava um grande número de URIs defeituosos/inexistentes.
 
 ```
 <!-- extracted uris go to their own queue -->
@@ -3820,8 +3820,8 @@ Scripts úteis do Heritrix 3 H3 para executar no console de script.
 * obter uma lista de seeds do arquivo de seeds no disco
 * imprimir variáveis disponíveis no contexto de script
 * printProps (obj) e utilização do appCtx.getData ()
-* changing a regex decide rule
-* adding an exclusion surt
+* mudando uma regra regex (decide rule)
+* adicionar um surt de exclusão
 * take a gander at the decide rules
 * check your metadata
 * add a sheet forcing many queues into 'retired' state
@@ -3863,7 +3863,7 @@ this.binding.getVariables().each{ rawOut.println("${it.key}=\n ${it.value}\n") }
 
 O comando bash `ls` é para o diretório de trabalho o que esse método é para um objeto java. Ele usa getProperties fornecido pela groovy.
 
-Colocar printProps em appCtx.getData () significa que você não precisa incluir toda a definição printProps posteriormente, o que ajuda a manter os scripts curtos e gerenciáveis. appCtx.getData () é um java.util.Map. Mais informações sobre o tópico fornecidas pelo Groovy (detalhadas) e pelo IBM (concisas).
+Colocar printProps em appCtx.getData () significa que a definição printProps não precisa ser incluída posteriormente, o que ajuda a manter os scripts curtos e gerenciáveis. appCtx.getData () é um java.util.Map. Mais informações sobre o tópico fornecidas pelo Groovy (detalhadas) e pelo (IBM (concisas)) [https://www.ibm.com/developerworks/java/tutorials/j-groovy/j-groovy.html].
 
 ```
 //Groovy
@@ -3892,7 +3892,7 @@ def printProps(x) { appCtx.getData().printProps(rawOut, x) }
 printProps(job.crawlController.frontier)
 ```
 
-**alteração uma regra de regex**
+**alterando uma regra regex (decide rule)**
 
 É recomendável pausar o rastreamento ao modificar as coleções das quais ele depende.
 
@@ -3907,37 +3907,382 @@ regexRuleObj.regexList.add(pat)
 rawOut.println("regexList: "+ regexRuleObj.regexList)
 ```
 
-**adicão de "**
+**adicionando surt de exclusão**
+
+```
+//Groovy
+rule = appCtx.getBean("scope").rules.find{ rule ->
+  rule.class == org.archive.modules.deciderules.surt.SurtPrefixedDecideRule &&
+  rule.decision == org.archive.modules.deciderules.DecideResult.REJECT
+}
+
+theSurt = "http://(org,northcountrygazette," // ncg is cranky. avoid.
+rawOut.print( "result of adding theSurt: ")
+rawOut.println( rule.surtPrefixes.considerAsAddDirective(theSurt) )
+rawOut.println()
+
+//dump the list of surts excluded to check results
+rule.surtPrefixes.each{ rawOut.println(it) }
+```
+
+**Adicionando surt de exclusão para uma lista de URIs**
+
+```
+rule = appCtx.getBean("scope").rules.find{ rule ->
+  rule.class == org.archive.modules.deciderules.surt.SurtPrefixedDecideRule &&
+  rule.decision == org.archive.modules.deciderules.DecideResult.REJECT
+}
+
+def stringList = [ "www.example.com", "example.net", "foo.org" ]
+
+
+stringList.each() { rawOut.println( rule.surtPrefixes.considerAsAddDirective("${it}")) }
+rule.surtPrefixes.each{ rawOut.println(it) }
+```
+
+**checar decide rule**
+
+```
+//Groovy
+def printProps(obj){
+  // getProperties is a groovy introspective shortcut. it returns a map
+  obj.properties.each{ prop ->
+    // prop is a Map.Entry
+    rawOut.println "\n"+ prop
+    try{ // some things don't like you to get their class. ignore those.
+      rawOut.println "TYPE: "+ prop.value.class.name
+    }catch(Exception e){}
+  }
+}
+ 
+// loop through the rules
+counter = 0
+appCtx.getBean("scope").rules.each { rule ->
+  rawOut.println("\n###############${counter++}\n")
+  printProps( rule )
+}
+```
+
+**checar metadados**
+
+```
+appCtx.getBean("metadata").keyedProperties.each{ k, v ->
+  rawOut.println( k)
+  rawOut.println(" $v\n")
+}
+```
+
+**adicionar uma planilha para forçar várias filas ao estado 'retired'**
+
+```
+// force-retire all .org queues
+mgr = appCtx.getBean("sheetOverlaysManager")
+mgr.putSheetOverlay("forceRetire","disposition.forceRetire",true)
+mgr.addSurtAssociation("http://(org,","forceRetire")
+```
+
+**criar uma planilha para forçar a atribuição de filas, e associar dois surts a ela**
+
+```
+mgr = appCtx.getBean("sheetOverlaysManager");
+newSheetName = "urbanOrgAndTaxpolicycenterOrgSingleQueue"
+mgr.putSheetOverlay(newSheetName, "queueAssignmentPolicy.forceQueueAssignment", "urbanorg_and_taxpolicycenterorg");
+mgr.addSurtAssociation("http://(org,urban,", newSheetName);
+mgr.addSurtAssociation("http://(org,taxpolicycenter,", newSheetName);
+
+//check your results
+mgr.sheetNamesBySurt.each{ rawOut.println(it) }
+rawOut.println(mgr.sheetNamesBySurt.size())
+```
+
+**adicionar uma associação de planilha decide rule**
+
+forçar atribuição de fila baseada no hop path
+
+```
+mgr = appCtx.getBean("sheetOverlaysManager");
+newSheetName = "speculativeSingleQueue"
+dr = new org.archive.crawler.spring.DecideRuledSheetAssociation()
+hpreg = new org.archive.modules.deciderules.HopsPathMatchesRegexDecideRule()
+hpreg.setRegex(~/.*X$/)
+dr.setRules(hpreg)
+dr.setTargetSheetNames([newSheetName])
+dr.setBeanName("forceSpeculativeQueueAssociation")
+mgr.putSheetOverlay(newSheetName, "queueAssignmentPolicy.forceQueueAssignment", "speculative-queue");
+mgr.addRuleAssociation(dr)
+```
+
+xml parecido:
+
+```
+ <bean class='org.archive.crawler.spring.DecideRuledSheetAssociation'>
+  <property name='rules'>
+    <bean class="org.archive.modules.deciderules.HopsPathMatchesRegexDecideRule">
+     <property name="regex" value=".*X$" />
+    </bean>
+  </property>
+  <property name='targetSheetNames'>
+   <list>
+    <value>speculativeSingleQueue</value>
+   </list>
+  </property>
+ </bean>
+ <bean id='speculativeSingleQueue' class='org.archive.spring.Sheet'>
+  <property name='map'>
+   <map>
+    <entry key='queueAssignmentPolicy.forceQueueAssignment' value='speculative-queue' />
+   </map>
+  </property>
+ </bean>
+ ```` 
+ 
+**aplicar planilha (ignoreRobots) a uma lista de URIs como strings, retirada do arquivo seeds.txt**
+
+```
+//Groovy
+sheetName = "ignoreRobots"
+mgr = appCtx.getBean("sheetOverlaysManager")
+ 
+//test that you got the name right
+if ( ! mgr.sheetsByName.containsKey( sheetName ) ) {
+ rawOut.println( "sheet $sheetName does not exist. your choices are:" )
+ mgr.sheetsByName.keySet().each{ rawOut.println(it) }
+ return;
+}
+ 
+//look for lines in the seeds.txt file starting with http
+appCtx.getBean("seeds").textSource.file.readLines().findAll{ l ->
+ l =~ /^http/
+}.collect{ uriStr ->
+ //turn the domain into a surt and remove www
+ org.archive.util.SurtPrefixSet.prefixFromPlainForceHttp("http://"+ new org.apache.commons.httpclient.URI(uriStr).host).replaceAll( /www,$/, "" )
+}.unique().each{ seedSurt ->
+ rawOut.println("associating $seedSurt")
+ try{
+  //ignore robots on the domain
+  mgr.addSurtAssociation( seedSurt, sheetName)
+ } catch (Exception e) {
+  println("caught $e on $seedSurt")
+ }
+}
+//review the change
+mgr.sheetNamesBySurt.each{ k, v -> rawOut.println("$k\n $v\n") }
+```
+
+**reconsiderRetiredQueues**
+
+se definições relacionadas a Frontier tiverem mudado (por exemplo, budget), isso pode retirar as filas do estado "retired"
+
+```
+appCtx.getBean("frontier").reconsiderRetiredQueues()
+```
+
+**executar um comando arbitrário na máquina (TENHA CUIDADO)**
+
+```
+command = "ls";
+proc = Runtime.getRuntime().exec(command);
+
+stdout = new BufferedReader(new InputStreamReader(proc.getInputStream()));
+while ((line = stdout.readLine()) != null) {
+    rawOut.println("stdout: " + line);
+}
+
+stderr = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
+while ((line = stderr.readLine()) != null) {
+    rawOut.println("stderr: " + line);
+}
+```
+
+There are groovier ways to do it, starting with the basic
+
+```
+rawOut.println( "ls".execute().text )
+```
+
+**listar urls pendentes**
+
+```
+// groovy
+// see org.archive.crawler.frontier.BdbMultipleWorkQueues.forAllPendingDo()
+
+import com.sleepycat.je.DatabaseEntry;
+import com.sleepycat.je.OperationStatus;
+
+MAX_URLS_TO_LIST = 1000
+
+pendingUris = job.crawlController.frontier.pendingUris
+
+rawOut.println "(this seems to be more of a ceiling) pendingUris.pendingUrisDB.count()=" + pendingUris.pendingUrisDB.count()
+rawOut.println()
+
+cursor = pendingUris.pendingUrisDB.openCursor(null, null);
+key = new DatabaseEntry();
+value = new DatabaseEntry();
+count = 0;
+
+while (cursor.getNext(key, value, null) == OperationStatus.SUCCESS && count < MAX_URLS_TO_LIST) {
+    if (value.getData().length == 0) {
+        continue;
+    }
+    curi = pendingUris.crawlUriBinding.entryToObject(value);
+    rawOut.println curi
+    count++
+}
+cursor.close(); 
+
+rawOut.println()
+rawOut.println count + " pending urls listed"
+```
+
+**Informações sobre GC Garbage Collector Collection**
+
+```
+// beanshell
+for (gcMxBean: java.lang.management.ManagementFactory.getGarbageCollectorMXBeans()) {
+    rawOut.println(gcMxBean.getName() + " pools=" + java.util.Arrays.toString(gcMxBean.getMemoryPoolNames()) + " count=" + gcMxBean.getCollectionCount() + " time=" + gcMxBean.getCollectionTime());
+}
+```
+
+**Recuperar histórico para URI**
+
+```
+//Groovy
+uri="http://example.com/"
+loadProcessor = appCtx.getBean("persistLoadProcessor") //this name depends on config
+key = loadProcessor.persistKeyFor(uri)
+history = loadProcessor.store.get(key)
+history.get(org.archive.modules.recrawl.RecrawlAttributeConstants.A_FETCH_HISTORY).each{historyStr ->
+    rawOut.println(historyStr)
+}
+```
+
+**Despejar surts**
+
+```
+// beanshell
+
+// permit access to protected variable surtPrefixes
+setAccessibility(true);
+
+// assumes SurtPrefixedDecideRule is second rule in scope; adjust number for nth rule
+rawOut.print(appCtx.getBean("scope").rules.get(1).surtPrefixes);
+```
+
+**Adicionar cookies a um rastreamento em andamento**
+
+```
+//Groovy
+cookies = appCtx.getBean("cookieStorage").getCookiesMap();
+epochSeconds = Long.parseLong("2094586238") //Expiration in 2036
+expirationDate = (epochSeconds >= 0 ? new Date(epochSeconds * 1000) : null);
+ 
+//Domain (compare with actual cookie, may be partial domain), Name, Value, Path, Expiration, isSecure (cookie only over https)
+cookie = new org.apache.commons.httpclient.Cookie("www.trivediforcongress.com", "splash","1","/",expirationDate,false); 
+//Indicates whether the cookie had a path specified in a path attribute of the Set-Cookie header
+cookie.setDomainAttributeSpecified(true);
+
+rawOut.println(cookie.getSortKey());
+rawOut.println(cookie);
+cookies.put(cookie.getSortKey(), cookie);
+```
+
+**Deletar urls correspondentes ao regex da Frontier**
+
+```
+// groovy
+count = job.crawlController.frontier.deleteURIs(".*", "^http://de.wikipedia.org/.*")
+rawOut.println count + " uris deleted from frontier"
+```
+
+**Forçar URLs dormentes (snoozed) a "acordar"**
+
+```
+//Groovy
+ 
+countBefore = job.crawlController.frontier.getSnoozedCount()
+
+
+job.crawlController.frontier.forceWakeQueues()
+countAfter = job.crawlController.frontier.getSnoozedCount()
+
+rawOut.println("Snoozed queues.")
+rawOut.println(" - Before: " + countBefore)
+rawOut.println(" - After: " + countAfter)
+```
+
+**Adicionar uma DecideRule ao escopo, rejeitando o secundo hop especulativo**
+
+Pause o rastreamento antes de fazer isso.
+
+```
+//Groovy
+
+scope = appCtx.getBean("scope")
+hpm = new org.archive.modules.deciderules.HopsPathMatchesRegexDecideRule()
+hpm.regex = ~/.*X.*X.*/
+hpm.decision = org.archive.modules.deciderules.DecideResult.REJECT
+rawOut.println scope.rules.add(hpm)
+scope.rules.each{rawOut.println it}
+```
+
+**Desativar as filas que correspondem ao Regex**
+
+```
+//Groovy
+
+dr = new org.archive.crawler.spring.DecideRuledSheetAssociation()
+matchreg = new org.archive.modules.deciderules.MatchesRegexDecideRule()
+matchreg.setRegex(~/^https?:\/\/([^\/])*((discount)|(cheap))[^\/]*.*$/)
+dr.setRules(matchreg)
+dr.setBeanName("cheap-discount-domain-small-budget")
+dr.setTargetSheetNames(["smallBudget"])
+
+//smallBudget bean exists by default
+```
+
+**Determinar qual rastreador de várias máquinas é responsável por determinado URI**
+
+Interprete a saída como um índice no mapa de desvio.
+
+```
+//Groovy
+import org.archive.modules.CrawlURI
+import org.archive.net.UURIFactory
+uris=['http://foo.com','http://bar.org']
+mapper = appCtx.getBean("hashCrawlMapper")
+uris.each{ uri -> rawOut.println(uri + ":" + mapper.map(new CrawlURI(UURIFactory.getInstance(uri)))) }
+``` 
 
 ### Como adicionar URLs em massa ao rastreador
 
-Se você precisar adicionar um grande número de URLs a um rastreamento, no início ou em qualquer outro momento, antes de seu término, há várias opções.
+Há várias maneiras de adicionar um grande número de URLs a um rastreamento, seja no seu início ou em qualquer outro momento antes de seu término.
 
-Na prática, a primeira opção (adicionar como seeds) tem funcionado de forma aceitável com centenas de milhares de URLs - se o tratamento desses URLs como seeds for aceitável. A segunda opção, importar via interface do usuário da web ou JMX, funcionou bem para grupos de tamanhos variados, a qualquer momento durante um rastreamento, e permite definir o hops-path e os valores de URLs sem seeds. A terceira opção, importar um log de recuperação no início do rastreamento, funcionou bem com dezenas de milhões de URLs e, diferentemente das outras opções, permite que o rastreamento comece enquanto os URLs ainda estão sendo importadas (pausa menor).
+Na prática, a primeira opção, adicionar como seeds, tem funcionado de forma aceitável com centenas de milhares de URLs - se o tratamento desses URLs como seeds for aceitável. A segunda opção, importar via interface do usuário da web ou JMX, funcionou bem para grupos de tamanhos variados, durante qualquer momento do rastreamento, e permite definir os valores *hops-path* e *via* de URLs que não são seeds. A terceira opção, importar um log de recuperação no começo do rastreamento, funcionou bem com dezenas de milhões de URLs e, diferentemente das outras opções, permite que o rastreamento comece enquanto os URLs ainda estão sendo importados (pausa menor).
 
 ### Adicionar como seeds
 
-Os URLs podem ser inseridos (ou fornecidos em um arquivo de seeds) no início do rastreamento. Esses URLs podem ser tratados de forma especial por algumas opções de escopo - automaticamente consideradas em escopo ou usadas para determinar outras classes de URLs relacionadas que também devem ser regidas no escopo.
+Os URLs podem ser inseridos (ou fornecidos em um arquivo de seeds) no começo do rastreamento. Esses URLs podem ser tratados de forma especial por algumas opções de escopo - automaticamente consideradas no escopo ou usadas para determinar outras classes de URLs relacionadas que também devem ser regidas no escopo.
 
-A lista de seeds pode ser editada por meio da interface do usuário de configurações da Web durante um rastreamento, embora seja recomendável que o rastreamento seja pausado antes dessa edição. Depois de concluir a edição e retomar o rastreamento, a lista de seeds será verificada novamente (a menos que uma configuração de escopo tenha sido alterada para desabilitar essa verificação). Todos os URLs serão apresentados para agendamento na frontier - mas qualquer URL previamente agendado (inserido como um seed ou descoberto durante o rastreamento) será ignorado e considerao já incluído. Ou seja, apenas novos URLs não descobertos adicionados à lista de propagação serão agendados.
+A lista de seeds pode ser editada por meio das configurações da interface do usuário da Web durante um rastreamento, embora seja recomendável que o rastreamento seja pausado antes dessa edição. Depois de concluir a edição e retomar o rastreamento, a lista de seeds será verificada novamente (a menos que uma configuração de escopo tenha sido alterada para desabilitar essa verificação). Todos os URLs serão apresentados para agendamento na frontier - mas qualquer URL previamente agendado (inserido como um seed ou descoberto durante o rastreamento) será ignorado e considerao já incluído. Ou seja, apenas URLs novos, não descobertos e adicionados à lista de propagação serão agendados.
 
-Geralmente, a área de entrada de texto da interface do usuário da web não é utilizável após algumas milhares de entradas e, quando a lista de seeds exceder um determinado tamanho, a área de entrada de texto da web será desativada. Listas de seeds maiores - centenas de milhares ou milhões - podem ser fornecidas por um arquivo de seeds (geralmente chamado seeds.txt). As edições feitas diretamente neste arquivo não serão detectadas por uma simples pausa/retomada do rastreador - mas a edição de qualquer outra configuração causará uma nova verificação (novamente, a menos que a opção para desabilitar essa nova verificação tenha sido escolhida no escopo). Cada vez que uma lista muito grande de seeds é digitalizada, pode ocorrer uma pausa mais longa, e o rastreamento só começa depois que todas as seeds forem importadas.
+Normalmente, a área de entrada de texto da interface do usuário da web não é mais utilizável após algumas milhares de entradas. Quando a lista de seeds exceder um determinado tamanho, a área de entrada de texto da web será desativada. Listas de seeds maiores - centenas de milhares ou milhões - podem ser fornecidas por um arquivo de seeds (geralmente chamado seeds.txt). As edições feitas diretamente neste arquivo não serão detectadas por uma simples pausa/retomada do rastreador - mas a edição de qualquer outra configuração causará uma nova verificação (novamente, a menos que essa opção tenha sido desabilitada no escopo). Cada vez que uma lista muito grande de seeds é digitalizada, pode ocorrer uma pausa mais longa e o rastreamento só começa depois que todos os seeds forem importados.
 
 ### Importar via interface do usuário da web ou JMX
 
-Quando um rastreamento é pausado, a opção "View or Edit Frontier URIs" aparecerá na área de informações da tarefa do controle. Nessa página, um arquivo contendo URIs pode ser importado. O arquivo pode ter um URI por linha, estar no mesmo formato de um craw.log ou no formato de um diário de recuperação (descompactado). (nesses casos, o hops-path e o URL de encaminhamento também serão retidos). A caixa de seleção "force fetch" forçará os URIs no arquivo a serem agendados, mesmo que eles tenham sido previamente agendados/ buscados.
+Quando um rastreamento é pausado, a opção "View or Edit Frontier URIs" aparecerá na área de informações de tarefa do console. Nessa página, um arquivo contendo URIs pode ser importado. O arquivo pode ter um URI por linha, estar no mesmo formato de um craw.log ou no formato de um diário de recuperação (descompactado). (Nesses casos, o hops-path e o via-URL também serão retidos). A caixa de seleção "force fetch" forçará os URIs do arquivo a serem agendados, mesmo que eles tenham sido previamente agendados/buscados.
 
-Opções semelhantes existem através da interface JMX no Heritrix 1. No Heritrix 3, o diretório "action" é um bom meio.
+Opções semelhantes existem através da interface JMX no Heritrix 1. No Heritrix 3, o diretório "action" é uma boa maneira.
 
 ### Começar o rastreamento com um log de recuperação 
 
-Especificar um log de recuperação no início do rastreamento, de acordo com o manual do usuário, fará com que um processo de duas etapas ocorra com o log que pode ser usado para adicionar um grande número de URIs ao rastreamento.
+Especificar um log de recuperação no começo do rastreamento, de acordo com o manual do usuário, fará com que um processo de duas etapas ocorra com o log, que pode ser usado para adicionar um grande número de URIs ao rastreamento.
 
-Na primeira etapa, todos os URLs nas linhas de log de recuperação que começam com 'Fs' são marcados como tendo sido agendados - mas não agendadas. Isso impede que esses URIs sejam agendados posteriormente pelo rastreamento. Na segunda etapa, todos os URLs nas linhas de log de recuperação que começam com 'F +' são apresentados para agendamento. Somente aqueles que ainda não estiverem marcados como agendados serão agendados.
+Na primeira etapa, todos os URLs nas linhas de log de recuperação que começam com 'Fs' são marcados como tendo sido agendados - mas não foram agendados. Isso impede que esses URIs sejam agendados posteriormente pelo rastreamento. Na segunda etapa, todos os URLs nas linhas de log de recuperação que começam com 'F +' são apresentados para agendamento. Somente aqueles que ainda não estiverem marcados como agendados serão agendados.
 
 Assim, editando ou compondo um arquivo de formato de log de recuperação, o rastreamento pode ser pré-configurado para incluir um grande número de URLs ou considerá-los já concluídos e, portanto, não programáveis.
 
-Esse processo funciona de forma aceitável com dezenas de milhões de URLs, e o rastreamento regular começa antes que todas as linhas sejam processadas na segunda etapa.
+Esse processo funciona de forma aceitável com dezenas de milhões de URLs, e o rastreamento padrão começa antes que todas as linhas sejam processadas na segunda etapa.
 
 ### MatchesListRegexDecideRule vs NotMatchesListRegexDecideRule
 
@@ -3972,19 +4317,19 @@ se você quiser rejeitar uma correspondência de padrão negativo: adicione
 NotMatchesListRegexDecideRule with <property name="decision" value="REJECT"/>
 
 
-Sinceramente, acho o comando NotMatchesListRegexDecideRule desnecessário, já que o MatchesListRegexDecideRule pode ser usado para quase tudo.
+Sinceramente, considero o comando NotMatchesListRegexDecideRule desnecessário, já que o MatchesListRegexDecideRule pode ser usado para quase tudo.
 
 ### WARC (Web ARChive)
 
 ### Formato de arquivo WARC
 
-O formato de arquivo WARC é sucessor do formato ARC. (O formato ARC tem sido usado por muitos anos para armazenar capturas da Web do Internet Archive.) Exemplos de arquivos ARC e WARC (v0.17) pequenos de um rastreamento raso (~ 2 hops) do site www.archive.org, feito pelo Heritrix, estão anexados nesta página wiki. É fácil criar arquivos ARC e WARC maiores e mais representativos usando qualquer versão recente do Heritrix.
+O formato de arquivo WARC é sucessor do formato ARC. (sO formato ARC tem sido usado, por muitos anos, para armazenar capturas da Web do Internet Archive.) Pequenos exemplos de arquivos ARC e WARC (v0.17) de um rastreamento raso (~ 2 hops) do site www.archive.org, feito pelo Heritrix, estão anexados nesta página wiki. É fácil criar arquivos ARC e WARC maiores e mais representativos usando qualquer versão recente do Heritrix.
 
 Download All
 
 Comparado ao ARC, observe que o WARC adiciona:
 
-* Uma quantidade expansível de informações de header por registro
+* Uma quantidade expansível de informações de cabeçalho por registro
 * Novos tipos de registro opcionais para dados/metadados, além de respostas HTTP (que era só o que o arquivo ARC gravava)
 
 ### Padrão ISO
@@ -4034,7 +4379,7 @@ No final da seção *extractors":
       </newObject>
  ```
  
- Em settings/com/youtube/settings.xml:
+Em settings/com/youtube/settings.xml:
  
  ```
    <object name="ExtractorImpliedURI-YoutubeWatchPage">
@@ -4044,7 +4389,7 @@ No final da seção *extractors":
   </object>
   ```
   
-  Em settings/com/youtube/c/settings.xml:
+ Em settings/com/youtube/c/settings.xml:
   
   ```
   <object name="robots-honoring-policy">
@@ -4052,7 +4397,7 @@ No final da seção *extractors":
   </object>
   ```
   
-Se tiver alguma dúvida sobre qualquer coisa documentada aqui, por favor, não hesite em entrar em contato com a lista em archive-crawler em yahoogroups dot com.
+Se houver alguma dúvida sobre o material documentado aqui, por favor, não hesite em entrar em contato com a lista em archive-crawler em yahoogroups.com.
 
 ## Problemas relatados
 
@@ -4064,7 +4409,7 @@ O Heritrix (ExtractorJS) tem dificuldade em encontrar os links que não são seq
 
 Por outro lado, extrai strings que o código javascript não usa como URIs, geralmente resultando em 404s notados pelos webmasters.
 
-Para tentar definir o problema melhor, este é um local para colocar exemplos de problemas de extração incorreta de javascript.
+Para tentar definir melhor o problema, criamos esse local para colocar exemplos de problemas de extração incorreta de javascript.
 
 https://webarchive.jira.com/browse/LOC-345
 
@@ -4074,7 +4419,7 @@ https://webarchive.jira.com/browse/HER-1522
 
 https://webarchive.jira.com/browse/HER-1523
 
-Uma solução possível: pesquise por chamadas location.replace e métodos semelhantes de acessar um URL. Se os parâmetros para tal função envolverem variáveis, tente resolvê-los.
+Possível solução: pesquise por chamadas location.replace e métodos semelhantes de acessar um URL. Se os parâmetros para tal função envolverem variáveis, tente resolvê-los.
 
 ## Leituras
 
@@ -4083,44 +4428,44 @@ Uma solução possível: pesquise por chamadas location.replace e métodos semel
 * Haydon, A; Najork, M. Mercator: A Scalable, Extensible Web Crawler (wayback (http://web.archive.org/web/\*/http://research.compaq.com/SRC/mercator/papers/www/paper.html)), 1999
 * Haydon, A; Najork, M. High-performance web crawling, 2001
 * Kimpton, Stata, Mohr. Internet Archive Crawler Requirements Analysis for library consortium, 2003
-* Lee, H; Leonard, D; Wang, X; Loguinov, D. IRLbot: Scaling to 6 Billion Pages and Beyond (new from WWW2008)
+* Lee, H; Leonard, D; Wang, X; Loguinov, D. (IRLbot: Scaling to 6 Billion Pages and Beyond)[http://irl.cs.tamu.edu/people/hsin-tsang/papers/www2008.pdf] (new from WWW2008)
 
 **Leituras complementares**
 
-* Najork, M.; Wiener, J. Breadth-First Search Crawling Yields High-Quality Pages, 2001
-* Cho, J.; Garcia-Molina, H.; Page, L. Efficient Crawling Through URL Ordering, 1998
-* Abiteboul, S.; Preda, M.; Cobena, G. Computing web page importance without storing the graph of the web (extended abstract), 2001
-* Olsten, C.; Pandey, S. Recrawl Scheduling Based on Information Longevity (new from WWW2008)
+* Najork, M.; Wiener, J. (Breadth-First Search Crawling Yields High-Quality Pages)[http://www10.org/cdrom/papers/208/], 2001
+* Cho, J.; Garcia-Molina, H.; Page, L. (Efficient Crawling Through URL Ordering)[http://ilpubs.stanford.edu:8090/347/], 1998
+* Abiteboul, S.; Preda, M.; Cobena, G. (Computing web page importance without storing the graph of the web (extended abstract))[http://groups.yahoo.com/group/archive-crawler/files/xyleme-crawlorder.pdf], 2001
+* Olsten, C.; Pandey, S. (Recrawl Scheduling Based on Information Longevity)[http://www.cs.cmu.edu/~spandey/www08.pdf] (new from WWW2008)
 
 **Informações sobre Java em relação ao Heritrix/rastreamento**
 
 * Haydon, A; Najork, M. Performance Limitations of the Java Core Libraries (may not reflect latest Java issues, Heritrix uses a high performance DNS package)
 
-Os estudos abaixo podem ser encontrados (também podem estar desatualizados em relação ao Java atual e nossas opções de implementação) na página de arquivos archive-crawler Yahoo Group:
+Os estudos abaixo podem ser encontrados (também podem estar desatualizados em relação ao Java atual e nossas opções de implementação) na página de arquivos (archive-crawler Yahoo Group)[http://tech.groups.yahoo.com/group/archive-crawler/files/]:
 
 * G. B. Reddy Study of synch vs. asynch IO in Java (synch vs. asynch IO em Java)
 * G. B. Reddy Study of multi-threaded DNS performance in Java (desempenho do DNS multi-threaded em Java)
 
 **Outros**
 
-* Arquivos de grupo archive-crawler
-* Cho, J.; Garcia-Molina, H. The Evolution of the Web and Implications for an Incremental Crawler, Conf. on Very Large Data Bases, 2000
-* Focused Crawling The Quest for Topic-specific Portals
+* (Arquivos)[http://tech.groups.yahoo.com/group/archive-crawler/files/] de grupo archive-crawler
+* Cho, J.; Garcia-Molina, H. (The Evolution of the Web and Implications for an Incremental Crawler)[https://scholar.google.com/scholar?hl=en&lr=&safe=off&client=firefox-a&q=author%3A%22Cho%22+intitle%3A%22The+evolution+of+the+web+and+implications+for+an+incremental+crawler%22+&btnG=Search], Conf. on Very Large Data Bases, 2000
+* (Focused Crawling The Quest for Topic-specific Portals)[https://www.cse.iitb.ac.in/~soumen/focus/]
 * Focused Crawling: : A New Approach to Topic-Specific Web Resource Discovery, 1999, WWW8
-* Intelligent Crawling on the World Wide Web with Arbitrary Predicates, 2001, WWW10
+* (Intelligent Crawling on the World Wide Web with Arbitrary Predicates)[http://www10.org/cdrom/papers/110/], 2001, WWW10
 * Web Crawling High-Quality Metadata using RDF and Dublin Core, 2002, WWW11
-* Stanford WebBase Project
+* Projeto Stanford (WebBase) [http://diglib.stanford.edu:8091/~testbed/doc2/WebBase/]
 * An Introduction to Heritrix - Mohr et al, 4th International Web Archiving Workshop 2004
 
 **Especificações relevantes**
 
-* RFC 2616: Hypertext Transfer Protocol - HTTP/1.1
-* Clarifying the fundamentals of HTTP By Jeffery Mogul, an author of RFC-2616.
+* (RFC 2616: Hypertext Transfer Protocol - HTTP/1.1)[https://www.ietf.org/rfc/rfc2616.txt]
+     * Clarifying the fundamentals of HTTP por Jeffery Mogul, um autor de RFC-2616.
 * RFC 3986: Uniform Resource Identifiers (URI): Generic Syntax.
-* HTML 4.01 specification (from W3C).
-* Embora o robots.txt seja importante para o rastreamento, ele nunca foi oficialmente ratificado como RFC. A especificação mínima do defacto está disponível em robotstxt.org. Os mecanismos de pesquisa fizeram várias extensões ad hoc; recentemente, o Google compartilhou algumas informações sobre como o GoogleBot implementa o *Robots Exclusion Protocol*.
-* RFC 1034: Domain Names - Concepts and Facilities
-* RFC 1035: Domain Names - Implementation and Specification
+* (HTML 4.01 specification)[https://www.w3.org/TR/html401/] (from W3C).
+* Embora o robots.txt seja importante para o rastreamento, ele nunca foi oficialmente ratificado como RFC. A especificação mínima do defacto está disponível em robotstxt.org. Os mecanismos de pesquisa fizeram várias extensões ad hoc; recentemente, o Google compartilhou algumas informações sobre como o (GoogleBot implementa o *Robots Exclusion Protocol*)[https://webmasters.googleblog.com/2008/06/improving-on-robots-exclusion-protocol.html].
+* (RFC 1034: Domain Names - Concepts and Facilities)[ftp://ftp.rfc-editor.org/in-notes/rfc1034.txt]
+* (RFC 1035: Domain Names - Implementation and Specification)[ftp://ftp.rfc-editor.org/in-notes/rfc1035.txt]
 
 ### Formato de arquivo ARC
 
@@ -4132,7 +4477,7 @@ Internet Archive
 
 **Visão geral**
 
-O Internet Archive armazena os dados coletados em grande escala (atualmente 100MB) e agrega arquivos para facilitar o armazenamento em um sistema de arquivos convencional. Sabe-se pela experiência do Archive que é difícil gerenciar centenas de milhões de arquivos pequenos na maioria dos sistemas de arquivos existentes.
+O Internet Archive armazena os dados coletados em grande escala (atualmente 100MB) e agrega arquivos para facilitar o armazenamento em um sistema de arquivos convencional. Sabe-se, pela experiência do Archive, que é difícil gerenciar centenas de milhões de arquivos pequenos na maioria dos sistemas de arquivos existentes.
 
 Este documento descreve o formato dos arquivos agregados. O formato do arquivo foi projetado para atender a vários requisitos:
 
@@ -4205,7 +4550,7 @@ URL-record-definition == names of fields in URL records
 
 ### URL Record
 
-introduz um objeto no arquiv e fornece o nome e o tamanho do objeto, bem como vários metadados sobre sua recuperação.
+introduz um objeto no arquivo do archive e fornece o nome e o tamanho do objeto, bem como vários metadados sobre sua recuperação.
 
 **URL Record v1**
 
@@ -4249,7 +4594,7 @@ offset == deslocamento em bytes desde o início do arquivo até o início do reg
 filename == nome do arquivo arc
 ```
 
-Note que todos os valores de campo são texto ascii. Todos os campos possuem pelo menos um caractere. Nenhum valor de campo contém um espaço.
+Observe que todos os valores de campo são texto ascii. Todos os campos possuem pelo menos um caractere. Nenhum valor de campo contém um espaço.
 
 **Exemplo de um arquivo Archive**
 
@@ -4296,9 +4641,9 @@ Hello World!!!
 
 **Lendo um arquivo ARC**
 
-Como observado acima, a melhor maneira de recuperar um objeto específico de um arquivo archive é manter um banco de dados externo de nomes de objetos, os arquivos nos quais eles estão localizados, seus deslocamentos nos arquivos e os tamanhos dos objetos. Então, para recuperar o objeto, basta abrir o arquivo, buscar o offset e fazer uma única leitura de `<size>` bytes.
+Como observado acima, a melhor maneira de recuperar um objeto específico de um arquivo archive é manter um banco de dados externo de nomes de objetos, os arquivos nos quais eles estão localizados, seus deslocamentos nos arquivos e os tamanhos dos objetos. Então, para recuperar o objeto, basta abrir o arquivo, buscar o offset e fazer uma única leitura de bytes `<size>`.
 
-Programas que precisam ler o arquivo sem um índice (como descompactar o arquivo inteiro) devem usar I/O armazenada em buffer. O registro de URL pode, então, ser lido com um fgets (), e os objetos podem ser lidos com um fread () de <size> bytes.
+Programas que precisam ler o arquivo sem um índice (como para descompactar o arquivo inteiro) devem usar I/O armazenada em buffer. O registro de URL pode, então, ser lido com um fgets (), e os objetos podem ser lidos com um fread () de <size> bytes.
   
 **Usando o formato Archive para outros tipos de URL**
 
