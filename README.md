@@ -4686,15 +4686,15 @@ O Archive deseja suportar os seguintes casos de uso:
 
 ### 2.1 Rastreamentos amplos
 
-Rastreamentos amplos são rastreamentos grandes, de alta largura de banda, nos quais o número de sites e o número de páginas interessantes, individuais, "tocadas" é tão importante quanto a integridade com que qualquer site é coberto. A Web não está catalogada; um rastreamento amplo é importante para descobrir páginas desconhecidas. Além disso, não se pode saber a priori quais partes da Web serão importantes no futuro; rastreamentos amplos tentam garantir cobertura suficiente para esses usos desconhecidos.
+Rastreamentos amplos são rastreamentos grandes, de alta largura de banda, nos quais o número de sites e o número de páginas interessantes e individuais "tocadas" é tão importante quanto a completude com que qualquer site é coberto. A Web não está catalogada; um rastreamento amplo é importante para descobrir páginas desconhecidas. Além disso, não se pode saber a priori quais partes da Web serão importantes no futuro; rastreamentos amplos tentam garantir cobertura suficiente para usos desconhecidos.
 
 ### 2.2 Rastreamentos restritos
 
-Rastreamentos restritros são rastreamentos de pequeno a médio porte nos quais o critério de qualidade é a cobertura completa de alguns sites ou tópicos selecionados. Rastreamentos restritos são necessários para capturar sites que são conhecidos a priori como importantes (intrinsecamente ou em relação a alguma coleção que está sendo montada).
+Rastreamentos restritros são rastreamentos de tamanho pequeno ou médio, nos quais o critério de qualidade é a cobertura completa de alguns sites ou tópicos selecionados. Rastreamentos restritos são necessários para capturar sites que são conhecidos a priori como importantes ( intrinsecamente ou em relação a alguma coleção que está sendo montada).
 
 ### 2.3 Rastreamentos contínuos
 
-Tradicionalmente, rastreadores tem se esforçado para não fazer download de páginas que já foram baixadas. Todos os rastreadores são geralmente conhecidos como rastreadores *batch* ou *snapshot crawlers*, pois geralmente são executados durante um período fixo para capturar a Web e, em seguida, são reiniciados para começarem um novo rastreamento.
+Os rastreadores normalmente têm se esforçado para não fazer download de páginas que já foram baixadas. Esses rastreadores são conhecidos como rastreadores *batch* ou *snapshot crawlers*, pois geralmente são executados durante um período fixo para capturar a Web e, em seguida, são reiniciados para começarem um novo rastreamento.
 
 Rastreamentos contínuos fazem o download contínuo de páginas buscadas anteriormente (procurando alterações), bem como (possivelmente) a descoberta e a busca de novas páginas. O rastreamento contínuo é útil para capturar páginas que mudam rapidamente. Além disso, quando as taxas de download das páginas são ajustadas para refletir as freqüências de alteração medidas, o rastreamento contínuo pode ser mais eficiente do que o rastreamento *batch*.
 
@@ -4708,11 +4708,12 @@ O Archive está interessado em rastrear páginas disponíveis através de protoc
 
 O Archive quer apoiar experimentos em técnicas de rastreamento e tecnologia executadas por organizações externas. O estudo da Biblioteca Nacional de Ciências Digitais (National Digital Science Library) feito na Universidade de Cornell é um bom exemplo do que queremos apoiar. Neste projeto, os pesquisadores queriam construir um reastreador focado em um tema, para encontrar materiais relacionados à ciência na Web. Eles foram capazes de escrever "analisadores" que usaram técnicas de vetor de termo para identificar material de interesse e foram capazes de modificar as políticas do rastreador para usar essas informações para direcionar o rastreamento.
 
+Queremos apoiar projetos como o NSDL. Para fazer isso, o rastreador precisa ser fácil de estender e usar, não podendo ser sobrecarregado com restrições de licenciamento.
+
 ### 2.6 Administração "zero"/facilidade de operação
 
-O Archive não tem uma grande equipe de operadores e, portanto, requer um alto nível de automação em seus rastreadores. Em particular, acreditamos que um único rastreamento amplo pode ser administrado pelos esforços, em tempo parcial, de uma única pessoa (assumindo hardware e conectividade de rede). Além disso, o Archive não pode fornecer muito suporte técnico para organizações externas usando seu software de rastreamento, portanto, este software deve ser fácil de operar sem precisar de suporte.
+O Archive não tem uma grande equipe de operadores e, portanto, requer um alto nível de automação em seus rastreadores. Em particular, acreditamos que um único rastreamento amplo pode ser administrado, em tempo parcial, por uma única pessoa (assumindo conectividade de rede e hardware confiável). Além disso, o Archive não consegue fornecer suporte técnico para organizações externas usando seu software de rastreamento, portanto, este software deve ser fácil de operar sem precisar de suporte.
 
-Queremos poder apoiar projetos como o NSDL. Para fazer isso, o rastreador precisa ser fácil de estender e usar, não podendo ser sobrecarregado com restrições de licenciamento.
 
 ### 3. Requisitos
 
@@ -4722,7 +4723,7 @@ Acreditamos que os seguintes requisitos são necessários para suportar os casos
 
 Extensibilidade é a capacidade de alterar o comportamento do rastreador: sua política de seleção, sua política de agendamento, o que ele armazena em disco e assim por diante. É o nosso requisito mais importante, já que é necessário para suportar quase todos os casos de uso acima (rastreamentos amplo e restritos, rastreamentos contínuos, rastreamentos de multiprotocolo, facilidade de operação e rastreamentos experimentais).
 
-Conforme enumerado abaixo, a extensibilidade se aplica a muitos aspectos do rastreador. Em um nível alto, o que realmente queremos é um *framework* para criar rastreadores, não um rastreador em particular que incorpore políticas ou recursos específicos. Um *designer de rastreamento* deve ser capaz de criar uma instância desta estrutura para atender às necessidades de um projeto de rastreamento específico. Ao mesmo tempo, não queremos um framework objeto-orientado tradicional que *exija* que a programação reúna sistemas úteis. Como discutiremos a seguir, enquanto a capacidade de conectar códigos novos e personalizados no framework é importante, também é importante que o framework também suporte extensibilidade através de parametrização.
+Conforme enumerado abaixo, a extensibilidade se aplica a muitos aspectos do rastreador. Em um alto nível, o que realmente queremos é um *framework* para criar rastreadores, não um rastreador em particular que incorpore políticas ou recursos específicos. Um *designer de rastreamento* deve ser capaz de criar uma instância desta estrutura para atender às necessidades de um projeto de rastreamento específico. Ao mesmo tempo, não queremos um framework objeto-orientado tradicional que *exija* que a programação reúna sistemas úteis. Como discutiremos a seguir, enquanto a capacidade de conectar códigos novos e personalizados no framework é importante, também é importante que o framework também suporte extensibilidade através de parametrização.
 
 ### 3.1.1 Aspectos extensíveis do rastreador
 
@@ -4734,7 +4735,7 @@ A adição de novos protocolos de download ao framework deve ser fácil.
 
 ### 3.1.1.2. Seleção (descoberta e filtragem)
 
-A política de seleção determina o que o rastreador fará o download. É, normalmente, o produto de dois mecanismos: um mecanismo de descoberta pelo qual novas URLs são identificadas e um mecanismo de filtragem que decide quais URLs descobertas devem ser baixadas. Nos rastreamentos contínuos, em que URLs antigos são rastreados novamente, também é necessário que haja um processo de filtragem para eliminar os URLs que não são mais de interesse.
+A política de seleção determina o conteúdo que o rastreador fará download. É, normalmente, produto de dois mecanismos: um mecanismo de descoberta pelo qual novas URLs são identificadas e um mecanismo de filtragem que decide quais URLs descobertas devem ser baixadas. Nos rastreamentos contínuos, em que URLs antigos são rastreados novamente, também é necessário que haja um processo de filtragem para eliminar os URLs que não são mais de interesse.
 
 As políticas de seleção são de importância vital para rastreadores amplos e restritos. É uma área na qual esperamos que haja pesquisas e experimentos contínuos e significativos. Assim, nosso framework de rastreador deve oferecer suporte à extensibilidade mais ampla possível quando se trata de descoberta e mecanismos de filtragem.
 
@@ -4742,29 +4743,29 @@ As políticas de seleção são de importância vital para rastreadores amplos e
 
 ### 3.1.1.3 Agendamento
 
-A política de agendamento (às vezes chamada de política de classificação) determina a ordem na qual os URLs pendentes são baixados. As políticas de agendamento e seleção, juntos, definem o conteúdo da coleção obtida por um rastreamento e, portanto, são de enorme interesse para designers de rastreamento no que diz respeito a ambos. No entanto, a flexibilidade em relação ao agendamento é particularmente difícil de fornecer, pois a política de agendamento é determinada pela *frontier* de URLs pendentes do rastreador.
+A política de agendamento (às vezes chamada de política de classificação) determina a ordem na qual os URLs pendentes são baixados. As políticas de agendamento e seleção, juntas, definem o conteúdo da coleção obtida por um rastreamento e, portanto, são de enorme interesse para designers de rastreamento no que diz respeito a ambos. No entanto, a flexibilidade em relação ao agendamento é particularmente difícil de fornecer, pois a política de agendamento é determinada pela *frontier* de URLs pendentes do rastreador.
 
 A *frontier* de um rastreador é a coleção de URLs que o rastreador pretende baixar no futuro. Em um rastreamento em massa, a *frontier* contém apenas URLs novos (URLs que não foram baixados nesse rastreamento). Em um rastreamento contínuo, a *frontier* pode conter URLs novos e URLs antigos que devem ser rastreados novamente. A política de agendamento determina a ordem na qual os elementos são removidos dessa *frontier*. Para rastreamentos amplos, a *frontier* pode se tornar muito grande, contendo até 10 de bilhões de URLs e, assim, em um rastreador com capacidade de escala, a *frontier* deve ser uma estrutura de dados baseado em disco. Estruturas de dados baseadas em disco podem ter alta latência, mas a frontier está no caminho crítico do rastreador, onde a latência não pode ser tolerada. Assim, uma boa frontier requer habilidade de programação significativa para implementar e ajustar.
 
-Como resultado, não esperamos que novos *frontiers* sejam escritas com rapidez e facilidade e, portanto, a flexibilidade para agendar políticas não pode advir principalmente da criação de novas implementações de frontier. É importante que o framework do rastreador venha com uma variedade de implementações de frontier que suportam uma variedade de políticas de agendamento. Ao mesmo tempo, para apoiar a experimentação e desenvolvimento, deve haver uma boa API para definir novas implementações de frontier.
+Como resultado, não esperamos que novas *frontiers* sejam escritas com rapidez e facilidade e, portanto, a flexibilidade para agendar políticas não pode advir principalmente da criação de novas implementações de frontier. É importante que o framework do rastreador venha com uma variedade de implementações de frontier que suportam uma variedade de políticas de agendamento. Ao mesmo tempo, para apoiar a experimentação e desenvolvimento, deve haver uma boa API para definir novas implementações de frontier.
 
-### 3.1.1.4 Politeness
+### 3.1.1.4 Cortesia (Politeness)
 
-Os rastreadores de alta capacidade podem facilmente sobrecarregar um servidor Web de baixo custo e podem até sobrecarregar os servidores Web de ponta. Por isso, é muito importante que os rastreadores sejam "educados", limitando a carga que eles colocam em um servidor da Web.
+Os rastreadores de alta capacidade podem facilmente sobrecarregar um servidor Web de baixo custo e podem até sobrecarregar os servidores Web de ponta. Por isso, é muito importante que os rastreadores sejam "cortês", limitando a carga que eles colocam em um servidor da Web.
 
-Infelizmente, a necessidade de ser educado às vezes entra em conflito com a política de agendamento de um rastreamento. Por exemplo, uma política simples de politeness é de, com o tempo, escalonar as páginas baixadas de um determinado site. No entanto, como discutido acima, às vezes é desejável baixar imagens e outros objetos associados a uma página imediatamente após o download da própria página. Se este último requisito é particularmente importante para o rastreamento, é necessária uma política de politeness mais sofisticada para acomodá-lo. Ao mesmo tempo, quando esses problemas de atualização não são importantes para um rastreamento, é geralmente considerado vizinho ao espaço de downloads de um site tão distante quanto possível.
+Infelizmente, a necessidade de cortesia às vezes entra em conflito com a política de agendamento de um rastreamento. Por exemplo, uma política simples de cortesia é de escalonar, com o tempo, as páginas baixadas de um determinado site. No entanto, como discutido acima, às vezes é desejável baixar imagens e outros objetos associados a uma página imediatamente após o download da própria página. Se este último requisito é particularmente importante para o rastreamento, é necessária uma política de cortesia mais sofisticada para acomodá-lo. Ao mesmo tempo, quando esses problemas de atualização não são importantes para um rastreamento, são geralmente considerados secundários ao espaço de downloads de um site tão distante quanto possível.
 
-O rastreador deve ser flexível em relação às políticas de educação que implementa. Novamente, não existe um rastreador de "tamanho único"; o que é necessário é um framework que acomode uma ampla variedade de políticas.
+O rastreador deve ser flexível em relação às políticas de cortesia que implementa. Novamente, não existe um rastreador de "tamanho único"; o que é necessário é um framework que acomode uma ampla variedade de políticas.
 
 ### 3.1.1.5 Processamento de documentos
 
 Depois que um documento é baixado, ele é processado por vários motivos. Recursos podem ser extraídos para fins de rastreamento adicional (por exemplo, links na maioria dos rastreamentos, além de texto de links para rastreamentos focados em um tema). Recursos podem ser extraídos simplesmente para coletar estatísticas e a própria página pode ser transformada em algum formato de saída apropriado.
 
-Assim, o rastreador deve suportar um framework para "analisadores" conectáveis que processam documentos. Além disso, essa estrutura deve oferecer suporte à interoperabilidade efetiva entre os analisadores, garantindo que o bom trabalho de um grupo possa ser construído por outros.
+Assim, o rastreador deve suportar um framework para "analisadores" conectáveis que processem documentos. Além disso, essa estrutura deve oferecer suporte à interoperabilidade efetiva entre os analisadores, garantindo que o bom trabalho de um grupo possa ser construído por outros.
 
 Os analisadores devem ter acesso ao máximo de metadados possíveis. Isso inclui o URL usado para buscar o objeto, download de timestamps (data e hora), informações de resolução de DNS e headers de solicitação e resposta usados durante a transação (e qualquer outro material usado para buscar o objeto, como senhas ou chaves SSL).
 
-Os analisadores devem ter acesso aos resultados de todas as solicitações, não apenas aos bem-sucedidos. Isso é necessário, por exemplo, para detectar alterações na Web ou para detectar as "bordas" da *deep web*. Isso significa registrar, por exemplo, respostas 30x (moved/redirect) e 40x (invalid/not found/unauthorized). Isso também significa registrar solicitações negadas por regras de robot exclusion. Por fim, os arquivos de robot exclusion buscados automaticamente também devem estar sujeitos a análises regulares (em vez de serem manipulados por um caminho separado).
+Os analisadores devem ter acesso aos resultados de todas as solicitações, não apenas as bem-sucedidas. Isso é necessário, por exemplo, para detectar alterações na Web ou para detectar as "bordas" da *deep web*. Isso significa registrar, por exemplo, respostas 30x (moved/redirect) e 40x (invalid/not found/unauthorized). Isso também significa registrar solicitações negadas por regras de robot exclusion. Por fim, os arquivos de robot exclusion buscados automaticamente também devem estar sujeitos a análises regulares (em vez de serem manipulados por um caminho separado).
 
 A extração de links é, obviamente, uma forma muito importante de processamento de documentos. Extensibilidade, nesse respeito, significa que deve ser fácil adicionar módulos para lidar com Javascript, Flash e outros tipos de mídia que tenham links incorporados.
 
@@ -4788,7 +4789,7 @@ Além de oferecer suporte a ambas as formas de extensibilidade, o rastreador dev
 
 ### 3.1.2.1 Parametrização
 
-Extensibilidade através de parametrização é a capacidade de personalizar o comportamento do rastreamento através do uso de módulos de código cujo comportamento pode ser alterado fornecendo parâmetros apropriados. Por exemplo, um módulo de frontier pode ter um parâmetro politeness controlando quanto tempo esperar antes de revisitar um determinado servidor ou um parâmetro de agendamento controlando se os objetos de imagem de uma página são colocados no início ou no final da fila de rastreamento. Outro exemplo é que um módulo de filtro pode usar um conjunto de expressões regulares que controlam os URLs recém-descobertos que devem ser permitidos na frontier.
+Extensibilidade através de parametrização é a capacidade de personalizar o comportamento do rastreamento através do uso de módulos de código cujo comportamento pode ser alterado fornecendo parâmetros apropriados. Por exemplo, um módulo de frontier pode ter um parâmetro de cortesia controlando quanto tempo esperar antes de revisitar um determinado servidor ou um parâmetro de agendamento controlando se os objetos de imagem de uma página são colocados no início ou no final da fila de rastreamento. Outro exemplo é que um módulo de filtro pode usar um conjunto de expressões regulares que controlam os URLs recém-descobertos que devem ser permitidos na frontier.
 
 Outra forma de parametrização é a capacidade de controlar, a partir de um arquivo de configuração simples em tempo de execução, quais módulos de código são usados durante o rastreamento. Por exemplo, uma implementação da frontier pode basear-se em uma política abrangente de rastreamento; uma implementação diferente pode ser baseada em uma política ordenada por classificação de página. Por meio de diretivas simples no arquivo de configuração do rastreador, o designer de rastreamento deve poder selecionar entre essas implementações de frontier. (É claro que esses módulos em si podem ser parametrizados mais adiante, como discutido acima. Por exemplo, os dois módulos podem ter um sinalizador indicando que as imagens de uma página devem ser tratadas como exceções à política geral de planejamento, garantindo que essas imagens sejam baixadas simultaneamente com as páginas referentes a elas.)
 
@@ -4798,15 +4799,15 @@ No mínimo, o framework do rastreador deve ter parâmetros controlando os seguin
 
 *Agendamento.* Como mencionado acima, o agendamento é determinado em grande parte pelos tipos de frontiers permitidos pelo rastreador. Acreditamos que os seguintes tipos de frontiers são necessários:
 
-*Frontiers de prioridade múltipla e ampla.* Essas frontiers permitem implementações eficientes, baseadas em disco, que podem ser dimensionadas para rastreamentos muito grandes. Prioridades múltiplas significa que há várias filas com prioridades diferentes, permitindo agendar downloads "urgentes" acima da fila básica. Esses downloads urgentes suportariam, por exemplo, o download de uma imagem ao mesmo tempo que a página que a contém. Essas prioridades também podem ser usadas em rastreamentos contínuos, em que páginas que mudam com frequência podem ter prioridade mais alta do que as que mudam lentamente.
+*Frontiers de prioridade múltipla e ampla.* Essas frontiers permitem implementações eficientes, baseadas em disco, que podem ser dimensionadas para rastreamentos muito grandes. Prioridades múltiplas significa que há várias filas com prioridades diferentes, permitindo agendar downloads "urgentes" acima da fila básica. Esses downloads urgentes suportariam, por exemplo, o download de uma imagem e, ao mesmo tempo, da página que a contém. Essas prioridades também podem ser usadas em rastreamentos contínuos, em que páginas que mudam com frequência podem ter prioridade mais alta do que as que mudam menos.
 
-*Site-first frontier.* Essas frontiers estão mais próximas de rastreadores depth-first, tentando concluir sites o mais rápido possível antes de iniciar novos sites. Como frontiers abrangentes, elas são muito escalonáveis e podem oferecer suporte a um esquema de prioridade.
+*Site-first frontier.* Essas frontiers estão mais próximas de rastreadores depth-first, tentando concluir sites o mais rápido possível antes de iniciar novos sites. Como frontiers abrangentes, elas são muito escalonáveis e podem suportar um esquema de prioridade.
 
-*Frontier classificado dinamicamente.* As frontiers anteriores atribuem uma prioridade imutável às URLs quando elas são (re) inseridas na frontier. Uma frontier classificada dinamicamente permite que o rastreamento atualize prioridades de URL após a inserção. Tais frontiers podem ser usadas, por exemplo, para fazer o download de páginas na ordem do Pagerank próximo e também permitir que as classificações sejam modificadas de acordo com considerações lingüísticas ou outras. Essas frontiers normalmente têm um componente na memória que limita sua escalabilidade de acordo com a quantidade de memória nas máquinas do rastreador e menos escalonável do que as frontiers classificadas estatisticamente.
+*Frontier classificada dinamicamente.* As frontiers anteriores atribuem uma prioridade imutável às URLs quando elas são (re)inseridas na frontier. Uma frontier classificada dinamicamente permite que o rastreamento atualize prioridades de URL após a inserção. Tais frontiers podem ser usadas, por exemplo, para fazer o download de páginas na ordem do Pagerank próximo e também permitir que as classificações sejam modificadas de acordo com considerações lingüísticas ou outras. Essas frontiers normalmente têm um componente na memória que limita sua escalabilidade de acordo com a quantidade de memória nas máquinas do rastreador e menos escalonável do que as frontiers classificadas estatisticamente.
 
-Todas essas frontiers devem oferecer suporte à distribuição em várias máquinas. Elas devem oferecer suporte a rastreamentos contínuos e políticas flexíveis de politeness.
+Todas essas frontiers devem oferecer suporte a distribuição em várias máquinas. Elas devem oferecer suporte a rastreamentos contínuos e políticas flexíveis de politeness.
 
-*HTTP.* O rastreador deve vir com suporte embutido para HTTP (v. 1.1). Essa implementação HTTP deve suportar robot exclusions, mas também deve ser possível ignorar robot exclusions. Este módulo deve suportar a parametrização de headers de saída (por exemplo, permitindo que o designer de rastreamento defina o User-Agent e outros campos de header). Este módulo deve suportar o uso do header if-modified-since do HTTP (e também suportar não usá-lo).
+*HTTP.* O rastreador deve vir com suporte embutido para HTTP (v. 1.1). Essa implementação HTTP deve suportar robot exclusions, mas também deve ser possível ignorar exclusões de robot. Este módulo deve suportar a parametrização de cabeçalhos de saída (por exemplo, permitir que o designer de rastreamento defina o User-Agent e outros campos de cabeçalho). Este módulo deve suportar o uso do cabeçalho if-modified-since do HTTP (e também suportar não usá-lo).
 
 *Extração de links.* O rastreador deve conseguir extrair links de HTML e de objetos Flash. Em objetos HTML, ele deve fazer um "best effort" para extrair links do Javascript e outras linguagens de script.
 
@@ -4828,11 +4829,11 @@ Os rastreamentos geralmente se estendem por dias e até semanas; rastreamentos c
 
 ## 3.2 Alta largura de banda
 
-Uma única máquina baseada em Pentium (adequadamente configurada) deve ser capaz de baixar de 10 a 20 milhões de documentos por dia (o que significa cerca de 15-30 Mbps de largura de banda em média durante o dia inteiro). Além disso, deve ser possível distribuir um rastreamento 10-20 dessas máquinas para obter melhorias de 10 a 20 vezes na largura de banda de rastreamento.
+Uma única máquina baseada em Pentium  (configurada adequadamente) deve ser capaz de baixar de 10 a 20 milhões de documentos por dia (o que significa cerca de 15-30 Mbps de largura de banda em média durante o dia inteiro). Além disso, deve ser possível distribuir um rastreamento 10-20 dessas máquinas para obter melhorias de 10 a 20 vezes na largura de banda de rastreamento.
 
 ### 3.3 Largura de banda sustentada
 
-A largura de banda do rastreador não deve parar de ser baixada até que pelo menos 2.5B documentos tenham sido baixados (se houver). (Isso não pressupõe interferência de questões de politeness. Por exemplo, um conjunto adequado de sites para escolher).
+A largura de banda do rastreador não deve parar de cair até que pelo menos 2.5B documentos tenham sido baixados (se houver). (Isso não pressupõe interferência de questões de cortesia. Por exemplo, um conjunto adequado de sites para escolher).
 
 ### 3.4 Acréscimo
 
@@ -4840,7 +4841,7 @@ O rastreador deve ser utilizável para rastreamentos grandes ou pequenos. Embora
 
 ### 3.5 Portabilidade
 
-O rastreador deve rodar muito bem no Linux. Onde for prático, o rastreador também deve ser capaz de pequenas execuções de teste no Windows 2K/XP. Isso significa que o rastreador está escrito em linguagens e middlewares e bibliotecas portáveis.
+O rastreador deve rodar muito bem no Linux. Onde for prático, o rastreador também deve ser capaz de pequenas execuções de teste no Windows 2K/XP. Isso significa que o rastreador está escrito em linguagens e com middlewares e bibliotecas portáveis.
 
 ### 3.6 Facilidade de operação
 
@@ -4995,7 +4996,7 @@ $ mv cuba test_config
 $ cd test_config
 ```
 
-Primeiro, precisamos de um arquivo de texto `seed` de URLs que serão as origens do rastreamento. Neste caso, criamos o arquivo `mcloud_seeds.txt` a partir do arquivo RSS https://core.mediacloud.org/static/mc_20160317.rss:
+Primeiro, precisamos de um arquivo de texto `seed` de URLs que originarão o rastreamento. Neste caso, criamos o arquivo `mcloud_seeds.txt` a partir do arquivo RSS https://core.mediacloud.org/static/mc_20160317.rss:
 
 ```
 $ head mcloud.seeds.txt
@@ -5118,7 +5119,7 @@ Atualize seu navegador para atualizar o painel:
 
 {height="250"}
 
-Mostra quantos URLs foram processados e quantos estão pendentes, taxas de processamento de URL, status do encadeamento e outros dados.
+Isso mostra quantos URLs foram processados e quantos estão pendentes, taxas de processamento de URL, status do encadeamento e outros dados.
 
 ### Arquivos de saída WARC
 
@@ -5217,16 +5218,16 @@ compact_names:   1# Same as the parent directory:
 
 Agora, execute o `draintasker` para obter seus WARCs de saída em coleções de petabox. Há alguns documentos disponíveis sobre draintasker, porém confusos: 
 
-Draintasker
-Draintasker Definitions (definições)
-Draintasker Use Cases (casos de uso)
-Draintasker Config (configuração)
-Draintasker Execution (execução)
-Draintasker Operations (operações)
-Draintasker Processing (processamento)
-Draintasker Output (saída)
+(Draintasker)[https://webarchive.jira.com/wiki/spaces/BOT/pages/4620451/Draintasker+Documentation]
+(Draintasker Definitions([https://webarchive.jira.com/wiki/spaces/BOT/pages/6423168/Draintasker+Definitions] (definições)
+(Draintasker Use Cases)[https://webarchive.jira.com/wiki/spaces/BOT/pages/6423170/Draintasker+Use+Cases] (casos de uso)
+(Draintasker Config)[https://webarchive.jira.com/wiki/spaces/BOT/pages/6423157/Draintasker+Config] (configuração)
+(Draintasker Execution)[https://webarchive.jira.com/wiki/spaces/BOT/pages/6423161/Draintasker+Execution] (execução)
+(Draintasker Operations)[https://webarchive.jira.com/wiki/spaces/BOT/pages/6423172/Draintasker+Operations] (operações)
+(Draintasker Processing)[https://webarchive.jira.com/wiki/spaces/BOT/pages/6423164/Draintasker+Processing] (processamento)
+(Draintasker Output)[https://webarchive.jira.com/wiki/spaces/BOT/pages/6423166/Draintasker+Output] (saída)
 
-Alguns desses documentos, além de tentativas e erros, revelaram as etapas a seguir.
+Alguns desses documentos, além de algumas tentativas e erros, revelaram as etapas a seguir.
 
 Primeiro, crie um arquivo `~/.ias3cfg`. Obtenha os valores de `access_key` e `secret_key` do seu arquivo `~/config/internetarchve.yml`. (Não use aspas nos valores das linhas de *key*).
 
@@ -5276,7 +5277,7 @@ Arquivos de log
 
 ### Notas sobre o H3 para operadores de rastreamento
 
-### Notas sobre desenvolvimento
+### Notas de desenvolvimento
 
 A maior parte dos esforços de desenvolvimento, no momento, é direcionada para a linha Heritrix3. Informações gerais sobre o desenvolvimento 3.x estão disponíveis no Heritrix3. Um tema importante dos lançamentos 3.x possibilitará o rastreamento adaptável e contínuo revisitado em larga escala. Os próximos trabalhos em direção a esse objetivo incluirão:
 
@@ -5394,8 +5395,8 @@ Questão: interface do usuário para compor a configuração do Spring
 
 Questão: ferramenta de migração 1.x para 2.x
 
-* irá aguardar até que as configurações Spring-ified estejam prontas
-* irá trabalhar por configurações simples; fornecerá lista de exceções de problemas que o operador precisa corrigir manualmente no final
+* aguardará até que as configurações Spring-ified estejam prontas
+* trabalhará por configurações simples; fornecerá lista de exceções de problemas que o operador precisa corrigir manualmente no final
 * estratégia geral: walk 1.x settings, find handler for that setting, build new XML
 
 Ver também: [Detalhes do Design do Heritrix Springified] (https://github.com/internetarchive/heritrix3/wiki/Springified%20Heritrix%20Design%20Details)
@@ -5404,7 +5405,7 @@ Ver também: [Detalhes do Design do Heritrix Springified] (https://github.com/in
 
 O ponto de verificação do Heritrix, atualmente...
 
-* requere pausa total do rastreador
+* requer pausa total do rastreador
 * depende fortemente de serialização Java, para todo o estado de componente
 * muito frágil se o software for alterado antes da restauração (nunca tivemos compatibilidade de ponto de verificação entre os lançamentos, principais ou não)
 
@@ -5423,14 +5424,14 @@ Ver também: [Detalhes do Design de Ponto de Verificação Simplificado] (https:
 
 Objetivo: separar o máximo possível, de dentro da Frontier, em processadores independentes que marcam o URI
 
-* geral: deixar a Frontier ser a mais burra possível, apenas siga as instruções dentro das URIs agendadas / terminadas
+* geral: deixar a Frontier ser a mais burra possível, apenas siga as instruções dentro das URIs agendadas/terminadas
 * decisões atuais na fronteira que podem ser removidas:
       * canonização
       * decisão de disposição (success, retry, failure)
       * precedência de uri
       * atraso de cortesia
       * chave de fila
-* fronteira lançava erro se a orientação necessária não estivesse presente
+* frontier lançava erro se a orientação necessária não estivesse presente
 
 Ver também: [Detalhes do Design de Separação da Frontier] (https://github.com/internetarchive/heritrix3/wiki/Frontier%20Unbundling%20Design%20Details)
 
@@ -5509,7 +5510,7 @@ Todas as etapas contidas na Disposition Chain devem ser feitas atomicamente em r
 
 Uma configuração de rastreamento é, agora, uma coleção de beans, especificada e inicializada no estilo Spring.
 
-Um arquivo de configuração do Spring, nomeado, por convenção, 'crawler-beans.xml' (em vez do usual Spring 'beans.xml') é a principal maneira de especificar um rastreamento. Como tal, substitui o order.xml do Heritrix 1.X e o global.sheet (e possivelmente outras planilhas) do Heritrix 2.0.
+Um arquivo de configuração do Spring nomeado, por convenção, 'crawler-beans.xml' (em vez do usual Spring 'beans.xml') é a principal maneira de especificar um rastreamento. Como tal, substitui o order.xml do Heritrix 1.X e o global.sheet (e possivelmente outras planilhas) do Heritrix 2.0.
 
 Usar recursos do Spring para incluir outros arquivos de configuração por referência, a configuração pode, de fato, ser dividida em vários arquivos, incluindo arquivos padronizados reutilizados em vários rastreamentos (onde eles são idênticos).
 
@@ -5521,7 +5522,7 @@ Em vez disso, a interface Spring 'Lifecycle' informa aos componentes quando come
 
 Todos os valores que podem ser sobrepostos terão acessores Java padrão (tipo bean), de seu tipo natural.
 
-Uma classe com valores substituíveis deve implementar a interface HasKeyedProperties; isso dá acesso a um mapa (do tipo KeyedProperties) que contém todos os valores de bean que podem ser sobr. O suporte para a interface HasKeyedProperties é tão simples quanto:
+Uma classe com valores substituíveis deve implementar a interface HasKeyedProperties; isso dá acesso a um mapa (do tipo KeyedProperties) que contém todos os valores de bean que podem ser sobrepostos. O suporte para a interface HasKeyedProperties é tão simples quanto:
 
 ```
  KeyedProperties kp = new KeyedProperties();
@@ -5602,7 +5603,7 @@ Uma planilha será automaticamente iniciada na primeira vez que for pressionada.
 * usar estruturas em disco que podem ser congeladas/marcadas, em vez de exigirem novas cópias. (por exemplo: um snapshot LVM)
 * mover tanto quanto simplesmente copiado o processo exterior do rastreador: o ponto de verificação é, principalmente, um manifesto de arquivos para restaurar o rastreamento; cabe ao operador copiá-los em outro lugar, se desejar
 
-### Melhore a robustez nas alterações de código
+### Melhorar a robustez nas alterações de código
 
 * cada objeto é responsável pelo próprio ponto de verificação
 * desenfatizar serialização; executar a maioria dos componentes salvando o estado em um formato de texto solto (JSON ou XML) para facilitar a restauração de código alterado ou a edição manual offline
@@ -5611,7 +5612,7 @@ Uma planilha será automaticamente iniciada na primeira vez que for pressionada.
 
 ## Abordagem geral
 
-Cada componente do rastreador com estado possível de ponto de verificação implementará uma interface diferenciada que permita a solicitação do ponto de verificação de seu estado e uma propriedade startState (opcional).
+Cada componente do rastreador com estados em que é possível fazer ponto de verificação implementará uma interface diferenciada que permita a solicitação do ponto de verificação de seu estado e uma propriedade startState (opcional).
 
 Quando um ponto de verificação é acionado/solicitado, ele gravará o estado do componente no local fornecido (possivelmente incluindo ponteiros para arquivos pré-existentes em andamento que fazem parte de seu estado).
 
@@ -5621,7 +5622,7 @@ Quando um rastreamento é iniciado, se a propriedade startState estiver configur
 
 ## Notas de design da fase B: Histórico de URI e Atualizações de Fila
 
-Idéia geral: expandir os recursos principais da Frontier padrão para que ela possa fazer revisits simplesmente por meio de orientações passadas de componentes externos opcionais.
+Ideia geral: expandir os recursos principais da Frontier padrão para que ela possa fazer revisits simplesmente por meio de orientações passadas de componentes externos opcionais.
 
 Objetivo: expandir opções da estrutura já incluída
 
@@ -5687,19 +5688,19 @@ Nota: o objetivo agora é oferecer uma ferramenta que tenha configurações que 
 
 ### Crawl Order
 
-Deve ser bem direto ao ponto. As configurações que passaram pela maioria das alterações no H3 foram as melhor estruturadas no 1.14 order.xml, nas configurações de CrawlOrder e nas configurações do CrawlController. Ao criar um modelo H3 para as migrações 1.14,  mover as configurações de CrawlOrder e CrawlController, por meio de um mapeamento simples, deve ser trivial.
+Deve ser bem direto ao ponto. As configurações que passaram pela maioria das alterações no H3 são as configurações que foram melhor estruturadas no 1.14 order.xml, nas configurações de CrawlOrder e nas configurações do CrawlController. Ao criar um modelo H3 para as migrações 1.14,  mover as configurações de CrawlOrder e CrawlController, por meio de um mapeamento simples, deve ser trivial.
 
-(Uma grande tabela de mapeamento de porções 1.14 order.xml para editar, que deve ser feita para um modelo H3 inicial, pode ser suficiente para lidar com quase todos os pedidos simples.)
+(Uma grande tabela mapeando as porções 1.14 do order.xml para editar, que deve ser feita para um modelo H3 inicial, pode ser suficiente para lidar com quase todos os pedidos simples.)
 
 ### Definições
 
-Os nomes das definições de módulo foram alterados, mas de maneira simples e fácil de entender. (Por exemplo, de traços para camelCase.) Muitas configurações novas foram adicionadas, mas quase todas são configurações "autowire" para atrair outros beans singleton. Se o modelo de migração incluir beans padrões adequados, as novas configurações não deverão causar/ter problemas.
+Os nomes das definições de módulo foram alterados, mas de maneira simples e fácil de entender. (Por exemplo, de palavra com hífens para camelCase.) Muitas configurações novas foram adicionadas, mas quase todas são configurações "autowire" para atrair outros beans singleton. Se o modelo de migração incluir beans padrões adequados, as novas configurações não deverão causar/ter problemas.
 
 Os nomes dos pacotes das classes de módulos mudaram significativamente, mas de maneira quase algorítmica. Acho que devemos usar arquivos de propriedades externos para definir mapeamentos de nomes 1.x para nomes 3.x e permitir que os usuários finais especifiquem mapeamentos adicionais no caso de não notarmos algo.
 
 ### Escopo de rastreamento
 
-Uma área de preocupação é a classe CrawlScope e suas subclasses, que não existem mais em 3.x. Foi substituído por um DecideRuleSequence genérico, que não pode ter status primário. Podemos criar conjuntos padrões de regras de decisão que se aproximam do comportamento das subclasses legadas do CrawlScope.
+Uma área de preocupação é a classe CrawlScope e suas subclasses, que não existem mais em 3.x. Foi substituído por um DecideRuleSequence genérico, que não pode ter status primário. Podemos criar conjuntos padrões de decide rules que se aproximam do comportamento das subclasses legadas do CrawlScope.
 
 ### Diretórios
 
@@ -5709,7 +5710,7 @@ O Heritrix 3 está mais próximo da abordagem 1.x, com várias camadas de relati
 
 A migração de sobresições da 1.14 para o H3 apresenta alguns desafios. Na versão 1.14, cada combinação de host/domínio + configuração tinha seu próprio arquivo. Em H3, queremos agregar valores de configuração semelhantes em planilhas e, em seguida, colocar o(s) host/domínios em associações para essa planilha. É um processo simples, supondo que podemos guardar tudo na memória, mas teremos que criar algum algoritmo sensato para nomear as planilhas criadas, já que as sobreposições 1.14 não têm nomes.
 
-As opções do H3 para sobreposições de listas, mapas e módulos devem ser um superconjunto do que era possível na 1.14, mas devemos verificar isso novamente.
+As opções do H3 para sobreposições de listas, mapas e módulos devem ser um superconjunto do que era possível na versão 1.14, mas devemos verificar isso novamente.
 
 ### Tarefas concluídas
 
@@ -5717,15 +5718,15 @@ Pode haver preocupação sobre como a ferramenta de migração deve lidar com ta
 
 ### Teste e falha
 
-Podemos testar a ferramenta com todas as nossas próprias configurações de rastreamento, mas, provavelmente, haverá casos que não encontraremos nesses testes. Não está claro como os erros de conversão devem ser tratados. Poderíamos apenas incluir configurações defeituosas nos arquivos da planilha de saída; a interface do usuário da web "reclamaria" sobre essas configurações e, esperamos, facilitaria a intervenção humana. Também poderíamos registrar todas as partes do order.xml/settings.xml que não resultam em uma conversão de fórmulas. (Mesmo os que o fazem podem exigir um aviso de log que o comportamento não é idêntico.)
+Podemos testar a ferramenta com todas as nossas configurações de rastreamento, mas, provavelmente, haverá casos que não encontraremos nesses testes. Não está claro como os erros de conversão devem ser tratados. Poderíamos incluir configurações defeituosas nos arquivos da planilha de saída; a interface do usuário da web notaria e "reclamaria" dessas configurações e, esperamos, facilitaria a intervenção humana. Também poderíamos registrar todas as partes do order.xml/settings.xml que não resultam em uma conversão formulaica. (Mesmo as que o fazem podem exigir um aviso de log que o comportamento não é idêntico.)
 
 # Metas não-metas
 
-É uma meta para qualquer rastreamento com base nos padrões do pacote 1.14.x, incluindo apenas alterações superficiais (alterações em Strings/valores primitivos ou adição/remoção de componentes opcionais comumente usados) fazer conversões sem problemas.
+É uma meta para qualquer rastreamento com base nos padrões do pacote 1.14.x, incluindo apenas alterações superficiais (alterações em Strings/valores primitivos ou adição/remoção de componentes opcionais comumente usados), fazer conversões sem que ocorra algum problema.
 
 É uma meta para todas as configurações usadas em rastreamentos IA ativos - incluindo rastreamentos de contrato, rastreamentos de domínio nat'l e rastreamentos Archive-It - para fazer conversões sem problemas ou com apenas problemas triviais que são fáceis de corrigir manualmente.
 
-Não é um objetivo dos componentes não utilizados nos rastreamentos IA fazer conversões sem problemas. (Não temos o conhecimento para avaliar a conversão.) Idealmente, o mecanismo baseado em pesquisa para mapear configurações antigas para novas configurações será flexível o suficiente para que, se os autores originais ou usuários frequentes dessas ferramentas ajudarem, ele possa cobrir esses componentes também. No entanto, pelo menos até que as correções sejam contribuídas, um *error* que explique essas partes da configuração 1.14 não traduzidas é suficiente.
+Não é um objetivo dos componentes não utilizados nos rastreamentos IA fazer conversões sem que ocorra algum problemas. (Não temos o conhecimento para avaliar a conversão.) Idealmente, o mecanismo baseado em pesquisa para mapear configurações antigas para novas configurações será flexível o suficiente para que, se os autores originais ou usuários frequentes dessas ferramentas ajudarem, ele possa cobrir esses componentes também. No entanto, pelo menos até que as correções sejam contribuídas, um *error* que explique essas partes da configuração 1.14 não traduzidas é suficiente.
 
 ## Configurações de rastreamento Spring
 
@@ -5753,11 +5754,11 @@ http://builds.archive.org:8080/maven2/org/archive/heritrix/heritrix/
 
 Os nomes dos artefatos da versão de compilação de desenvolvimento começam com o número da versão que eles estão se aproximando e terminam com "-SNAPSHOT". Os produtos reais de compilação de desenvolvimento começam com o número da versão e incluem um registro de data e hora. Assim, por exemplo, a versão mais recente da compiação de desenvolvimento do H3, no momento desta publicação, aproximando-se de uma versão final do 3.1.0, é composta dos arquivos de último registro de data e hora disponíveis no diretório 3.1.0-SNAPSHOT.
 
-## Refatorações potenciais de limpeza
+## Refatorações de limpeza em potencial
 
 ### org.archive.util org.archive.crawler.util
 
-* unir as classes *util* pequenas em um número menor de classes maiores?
+* unir as classes *util* menores em um número menor de classes maiores?
 * precisamos de ambos org.archive.util.IoUtils e org.archive.crawler.util.IoUtils?
 * precisamos de IoUtils e FileUtils separados?
 * o pacote deve ser reduzido ou dividido em subpacotes?
@@ -5766,7 +5767,7 @@ Os nomes dos artefatos da versão de compilação de desenvolvimento começam co
 
 ### ALists e estruturas genéricas de dados - JSON?
 
-O CrawlURI precisa de uma estrutura de dados serializável, genérica e flexível para marcação arbitrária por extensões pouco coordenadas. Isso tem sido AList, mas nosso desconforto com isso nos levou a preterir os acessores diretos ainda úteis.
+O CrawlURI precisa de uma estrutura de dados serializável, genérica e flexível para marcação arbitrária por extensões pouco coordenadas. Alist tem sido isso, mas nosso desconforto nos levou a preterir os acessores diretos ainda úteis.
 
 ### Ideias de limpeza do S
 
@@ -5787,7 +5788,7 @@ Eu preferiria que qualquer versão de seqüência (string-version) de caracteres
 
 ### Banir todas as dependências de JS da interface do usuário da web
 
-OK usar o JS, mas não deve ser necessário para a utilização da interface do usuário 
+Tudo bem usar o JS, mas não deve ser necessário para a utilização da interface do usuário 
 
 ### Generalizar o rastreamento de estatísticas (stats-tracking)
 
@@ -5799,15 +5800,15 @@ Algumas ideias para mudanças futuras no rastreador.
 
 ### Cadeias de processador (Processor Chains)
 
-A forma de agrupamento atual, por função (prefetch, fetch, extract, etc.), é um pouco restrito, especialmente quando um processador pode ser usado em vários locais ou vários processadores precisam trabalhar juntos.
+A forma de agrupamento atual, por função (prefetch, fetch, extract, etc.), é um pouco restrita, especialmente quando um processador pode ser usado em vários locais ou vários processadores precisam trabalhar juntos.
 
 A cadeia do processadores poderia ser substituída por *hooks* e *callbacks*? Poderia haver uma série de *callbacks* de chamada estabelecidos: start earlyPrereqs, latPreReqs, earlyFetch, lateFetch, earlyAnalysis, middleAnalysis, lateAnalysis, earlyFinish, lateFinish end. Um módulo poderia se conectar em vários lugares - desse modo, não teríamos que usar muitos Processadores pequenos para funcionalidades simples. Por padrão, os módulos se conectariam em locais razoáveis, mas isso poderia ser substituído por operadores especialistas.
 
-Como alternativa, a cadeia de processadores pode ser unida em uma só cadeia, mas, talvez, ter classificações consultivas - seja números inteiros sugestivos de posição relativa ou uma série de pré-condições/pós-condições recomendadas, como "não dev ir atrás de nenhum *Fetch processor*".
+Como alternativa, a cadeia de processadores pode ser unida em uma só cadeia, mas, talvez, ter ordens consultivas - seja números inteiros sugestivos de posição relativa ou uma série de pré-condições/pós-condições recomendadas, como "não deve ir atrás de nenhum *Fetch processor*".
 
 ### Cadeia/escopo pré-programados vs. alreadyIncluded
 
-Um teste feito por escopo e alreadyIncluded pode ser mesclado no mesmo processo? Atualmente, fazemos o escopo primeiro e depois testamos o alreadyIncluded; em teoria, o escopo é mais barato (nunca requer ES), mas rastreamentos futuros podem se beneficiar do contrário, ou certos mecanismos eficientes do alreadyIncluded poderiam tornar a rejeição de um URI comumente encontrado mais barato do que o escopo.
+Um teste feito por escopo e alreadyIncluded pode ser mesclado no mesmo processo? Atualmente, fazemos o escopo primeiro e depois testamos o alreadyIncluded; em teoria, o escopo é mais barato (nunca requer IO), mas rastreamentos futuros podem se beneficiar do contrário, ou certos mecanismos eficientes do alreadyIncluded poderiam tornar a rejeição de um URI comumente encontrado mais barato do que o escopo.
 
 ## Novas definições para a interface de usuário baseada na web
 
@@ -5821,9 +5822,9 @@ Alguns problemas com as configurações atuais da interface do usuário da web i
 
 * as sobreposições às vezes não funcionam como esperado, não tendo efeito ou (em um momento, bug provavelmente corrigido) alterando as configurações globais
 
-* não está claro o que pode ser alterado de forma efetiva no meio do rastreamento e se é necessário pausar para fazer isso. Podemos documentar/impor isso melhor?  Can we make all changes 'safe' either via some way of holding settings constant for a thread until a moment to safely atomically change is possible?
+* não está claro o que pode ser alterado de forma efetiva no meio do rastreamento e se é necessário pausar para fazer isso. Podemos documentar/impor isso melhor? Podemos tornar todas as mudanças "seguras", seja por meio de manter as definições constantes para um encadeamento até um momento que seja possível mudar atomicamente de forma segura?
 
-Embora as substituições mapeadas com prefixo SURT sejam um superconjunto da funcionalidade atual, a conveniência de ainda poder inserir um nome de host simples deve ser mantida.
+Embora as substituições mapeadas com prefixo SURT sejam um superconjunto da funcionalidade atual, ainda deve ser possível inserir um nome de host simples.
 
 Visualizar/editar a frontier parece útil, mas não é útil/eficiente em escala - isso pode ser corrigido?
 
@@ -5856,7 +5857,7 @@ Spam na Web é um grande problema para o mecanismo de pesquisa atual. Alguns sit
 Hoje em dia, sites de spam têm empregado todos os tipos de técnicas a fim de obter classificações mais elevadas do que merecem e esconder suas identidades. Essas técnicas podem ser categorizadas como *boosting* ou *hiding* [1]. Embora spam de conteúdo e link seja a técnica de *boosting* mais amplamente utilizada, redirecionamento (redirection) e camuflagem (cloaking) são técnicas *hiding*. Ao mesmo tempo, muitas técnicas de detecção de spam na Web foram propostas na literatura. Algumas delas usam recursos como a estrutura de hiperlinks entre páginas e os registros DNS de hosts, e alguns métodos baseados em conteúdo precisam de estágio de treinamento antes da detecção.  Eles não se encaixam bem na detecção de spam do Heritrix (já que o Heritrix não é um mecanismo de busca) e nas análises complexas feitas rapidamente (como analisar a estrutura de hiperlinks) e o conteúdo da página aumentaria a sobrecarga e afetaria sua funcionalidade principal - rastreamento de sites. Propomos, então, nos concentrar na detecção de spam baseado em redirecionamento e camuflagem por dois motivos: (1) Essas duas técnicas de spam são predominantes, atualmente. (2). As abordagens de detecção discutidas na próxima seção são simples e eficazes e causam menos sobrecarga. 
 
 
-Além disso, há outro motivo pelo qual este projeto é de interesse para a comunidade Heritrix. Como discutiremos na seção de metodologia, para detectar spam de redirecionamento de JavaScript e spam baseado em camuflagem, é necessário o recurso de execução de JavaScript, e esse recurso também ajudará a descobrir links externos legítimos de uma página da web.
+Além disso, há outro motivo pelo qual este projeto é de interesse para a comunidade Heritrix. Como discutiremos na seção de metodologia, para detectar spam de redirecionamento de JavaScript e spam baseado em camuflagem (cloaking), é necessário o recurso de execução de JavaScript, e esse recurso também ajudará a descobrir links externos legítimos de uma página da web.
 
 ### Metodologia
 
@@ -5891,7 +5892,7 @@ Na Etapa 3, após a detecção do redirecionamento de JavaScript OrgURL => DstUR
 * Redirecionamento dentro do mesmo host.
   O restante dos redirecionamentos é considerado como spam de redirecionamento de JavaScript.
   
-Claro que haverá falsos positivos. Para ser mais preciso, a investigação manual ou outras detecções de spam da Web podem ser aplicadas off-line.
+Claro que haverá falsos positivos. Para ser mais preciso, a investigação manual ou outras detecções de spam da Web podem ser aplicadas offline.
 
 ### Cloaking
 
@@ -5902,16 +5903,16 @@ A ideia básica do *cloaking* é de servir conteúdo diferente para diferentes v
 Portanto, podemos detectar sites de spam baseados em *click-through cloaking* da seguinte maneira, o que também exige que o rastreador possa interpretar os scripts:
 
 Primeiro passo. Primeira visita - acesse o site na forma normal do mecanismo de busca e obtenha o conteúdo do conteúdo da página (engine);
-Segundo passo. Segunda visita - faça com que o acesso pareça vir de um click-through de pesquisa para verificações de referência do lado do servidor e do lado do cliente e obtenha o conteúdo do conteúdo da página (click-through);
+Segundo passo. Segunda visita - para verificações de referência tanto do lado do servidor quanto do lado do cliente, faça com que o acesso pareça vir de uma busca através de cliques e obtenha o conteúdo do conteúdo da página (click-through);
 Etapa 3. Compare a diferença de conteúdo entre as duas visitas diff(content(engine) e content(click-through)). Se houver uma grande diferença, esse site é altamente suspeito de ser um site de spam e mais investigações precisam ser feitas, caso contrário, classifique-o como benigno.
 
-Neste projeto, nos concentramos em detectar o *click-through cloaking*.
+Neste projeto, focamos em detectar o *click-through cloaking*.
                
 ### Bibliotecas de terceiros
 
 **1. Mecanismo JavaScript incorporado**
 
-Como é discutido na seção de metodologia, ambas as abordagens de detecção para spam da Web baseado em cloaking e redirecionamento de JavaScript exigem que um rastreador da Web possa executar código JavaScript inlined/external.
+Como é discutido na seção de metodologia, ambas as abordagens de detecção de spam baseado em cloaking e de spam de redirecionamento de JavaScript exigem que um rastreador da Web possa executar código JavaScript embutido/externo (inline/external).
 
 Rhino [4] é um mecanismo JavaScript de código aberto escrito em Java sob o MPL 1.1/GPL 2.0. Vamos incorporá-lo no Heritrix.
 
@@ -5931,11 +5932,11 @@ Um desafio de integração foi questionado pelo Sr. Mohr: como ser compatível c
 
 > "Como garantir que todos os recursos necessários sejam buscados (incluindo SCRIPTs e possível CSS) antes do Javascript ser executado, mas de uma maneira aproximadamente compatível com a descoberta/fluxo existente de URIs no rastreador. (Por exemplo, para que cada URI buscado seja escrito palavra por palavra nos arquivos W/ARC do rastreio. Ou, que regras claras sejam aplicadas quando há conflitos entre se um URI é necessário para execução JS, mas excluído pelo(a) outro(a) escopo/definição do operador do rastreador.)" Fazer o download desses recursos adicionais passa pelas etapas normais de programação, cortesia, análise etc. do Heritrix? Por um lado, queremos que os logs do rastreador e os arquivos (W)ARC sejam um registro preciso dos recursos que ele realmente recuperou. Pelo outro, não queremos ter os recursos necessários para o processamento de JS/DOM em uma única página ser planejado no futuro, ou seu carregamento ser abortado por outras configurações do rastreador. "
 
-Porque o código JS pode ser interno (embutido no documento HTML) ou externo (isto é, <script src = "location">). No analisador sintático cobra de HTML , sempre que um código JS externo é necessário, ele tentará buscar o código-fonte dentro do próprio analisador. Gostaríamos que cada busca seguisse a cadeia de processadores, ou seja, passar pelas etapas normais de agendamento, cortesia, análise, etc. do Heritrix, e isso implica que precisamos buscar recursos JS externos necessários antes da execução do JS. Além disso, não queremos iimpedir a dupla busca de um documento HTML, portanto, durante a execução do JS, precisamos recuperar o conteúdo do documento HTML e também os recursos de JS necessários. Para fazer isso, introduzimos um mecanismo de cache - o cache de busca (fetch cache), que é usado para preservar esse tipo de informação.
+Porque o código JS pode ser interno (embutido no documento HTML) ou externo (isto é, <script src = "location">). No analisador sintático cobra de HTML, sempre que um código JS externo é necessário, ele tentará buscar o código-fonte dentro do próprio analisador. Gostaríamos que cada busca seguisse a cadeia de processadores, ou seja, passar pelas etapas normais de agendamento, cortesia, análise, etc. do Heritrix, e isso implica que precisamos buscar recursos JS externos necessários antes da execução do JS. Além disso, não queremos iimpedir a dupla busca de um documento HTML, portanto, durante a execução do JS, precisamos recuperar o conteúdo do documento HTML e também os recursos de JS necessários. Para fazer isso, introduzimos um mecanismo de cache - o cache de busca (fetch cache), que é usado para preservar esse tipo de informação.
   
 **. Class FetchCache**
 
-O cache de busca contém três grandes mapas: mapa de recursos, mapa dependente e mapa de localização de conteúdo ou conteúdo. No texto a seguir, "recurso" significa recurso JS requerido, por exemplo, arquivo de origem JS, e seu link é extraído de um documento HTML.
+O cache de busca contém três grandes mapas: mapa de recursos, mapa dependente e mapa de localização de conteúdo ou conteúdo. No texto a seguir, "recurso" significa recurso JS requerido (por exemplo, arquivo de origem JS) e seu link é extraído de um documento HTML.
 
 Mapa de recursos: <uri de um recurso, a lista de documentos HTML que dependem deste recurso>;
 Mapa dependente: <uri de um documento HTML, a lista de recursos dos quais este documento HTML depende>;
@@ -5952,7 +5953,7 @@ Outra tarefa do FetchCacheUpdater é criar um uri de rastreamento especial que �
 
 Esse processador é usado para analisar um documento HTML com o JS ativado e também simular eventos HTML no documento e tentar descobrir novos links criados pelo código JS. Só aceita uris com o esquema de "x-jseval".
 
-O conteúdo do HTML uri sendo processado e seus recursos necessários de JS podem ser recuperados do cache de busca.
+O conteúdo do uri HTML sendo processado e seus recursos necessários de JS podem ser recuperados do cache de busca.
 
 Em relação aos eventos HTML, o onload é simulado durante a análise, onclick, onmouseover e onmouseout são simulados após a análise. Esses três tipos de eventos HTML podem ser simulados de forma acumulativa ou a partir de um novo DOM (criado após a análise) toda as vezes.
 
@@ -6184,13 +6185,13 @@ setTimeout e setInterval, duas funções JS, são implementadas no Cobra invocan
 
 ### Discussão e trabalho futuro
 
-### Execução de JS**
+###### Execução de JS**
 
 **. Localização de conteúdo em FetchCache**
 
 Atualmente, no cache de busca, o que é salvo no mapa disponível é o conteúdo de cada documento, e todos eles estão na memória. Obviamente, se uma tafera de rastreamento muito grande estiver em execução, mais cedo ou mais tarde o cache ficará sem memória se continuarmos adicionando conteúdos novos nele. Para resolver esse problema, um mecanismo de "idade" pode ser projetado, ou seja, cada documento disponível no cache de busca tem uma propriedade de idade. Basicamente, um limite de idade é predeterminado e, quando um documento está disponível, não apenas o conteúdo, mas também a localização do conteúdo (por exemplo, nome do arquivo arc e deslocamento dentro do arquivo arc) serão armazenados no mapa disponível. Conforme o tempo passa, a "idade" do documento aumenta. Quando a idade do documento passar do limite determinado, o conteúdo deste documento é apagado da memória e apenas sua localização é apresentada. Quando o documento for necessário novamente, seu conteúdo pode ser recuperado a partir do local especificado.
 
-**. Use JavaScript para importar outro JavaScript**
+**. Usar JavaScript para importar outro JavaScript**
 
 No ExecuteJS, um documento HTML só será analisado uma vez com o JS ativado, gerará o DOM correspondente e não será processado novamente. Portanto, no caso a seguir, não poderemos obter o DOM final correto.
 
@@ -6245,7 +6246,7 @@ Logo, para tornar o comportamento do ExecuteJS muito mais parecido com um navega
 * Como agendar e buscar novos recursos que aparecem no DOM resultante?
 * Mesmo quando conseguimos extrair novos recursos, como podemos preservar o status de análise sintática atual e continuar a avaliação do JS quando os novos recursos estão disponíveis?
 
-**. Simule eventos HTML de forma acumulativa ou de um estado recém carregado (um DOM novo criado após a análise)**
+**. Simular eventos HTML de forma acumulativa ou de um estado recém carregado (um DOM novo criado após a análise)**
 
 Neste projeto, as duas formas foram implementadas (no código, o primeiro foi comentado). A simulação de eventos HTML de forma acumulativa é mais eficiente do que a outra maneira, já que para a última o documento original é analisado todas as vezes antes de uma simulação de um evento (pode haver uma maneira melhor de implementar isso). No entanto, como não podemos prever o comportamento do usuário, a maneira antiga pode não ser muito precisa. Eu não tenho uma boa ideia de como comparar as duas meneiras para ver qual é a melhor.
 
@@ -6357,7 +6358,7 @@ Essa seção wiki serve como guia de estilo de codificação e interação/proce
 
 A orientação pode, ocasionalmente, ser contraditória enquanto os tópicos estão sendo discutidos; alternativas conflitantes devem ser bem descritas (com argumentos de apoio e precedentes) para auxiliar o progresso rumo a uma expressão consensual/canônica.
 
-### Outras autoridades
+###### Outras autoridades
 
 Referências úteis:
 
@@ -6366,7 +6367,7 @@ Referências úteis:
 
 Na ausência de orientações ao contrário abaixo, as recomendações nas fontes acima podem ser sempre seguidas.
 
-### Estilo de código
+###### Estilo de código
 
 (Alguns tópicos retirados do [Manual de Desenvolvedor Heritrix 1.X] (http://crawler.archive.org/articles/developer_manual/conventions.html))
 
