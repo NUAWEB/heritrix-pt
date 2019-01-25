@@ -6363,7 +6363,7 @@ A orientação pode, ocasionalmente, ser contraditória enquanto os tópicos est
 Referências úteis:
 
 * [Code Conventions for the Java Programming Language] (https://www.oracle.com/technetwork/java/codeconvtoc-136057.html) do Sun
-* [Java Programming Style Guidelines] (https://petroware.no/javastyle.html) do Geosoft 
+* [Java Programming Style Guidelines] (https://petroware.no/javastyle.html) da Geosoft 
 
 Na ausência de orientações ao contrário abaixo, as recomendações nas fontes acima podem ser sempre seguidas.
 
@@ -6371,7 +6371,7 @@ Na ausência de orientações ao contrário abaixo, as recomendações nas fonte
 
 (Alguns tópicos retirados do [Manual de Desenvolvedor Heritrix 1.X] (http://crawler.archive.org/articles/developer_manual/conventions.html))
 
-* Use espaços, não guias. As guias não devem aparecer no código-fonte do projeto.
+* Use espaços ao invés da tecla tab. Tabs não devem aparecer no código-fonte do projeto.
 * Recuo de 4 espaços por nível.
 * Coloque o colchete de abertura de um bloco de código na mesma linha que a declaração/teste esperando o bloco.
 * Use colchetes mesmo quando uma ramificação/bloco for apenas uma única linha de código (para fornecer uma sugestão visual adicional e para robustez, se outras linhas forem adicionadas posteriormente).
@@ -6391,8 +6391,8 @@ Na ausência de orientações ao contrário abaixo, as recomendações nas fonte
 
 ### Estilo de desenvolvimento
 
-* [Emitir as melhores práticas] (https://github.com/internetarchive/heritrix3/wiki/Issue%20best%20practices)
-* [Cometer as melhores práticas] (https://github.com/internetarchive/heritrix3/wiki/Commit%20best%20practices)
+* [Emmit best practices] (https://github.com/internetarchive/heritrix3/wiki/Issue%20best%20practices)
+* [Commit best practices] (https://github.com/internetarchive/heritrix3/wiki/Commit%20best%20practices)
 
 ## Commit best practices
 
@@ -6545,7 +6545,7 @@ Usando o perfil padrão, configure um rastreamento mínimo de teste de um site c
 
 ### Criar ramificação com nome de release no SVN
 
-No repositório SVN, copie o branch 'trunk/heritrix' para release-'branches/heritrix-1.YEVEN.Z/heritrix'. Isso fornece uma ramificação nomeada de acordo com o que foi inserido na compilação.
+No repositório SVN, copie a árvore 'trunk/heritrix' para release-'branches/heritrix-1.YEVEN.Z/heritrix'. Isso fornece uma ramificação nomeada de acordo com o que foi inserido na compilação.
 
 ### Roll to Development Version Number
 
