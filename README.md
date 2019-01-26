@@ -3551,7 +3551,52 @@ Talvez:
 
 Desativa um OOME que não é criado quando a memória está realmente esgotada, mas quando uma quantidade excessiva de tempo é gasta no GC. We've seen this OOME at times when a requested memory-intensive report may have completed if not for this OOME (albeit in an extreme length of time).
 
-### Frontier queue budgets
+### Budgets da fila Frontier
+
+(Essa página descreve o comportamento do Heritrix 1.4x, mas grande parte também se aplica ao H2/H3.)
+
+###### Visão geral
+
+O BdbFrontier foi estendido com uma série de configurações que permitem usar um processo de "orçamentação" para alocar sua atenção às filas internas (e, portanto, aos hosts individuais que mapeiam one-to-one para as filas).
+
+Com essas configurações, é possível alternar as filas entre dentro e fora do status 'ativo', em intervalos regulares. (Uma fila que está 'ativa' está qualificada para fornecer URIs para os encadeamentos de trabalho prontos.) A decisão de desativar uma fila baseia-se no esgotamento do 'saldo de atividade' atual em execução; esses saldos são esgotados mais rapidamente por URIs que são considerados como tendo um 'custo' mais alto. Assim, as filas com URIs mais interessantes (com menos custo) recebem mais atenção, enquanto aquelas com URIs menos interessantes (com mais custo) recebem menos atenção. Uma fila inativa vai para o final de uma fila FIFO de todas as filas inativas. As filas inativas são ativadas quando necessário para fornecer trabalho a um encadeamento de trabalho pronto (porque todas as outras filas 'ativas' já estão em andamento ou em "snooze"). Quando ativado, o saldo de atividade em execução de uma fila é reabastecido e cada URI subsequente tentado a partir dessa fila diminui esse saldo. Quando a balança não é positiva, a fila é novamente desativada, para dar às outras filas uma oportunidade de se tornarem ativas e receberem atenção do encadeamento. (Se não houver outras filas inativas, uma fila desativada será imediatamente reativada com uma nova execução.)
+
+Um 'orçamento total' para toda a vida útil pode ser definido para uma fila. Quando as despesas totais em uma fila (para todos os momentos em que esteve ativa) excedem esse orçamento, a fila é 'aposentada' - colocada ao lado, permanentemente inativa. Somente a intervenção do operador - como aumentar o "orçamento total" para essa fila - pode tirar uma fila da "aposentadoria". No entanto, enquanto aposentada, a fila retém todos os seus URIs pendentes e continua a receber URIs recém-descobertos. A 'aposentadoria' é um bom lugar para manter uma fila enquanto tenta tomar decisões sobre quais, se algum, esforços serão feitos continuando a visitá-la.
+
+Qualquer número de filas desativadas, com qualquer número de URIs enfileiradas retiradas, não conta como URIs atualmente enfileiradas, portanto, não interromperá o rastreamento quando todas as filas ativas / inativas estiverem vazias. Assim, na presença de filas desativadas, é útil usar o recurso 'pause-at-finish' para evitar o término de um rastreamento que atingiu um estado finalizado. Em vez disso, pausando o rastreamento quando todas as filas não selecionadas estiverem vazias, o operador poderá inspecionar o progresso do rastreamento, incluindo as filas desativadas, e tomar uma decisão sobre rastreamento adicional, dentro do mesmo contexto, antes de realmente terminar o rastreamento.
+
+###### Configuração e Uso
+
+o BdbFrontier contém novas definições:
+
+* **hold-queues:** se definido como "true", novas filas começam inativas - permitindo comportamentos 'site-first' e similares.
+* **balance-replenish-amount:** each queue activated will be given a session activity balance to draw against of this many units.
+* **queue-total-budget:**  o máximo para gastar em uma fila; além desse valor, a fila será aposentada. Padrão -1: significa que não há máximo.
+* **cost-policy:** opções trocáveis do custo de cada URI. O padrão ZeroCostAssignmentPolicy considera todos os URIs com custo zero e, portanto, o orçamento não tem efeito. (O saldo da atividade nunca se esgota; o orçamento total nunca é excedido.) (O padrão deve ser UnitCostAssignmentPolicy.)
+
+Os valores de balance-replenish-amount e queue-total-budget podem ser definidos globalmente ou substituídos por domínios específicos. As filas assumem os valores de saldo e orçamento dos URIs colocados nelas. (Cuidado: se estiver usando qualquer esquema de atribuição de fila não padrão (como baseado em IP) com base em um número fixo de buckets, ou forçando determinados URIs a determinadas filas, isso pode levar a um comportamento confuso, pois cada URI variado altera os valores da fila.)
+
+###### Ajustes durante o rastreamento
+
+Definir o valor efetivo do balance-replenish de uma fila como zero, ou seu orçamento total como menor do que seu gasto total atual, fará com que a fila se mova rapidamente para o status de "retired" (aposentado).
+
+Nota: a alteração de qualquer configuração faz com que todas as filas aposentadas sejam movidas para inativas, de forma que, caso os novos números de reabastecimento/orçamento permitam que a fila se torne ativa, ela se torne ativa. (Se o momento de se tornar ativa chegar, mas a fila ainda atender às condições de aposentadoria, ela será aposentada novamente antes que qualquer URI seja tentado.)
+
+###### Relatórios
+
+Outras características notáveis:
+
+O relatório Frontier agora inclui informações de despesas por fila, incluindo o orçamento total (total budget), o gasto total (total expenditure), o atual orçamento restante de ativação  (current activation budget remaining) e o custo mais recente/custo médio de URIs vistos (latest-cost/average-cost of URIs seen). Uma fila cujo custo mais recente parece alto está na parte de custo mais alto de sua carga de trabalho; uma fila cujo custo médio é alto tem gasto uma preponderância do seu tempo em URIs mais caras.
+
+###### Cenários Comuns de Uso
+
+Para que o BdbFrontier se comporte exatamente como antes dos recursos de orçamento serem adicionados, defina 'hold-queue' como 'false' (para que todas as filas comecem ativadas, em um grande arranjo round-robin). Defina 'cost-policy' para ZeroCostAssignmentPolicy. (As configurações de 'balance-replenish-amount' e 'queue-total-budget' são irrelevantes.) Essa abordagem NÃO é recomendada; 'hold-queue' deve ser true para permitir pelo menos algum foco intenso em um conjunto menor de filas para minimizar o I/O aleatório do disco.
+
+Para usar o comportamento clássico 'site-first', defina 'hold-queue' como 'true' e mantenha o ZeroCostAssignmentPolicy. (Ou, se estiver usando uma política de custo diferente de zero, torne o 'balance-replenish-amount' muito grande). As filas começarão inativas e somente serão ativadas (começam a ser rastreadas) quando necessário, para manter os encadeamentos de trabalho ocupados. Em geral, somente quando os sites mais antigos terminam (ou diminuem a velocidade criando espaço para novas filas), novas filas serão ativadas, alcançando o efeito desejado de trabalhar uma fila até a conclusão antes de começar outras. No entanto, existe o risco de que, se as filas iniciais conterem materiais intermináveis de baixo valor/armadilhas, outras filas mais interessantes nunca serão ativadas.
+
+Para introduzir a rotação orçamentada das filas, de modo que, uma vez que um certo progresso for feito em uma fila, ela fique inativa para permitir que outro processo ocorra em outras filas, altere a 'cost-policy' para outra coisa. UnitCostAssignmentPolicy atribui a todos os URIs um custo de 1, portanto, cada tentativa diminui um pouco o orçamento de ativação (tamanho padrão: 3000). WagCostAssignmentPolicy inclui algumas estimativas sobre quais URIs são menos interessantes e aumenta o custo de URIs com componentes de string de consulta, e que são idênticos a seu 'via', exceto em sua string de consulta. Isso garante que esses URIs 'mais caros' sejam (dentro de uma única fila) agendados após URIs de menos custo, e as filas dominadas por URIs mais caros permaneçam menos tempo ativas. Você também pode ajustar a "balance-replenish-amount" para controlar a rapidez com que as filas alternadas do status de ativas. (Um valor degenerado de '1' não se aproximaria de nenhum orçamento, round-robinning among all queues.)
+
+Para limitar ainda mais o esforço dedicado às filas, você pode definir um valor 'queue-total-budget'. Qualquer fila cujo gasto total exceda esse orçamento será "aposentada". Isso é mais útil em conexão com a opção 'pause-on-finish', para que você tenha a chance de examinar as filas desativadas para conteúdo interessante antes que o rastreamento realmente termine. Ao alterar as configurações no meio do rastreamento (durante uma pausa), todas as filas retiradas serão reavaliadas para ativação.
 
 ### BeanShell (Notas de Usuário)
 
@@ -5275,7 +5320,27 @@ Arquivos de log
 
 ## Desenvolvimento
 
-### Notas sobre o H3 para operadores de rastreamento
+### Notas sobre o desenvolvimento H3 para operadores de rastreamento
+
+Mudanças mais recentes, com notas sobre impacto/uso, para os operadores que seguem as versões oficiais de testes e compilações de desenvolvimento de troncos SVN.
+
+###### Ponto de verificação
+
+A funcionalidade de ponto de verificação do H1/H2 foi atualizada e aprimorada para funcionar com o H3. Mais notavelmente: um ponto de verificação agora pode ser acionado sem exigir uma pausa completa no rastreamento.
+
+O principal objetivo dessa funcionalidade é capturar uma imagem consistente do estado de um rastreamento em um determinado momento, permitindo que uma futura reinicialização do rastreamento comece exatamente nesse ponto. Essa reinicialização pode ocorrer após um relançamento da JVM, reparo ou atualização de hardware, migração do estado de rastreamento para uma máquina diferente, alteração da configuração de rastreamento ou mesmo (dadas algumas limitações em quanto as classes podem alterar) alterações significativas no software de rastreamento.
+
+Para ativar o ponto de verificação, sua configuração de rastreamento deve conter um bean "org.archive.crawler.framework.CheckpointService" (agora incluído em perfis agrupados). Esse bean pode ser configurado com uma configuração de 'checkpointIntervalMinutes' inteiro, para ativar pontos de verificação automáticos nesse intervalo uma vez que o rastreamento é iniciado. (O intervalo padrão, -1, significa 'nenhum ponto de verificação automático'.)
+
+Para acionar um ponto de verificação manualmente, a página de tarefa da interface do usuário da web inclui um botão de 'ponto de verificação' que solicita um ponto de verificação imediatamente, com o rastreamento pausado ou não. (O método requestCrawlCheckpoint() do CheckpointService pode ser executado programaticamente.)
+
+Por padrão, cada ponto de verificação cria, no mínimo, um novo diretório dentro do diretório 'checkpoints' configurado pelo CheckpointService. Este diretório tem um nome no formato "cp[número-sequencial] - [14-dígitos-timestamp]", por exemplo "cp00003-20091120103609".
+
+Durante um ponto de verificação, todos os beans que marcam seu interesse no processo de ponto de verificação implementando a interface Checkpointable são instruídos a salvar seu estado relevante. (Observe que somente beans 'top-level', no jargão Spring, podem participar de pontos de verificação.) Beans com uma pequena quantidade de estado podem usar métodos utilitários (na classe Checkpoint) para salvar seu estado no diretório principal do ponto de verificação. Os beans com uma quantidade maior de estado, como aqueles apoiados por grandes estruturas em disco, podem armazenar seus estados de outras maneiras personalizadas, que evitam escrever ou copiar dados duplicados. Até agora, isso só acontece com os beans que usam os serviços BdbModule, que dependem do ponto de verificação customizado do BdbModule.
+
+(O BdbModule armazena seu estado salvo pelo ponto de verificação nos subdiretórios do checkpoint dentro do diretório de ambiente preexistente. Cada diretório contém um manifesto listando exatamente os arquivos de log '.jdb' necessários para reconstruir o estado BDB no momento do ponto de verificação. O comportamento normal do BdbModule nunca exclui arquivos '.jdb' obsoletos, apenas os renomeia para '.del'.)
+
+Cada ponto de verificação rotaciona todos os logs, renomeando o log atual para incluir o nome 'cp#####' como um sufixo, iniciando um novo log. Assim, a visualização de log padrão na interface do usuário mostrará os logs vazios imediatamente após um ponto de verificação, e a exibição de linhas de log mais antigas exige a solicitação do arquivo de log mais antigo por nome. Cada ponto de verificação também fecha qualquer ARCs/WARCs em andamento, resultando em ARCs/WARCs menores para os que estão em andamento no momento do ponto de verificação.
 
 ### Notas de desenvolvimento
 
