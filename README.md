@@ -5342,6 +5342,108 @@ Durante um ponto de verificação, todos os beans que marcam seu interesse no pr
 
 Cada ponto de verificação rotaciona todos os logs, renomeando o log atual para incluir o nome 'cp#####' como um sufixo, iniciando um novo log. Assim, a visualização de log padrão na interface do usuário mostrará os logs vazios imediatamente após um ponto de verificação, e a exibição de linhas de log mais antigas exige a solicitação do arquivo de log mais antigo por nome. Cada ponto de verificação também fecha qualquer ARCs/WARCs em andamento, resultando em ARCs/WARCs menores para os que estão em andamento no momento do ponto de verificação.
 
+O ponto de verificação visa reproduzir o status da frontier (filas/já visto) e as estatísticas de rastreamento em execução, que "alimentam" relatórios perfeitamente, juntamente com qualquer outro componente que estados personalizados podem escolher salvar. Os processadores no 'FetchChain' podem salvar estatísticas de execução levemente inconsistentes *a menos que* o rastreamento seja pausado, pois é possível continuar o progresso entre os processadores da cadeia de busca durante um ponto de verificação sem pausa. (Se forem exigidos pontos de verificação perfeitamente consistentes desses processadores, pause o rastreamento completamente primeiro.) O ponto de verificação *não* procura, especificamente, salvar o estado que (1) vem diretamente da configuração de rastreamento; (2) já foi capturado em logs ou arquivos ARCs/WARCs e não é consultado novamente durante um rastreamento contínuo; ou (3) expiraria se o ponto de verificação fosse retomado em uma data arbitrária posterior. Ou seja, os resultados das buscas de DNS e robots não são salvos no ponto de verificação e a retomada do ponto de verificação, mesmo segundos depois, resultará na atualização automática dos dados buscados como necessários (como se o rastreamento tivesse sido iniciado novamente ou o ponto de verificação tivesse sido iniciado muito tempo depois que os dados atuais expiraram).
+
+Portanto, para fazer backup ou migrar completamente um ponto de verificação de tarefa, inclua entre os arquivos movidos ou de backup: (1) arquivos de configuração (cxml ou qualquer outro arquivo como seeds ou listas SURT referentes); (2) os diretórios 'cp##### -##############' (com conteúdo completo) dos pontos de verificação de interesse, seja no diretório 'checkpoints' ou nos diretórios de ambiente BdbModule; (3) todas as referências de logs '.jdb' (ou suas versões renomeadas '.del') pelos pontos de verificação de interesse.
+
+Para acionar uma recuperação de ponto de verificação, o ponto de verificação designado deve fazer parte da configuração de rastreamento antes dos estágios de inicialização 'compilar' (build) ou 'iniciar' (launch). (Cada componente Checkpointable percebe em seu método Lifecycle start() se é uma recuperação a partir de um ponto de verificação ou uma inicialização a partir do zero e pré-carrega seu estado conforme apropriado.) Na interface do usuário da web, se uma tarefa é construída e o CheckpointService reporta diretórios Checkpoint de aparência válida em seu diretório 'checkpoints', uma caixa de seleção oferecerá uma opção de pontos de verificação por nome. Selecionar um desses pontos antes de escolher 'launch' fará com que o lançamento comece a partir de uma retomada de ponto de verificação (programaticamente, o método CheckpointService.setRecoveryCheckpointByName pode ser usado para ativar um desses pontos de verificação descobertos).
+
+Como alternativa, um bean 'org.archive.checkpointing.Checkpoint', configurado com a propriedade 'checkpointDir' adequada, pode ser declarado na configuração de rastreamento e será conectado automaticamente por Spring a um componente Checkpointable antes do lançamento/inicialização() para indicar um ponto de verificação de recuperação.
+
+###### Reagendamento fixo
+
+Um recurso (protótipo) para forçar URIs a serem reagendados em um intervalo de tempo fixo após cada busca está disponível. O recurso opcional, ReschedulingProcessor, pode ser adicionado como um pós-processador no DispositionChain, após o DispositionProcessor.
+
+O ReschedulingProcessor tem uma configuração, 'rescheduleDelaySeconds'. Quando esse valor é <= 0, nenhum reagendamento ocorre (comportamento tradicional). Para valores maiores que 0, um tempo de reagendamento na mesma quantidade de segundos que o valor, no futuro, será calculado e gravado no CrawlURI; a frontier, em seguida, lembra do URI e organiza para que ele seja re-enfileirado o mais rápido possível após esse tempo, desde que o rastreamento ainda esteja em execução. (A rapidez com que o URI é repetido depende dos outros URIs já enfileirados no momento.)
+
+A configuração 'rescheduleDelaySeconds' pode ser sobreposta com valores alternativos baseados em SURTs ou DecideRules usando o mecanismo de Planilhas, permitindo a experimentação com diferentes taxas de reagendamento para URIs em hosts diferentes ou correspondendo a padrões diferentes. (Além disso, o ReschedulingProcessor pode ser substituído por políticas personalizadas arbitrariamente complexas para calcular o intervalo de reagendamento.)
+
+###### MigrateH1to3Tool
+
+Um utilitário para auxiliar na criação de uma configuração de rastreamento do H3 em funcionamento, a partir de uma configuração do Heritrix 1.X, está disponível na classe org.archive.crawler.migrate.MigrateH1to3Tool.
+
+A classe tem um main() para ser executado de forma autonoma. São necessários dois argumentos: um caminho para um H1 order.xml e um caminho para um diretório desejado onde o equivalente H3 deve ser construído.
+
+Inicialmente, ele funciona em todas as configurações globais de valor simples do perfil de rastreamento padrão fornecido com o Heritrix 1.14.3 - copiando-as para uma configuração de modelo H3 em funcionamento como  'subreposições' de sintaxe de properties-map. Para outras configurações personalizadas de rastreamento global, um log do que não pode ser aplicado ao modelo H3 será registrado, para que a intenção dessa configuração possa ser manualmente portada.
+
+Os scripts de inicialização 'bin/heritrix' (ou 'bin\heritrix.cmd', no Windows) incluídos podem ser usados para iniciar outras classes, como MigrateH1to3Tool, com todas as bibliotecas necessárias no caminho de classe (classpath), fornecendo o nome da classe alternativa em uma variável de ambiente CLASS_MAIN e, quando apropriado, solicitando operação de primeiro plano com uma variável "true" de ambiente FOREGROUND. Por exemplo, de um shell bash dentro do diretório 'heritrix-3.0.0-SNAPSHOT':
+
+
+**Uso**
+
+```
+MigrateH2to3Tool - takes a H1 order.xml and creates a similar H3 job directory
+Usage:
+  $CLASS_MAIN $FOREGROUND bin/heritrix sourceOrderXmlFile destinationH3JobDir
+where
+  CLASS_MAIN          = org.archive.crawler.migrate.MigrateH1to3Tool
+  FOREGROUND          = true
+  sourceOrderXmlFile  = H1 order.xml
+  destinationH3JobDir = H3 job directory (to be created)
+```
+
+**Exemplo**
+
+```
+$ cd $HERITRIX_HOME
+$ CLASS_MAIN=org.archive.crawler.migrate.MigrateH1to3Tool\
+  FOREGROUND=true bin/heritrix\
+  ../heritrix-1.14.3/jobs/myoldjob-20090214002857765/order.xml\
+  jobs/myH3job
+```
+
+Futuras evisões incluirão suporte para subreposições de configurações baseadas em nome de host e maior variedade de personalização na escolha de Escopo, Processor e classes de implementação na configuração H1 original.
+
+###### Cadeia de processadores dividida em 3; LinksScoper/FrontierScheduler apagado
+
+Veja [HER-1605] e Detalhes do Design de Separação da Frontier para detalhes. Motivações:
+
+* tratar 'candidatos' que estão sendo analisados/colocados em escopo antes de programar a flexibilidade da mesma cadeia de processadores
+* dividir a antiga cadeia de processamento em uma primeira parte, cujo trabalho em andamento sempre pode ser interrompido ou ignorado para fins de verificação, e uma segunda parte, que sempre completa atomicamente (agendando links externos e registrando o status final de um URI testado) em relação a pontos de verificação - para permitir uma verificação instantânea melhorada.
+* fornecer locais para que várias tomadas de decisão/cálculos orientados por políticas ocorram fora da frontier sobrecarregada, aumentando a taxa de transferência
+
+O que era feito pelo LinksScoper + FrontierScheduler agora acontece dentro de um novo processador do CandidatesProcessor, que envia cada outlink candidato através de um CandidateChain configurável de outros processadores. Essa CandidateChain inclui, atualmente, um processador CandidateScoper, que faz uma verificação de escopo de um único outlink e um FrontierPreparer, que prepara os URIs que passaram pela verificação de escopo para o agendamento da frontier. (O agendamento real ou promotion-to-seed acontece no CandidatesProcessor.)
+
+Consulte o profile-crawler-beans.cxml padrão incluído no SVN para obter detalhes sobre a nova configuração recomendada das três cadeias de processador.
+
+###### Milhões de seeds: ok
+
+Os últimos lugares - principalmente na criação de relatórios - em que um rastreamento com (dezenas ou centenas de) milhões de seeds pode tentar usar uma quantidade ilimitada de RAM foram eliminados. Não deve haver problemas ao iniciar um rastreamento com milhões de seeds ou alimentar milhões de URIs extras a um rastreamento já iniciado (como o recurso ActionDirectory descrito abaixo).
+
+###### Lista de seeds e instruções de suporte '-' de SurtPrefixedDecideRule
+
+O bean que carrega o rastreamento com seeds agora anuncia linhas sem seeds (como aquelas que iniciam com '' ou '') para qualquer bean que ele saiba ser um SeedListener. (*Autowiring* de configuração significa que qualquer bean nomeado que implementa o SeedListener receberá tais anúncios.) Um SurtPrefixedDecideRule cuja decisão é ACCEPT considerará todas as linhas " como diretivas potenciais de "add-SURT-prefix" (adicionar prefixo SURT); Um SurtPrefixedDecideRule cuja decisão seja REJECT considerará todas as linhas " como diretivas potenciais de "add-SURT-prefix" (adicionar prefixo SURT).
+
+O perfil padrão incluído contém uma segunda SurtPrefixedDecideRule, posterior, inicialmente vazia de todos os prefixos, que pode ser preenchida por esse mecanismo (ou outras opções de configuração) para URIs do Scope-REJECT.
+
+Consulte o profile-crawler-beans.cxml padrão incluído no SVN para obter detalhes sobre as novas regras recomendadas de inicialização de escopo.
+
+###### Lista de seeds SURT-hinting mudou
+
+Em versões anteriores do Heritrix, se um seed sem caminho terminava ou não com um '/' (como "http://example.com/" ou "http://example.com") fazia diferença em qual prefixo SURT era implicado pelo seed. Especificamente, a presença do '/' significava 'exatamente este nome de host' (prefixo SURT "http://(com,example,)/") enquanto a ausência significava "este domínio e qualquer subdomínio" (prefixo SURT "http"://(com,exemplo,").
+
+Isso era, estritamente, uma sutileza inventada pelo Heritrix; em ambos os casos, os URIs são estritamente idênticos no nível do protocolo HTTP ou nas regras de interpretação do URI.
+
+Uma mudança na forma como os seeds são lidos e agendados para busca significa que a falta de um '/' é normalizada antes que as regras de escopo possam usar sua presença ou ausência como uma sugestão de interpretação. Assim, no H3, a semente "http://example.com" é equivalente em sua implicação SURT para "http://example.com/". O prefixo SURT mais antigo e permissivo antigo ainda pode ser adicionado por meio de uma diretiva "+" explícita no texto da lista de seeds.
+
+###### ActionDirectory para o carregamento de URIs pós-lançamento
+
+Uma classe de bean ActionDirectory, se presente em uma configuração de rastreamento (e é recomendável que se torne parte de todas as configurações padrão), observa um diretório 'action' configurado para quaisquer arquivos que apareçam (confirmando um intervalo configurável, padrão 30 segundos). Para cada arquivo, uma ação é executada de acordo com o sufixo do arquivo e, em seguida, o arquivo é movido para um diretório 'done'.
+
+Um arquivo que termina com ".seeds" acionará a adição de mais seeds. Um arquivo que termine '.recover' será tratado como um log de recuperação tradicional - com todas as linhas 'Fs' consideradas incluídas (para suprimir um novo rastreamento) e todas as linhas 'F+' reagendadas. Um arquivo que termine com '.include', '.schedule' ou '.force', respectivamente, será tratado como se fosse um formato de log de recuperação (com tag de prefixo de 3 caracteres por linha), mas todos os URIs listados (independentemente da tag de prefixo) serão considerados incluídos, programados ou programados por força, respectivamente.
+
+Todos esses arquivos podem ser compactados com gzip (com uma extensão '.gz') e aqueles no formato de log de recuperação podem ter '.s'. inserido antes do sufixo funcional (por exemplo, 'frontier.s.recover.gz') para indicar que, antes de outras etapas, o escopo deve ser tentado em relação aos URIs incluídos.
+
+Colocar os arquivos apropriados (possivelmente filtrados) nesse diretório será, provavelmente, a maneira recomendada de recuperar o estado da frontier anterior ao rastreamento ou de realizar adições em massa a um rastreador em execução.
+
+###### Mudanças no log de recuperação
+
+O log de recuperação, anteriormente denominado 'recover.gz', agora é chamado de 'frontier.recover.gz' para enfatizar que ele registra apenas informações da frontier e para tornar '.recover' um sufixo (dotted-sufix) adequado para que outras ferramentas reconheçam arquivos neste formato.
+
+###### A configuração 'sourceTagSeeds' foi movida da frontier para o SeedModule
+
+Como o SeedModule agora tem a responsabilidade de criar seeds do CrawlURIs e anunciar sua existência para todos os consumidores (SeedListeners), esta configuração para pré-configurar seeds com uma tag de seu hostname, que é herdada por URIs *discovery-descendant*, foi movida para o SeedModule.
+
 ### Notas de desenvolvimento
 
 A maior parte dos esforços de desenvolvimento, no momento, é direcionada para a linha Heritrix3. Informações gerais sobre o desenvolvimento 3.x estão disponíveis no Heritrix3. Um tema importante dos lançamentos 3.x possibilitará o rastreamento adaptável e contínuo revisitado em larga escala. Os próximos trabalhos em direção a esse objetivo incluirão:
