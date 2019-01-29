@@ -809,7 +809,7 @@ UOKDGOLGI5JYHDTXRFFQ5FF4N2EJRV - -
 | Mime Type | Documento baixado do tipo mime. |
 | Worker Thread ID | Identidade do worker thread que baixou o documento. |
 | Fetch timestamp | O registro de data e hora no formato somente de dígitos condensados RFC2550/ARC, indicando quando a busca de rede foi iniciada. Se apropriado, a duração de milissegundos da busca é anexada ao registro de data e hora com um caractere "+" como separador. |
-| SHA1 Digest | The SHA1 digest of the content only (headers are not digested). |
+| SHA1 Digest | O digest do SHA1 (apenas de conteúdo, cabeçalhos não possuem digest). |
 | Source Tag | A tag de origem herdada pelo URI, se a marcação de origem estiver ativada. |
 | Annotations | Se uma anotação tiver sido feita, ela será exibida. Possíveis anotações incluem: o número de vezes que o URI foi tentado, o "lenTrunc" literal se o download foi truncado devido a limites de tamanho excedidos configurados, o "timeTrunc" literal se o download foi truncado devido a limites de tempo excedidos configurados, ou "midFetchTrunc" se um filtro midfetch determinar que o download deve ser truncado. |
 | warc | Nome do arquivo WARC/ARC em que o conteúdo rastreado foi salvo. Esse valor só será salvo se a propriedade logExtraInfo do bean loggerModule está definida como true. Essa informação registrada será salva no formato JSON. |
@@ -830,7 +830,7 @@ Esse log é salvo pelo bean StatisticsTracker.  Em intervalos configuráveis, um
 | busy-thread | Número de toe threads ocupados processando um URI. |
 | mem-use-KB | Quantidade de memória sendo usada pelo Java Virtual Machine. |
 | heap-size-KB| O tamanho de heap atual da Java Virtual Machine. |
-|congestion | O índice de congestionamento é uma estimativa aproximada de quanta capacidade inicial, como um múltiplo da capacidade atual, seria necessária para rastrear a carga de trabalho atual, na taxa máxima disponível em determinadas configurações de politeness. Esse valor é calculado comparando o número de filas internas que estão progredindo em relação àquelas que estão aguardando a disponibilização de um encadeamento. |
+|congestion | O índice de congestionamento é uma estimativa aproximada de quanta capacidade inicial, como um múltiplo da capacidade atual, seria necessária para rastrear a carga de trabalho atual, na taxa máxima disponível em determinadas configurações de politeness. Esse valor é calculado comparando o número de filas internas que estão progredindo em relação àquelas que estão aguardando a disponibilização de um encadeamento de execução. |
 | max-depth | O tamanho da fila Frontier com o maior número de URIs enfileirados.  |
 | avg-depth | O tamanho habitual de todas as filas Frontier. |
 
