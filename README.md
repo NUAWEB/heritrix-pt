@@ -807,7 +807,7 @@ UOKDGOLGI5JYHDTXRFFQ5FF4N2EJRV - -
 | Caminho de Descoberta | Códigos de navegação (caminho de descoberta) que mostram a trilha de downloads que levam ao URI baixado. A partir da versão 3.1, o comprimento do caminho de descoberta foi limitado aos últimos 50 hop-types.  Por exemplo, um caminho de 62-hop pode aparecer, a partir de agora, como "12+LLRLLLRELLLLRLLLRELLLLRLLLRELLLLRLLLRELLLLRLLLRELE".  Esse aprimoramento diminui o tamanho do log e limita o uso de memória. Os códigos de navegação são os seguintes. |
 | Referenciador | O URI que precedeu imediatamente o URI baixado. Este é o referenciador. O caminho de descoberta e o referenciador estarão vazios para URIs de seeds. |
 | Mime Type | Documento baixado do tipo mime. |
-| Worker Thread ID | The id of the worker thread that downloaded the document. |
+| Worker Thread ID | Identidade do worker thread que baixou o documento. |
 | Fetch timestamp | O registro de data e hora no formato somente de dígitos condensados RFC2550/ARC, indicando quando a busca de rede foi iniciada. Se apropriado, a duração de milissegundos da busca é anexada ao registro de data e hora com um caractere "+" como separador. |
 | SHA1 Digest | The SHA1 digest of the content only (headers are not digested). |
 | Source Tag | A tag de origem herdada pelo URI, se a marcação de origem estiver ativada. |
@@ -1643,7 +1643,7 @@ Para configurar a deduplicação independente de URL de conteúdo idêntico, adi
   </bean>
   ```
   
-And then insert these beans into your disposition chain, sandwiching the warcWriter:
+Depois, insira esses beans na disposition chain, com o warcWriter no meio:
   
   ```
    <bean id="dispositionProcessors" class="org.archive.modules.DispositionChain">
@@ -2385,7 +2385,7 @@ O disovery path de um seed é uma cadeia vazia.
 
 ###### Frontier
 
-Módulo *pluggable* do Heritrix que mantém o estado interno do rastreamento. Ver Frontier.
+Módulo conectável (pluggable) do Heritrix que mantém o estado interno do rastreamento. Ver Frontier.
 
 ###### Host
 
@@ -2423,12 +2423,12 @@ Tentativas do software do rastreador de limitar a carga do site que ele está ra
 
 | Estado  | Significado |  
 | ------------- | ------------- |
-| ready | Filas prontas para emitir uma URL imediatamente. |
-| in-process | Filas que emitiram uma URL que está sendo processada no momento. |
+| ready | Filas prontas para emitir um URL imediatamente. |
+| in-process | Filas que emitiram um URL que está sendo processado no momento. |
 | snoozed | Devido ao atraso de rastreamento ou ao tempo de espera entre tentativas. |
 | active | Total de in-proncess + ready + snoozed. |
-| inactive | Filas que atualmente não estão sendo consideradas (devido à rotação de filas). |
-| inegilible | Filas inativas em que a precedência de fila excede a precedência de andar. |
+| inactive | Filas que atualmente não estão sendo analisadas (devido à rotação de filas). |
+| inegilible | Filas inativas em que a precedência de fila excede a precedência mínima. |
 | retired | Desativadas por algum motivo, ex. a fila atingiu sua cota alocada. |
 | exhausted | Filas que estão vazias. |
 
@@ -2664,7 +2664,7 @@ A seção do bean de escopo do arquivo `crawler-beans.cxml` é reproduzida abaix
 
 ## Suporte Whois
 
-A partir da versão 3.1, um fetcher opcional é fornecido para dados do domínio 'whois'. Um pequeno conjunto de servidores 'whois' bem estabelecidos é pré-configurado. O fetcher usa uma interpretação ad-hoc/intuitive de um URI de esquema 'whois:'.
+A partir da versão 3.1, um buscador opcional é fornecido para dados do domínio 'whois'. Um pequeno conjunto de servidores 'whois' bem estabelecidos é pré-configurado. O fetcher usa uma interpretação ad-hoc/intuitive de um URI de esquema 'whois:'.
 
 ```
 <bean id="fetchWhois" class="org.archive.modules.fetcher.FetchWhois">
@@ -3288,7 +3288,7 @@ Os seguintes parâmetros *curl* são usados ao chamar a API.
 
 | Parâmetros *curl* | Descrição |  
 | ------------- | ------------- |
-| -v | Verboso. Saída de um relato detalhado do comando curl para uma saída padrão. |
+| -v | Verboso. Saída de um relatório detalhado do comando curl para uma saída padrão. |
 | -d | Dados. Estes são os pares de nome/valor que são enviados no corpo de um POST. |
 | -k | Permite conexões a sites SSL sem certificados. |
 | -u | Usuário. Permite o envio de um nome de usuário e senha para autenticar a solicitação HTTP. |
