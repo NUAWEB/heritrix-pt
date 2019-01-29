@@ -5444,6 +5444,20 @@ O log de recuperação, anteriormente denominado 'recover.gz', agora é chamado 
 
 Como o SeedModule agora tem a responsabilidade de criar seeds do CrawlURIs e anunciar sua existência para todos os consumidores (SeedListeners), esta configuração para pré-configurar seeds com uma tag de seu hostname, que é herdada por URIs *discovery-descendant*, foi movida para o SeedModule.
 
+###### Padrão CrawlController 'pauseAtStart' agora true
+
+A não ser que seja especificado o contrário, agora é padrão que as tarefas iniciam no modo pausado - dando uma chance de examinar o estado, carregar URIs, etc.
+
+Os operadores podem "despausar" manualmente as tarefas através da interface da web ou adicionar a subreposição 'crawlController.pauseAtStart=true' à sua configuração.
+
+###### QueueAssignmentPolicies: definições de 'parallelQueues' e 'deferToPrevious' 
+
+SurtAuthorityQueueAssignmentPolicy e HostnameQueueAssignmentPolicy agora derivam de uma nova superclasse compartilhada, URIAuthorityBasedQueueAssignmentPolicy. Duas novas configurações estão disponíveis nesta superclasse:
+
+parallelQueues: valor padrão (e comportamento histórico) é '1'. Se, em vez disso, for N, todos os URIs que anteriormente iam para uma mesma fila nomeada entrarão em filas relacionadas à N (por meio de um mapeamento hash consistente da parte path?query do URL). Cada fila é analisada separadamente para cortesia tradicional com base em conexões um por vez e snooze-delays-between-fetches - portanto, as filas N significam que as pesquisas podem estar em andamento em um site de uma só vez. Assim, só deve ser usado em uma configuração de sobreposição, aplicada a sites com probabilidade de manipular várias conexões bem.
+
+deferToPrevious: o valor padrão é 'true'. comportamento histórico era "false". Se for true, quando um URI for atribuído a uma fila, ele não será verificado novamente para atribuição a outra fila quando ele sair da fila - a atribuição anterior é fixa. Por exemplo, se alterar a 'parallelQueues' para um N maior durante o rastreamento, o 'deferToPrevious' significa que os URIs antigos não serão recuperados entre as filas de N, apenas os novos URIs serão distribuídos dessa maneira.
+
 ### Notas de desenvolvimento
 
 A maior parte dos esforços de desenvolvimento, no momento, é direcionada para a linha Heritrix3. Informações gerais sobre o desenvolvimento 3.x estão disponíveis no Heritrix3. Um tema importante dos lançamentos 3.x possibilitará o rastreamento adaptável e contínuo revisitado em larga escala. Os próximos trabalhos em direção a esse objetivo incluirão:
