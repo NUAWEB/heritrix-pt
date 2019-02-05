@@ -3820,7 +3820,7 @@ O Heritrix 1.x não suporta a execução de um mesmo rastreamento mais de uma ve
 
 O Heritrix 3.x permite executar o mesmo rastreamento repetidamente, mas exige uma configuração diferente para a execução de rastreamentos que *armazenam* dados de deduplicação e a execução de rastreamento que *carregam* dados deduplicação, conforme descrito em Processadores de Redução de Duplicação. O mesmo modelo é seguido para o H1, exceto pelo uso do beans CXML do rastreador do Spring-world (`crawler-beans.cxml`) para configuração.
 
-### Force speculative embed URIs into single queue
+### Forçar URIs embed especulativos em uma única fila
 
 O uso da configuração a seguir enviará *embeds* especulativos (hoppath 'X' encontrado por meio da extração do javascript) em uma única fila separada.
 
