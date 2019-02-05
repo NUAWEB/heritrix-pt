@@ -85,7 +85,7 @@ A tabela a seguir lista as opções de linhas de comando.
 | `-h`,`--help` `<arg>` | Exibe informações de uso. |
 | `-j`,`--jobs-dir` | Exibe o diretório de tarefas. O padrão é `./jobs.` |
 | `-l`,`--logging-properties` | Exibe o caminho completo para o arquivo de propriedades de log (por exemplo, conf/logging.properties). Se presente, esse arquivo será usado para configurar log de Java. O padrão é `./conf/logging.properties`. |
-| `-p`,`--web-port` `<arg>` | Especifica qual porta a IU da Web irá escutar. | 
+| `-p`,`--web-port` `<arg>` | Especifica qual porta a IU da Web irá escutar (listen to). | 
 | `-r`,`--run-job` <arg> | Especifica um nome de tarefa ou perfil pronto para ser iniciado quando o Heritrix for iniciado. Se um nome de perfil for especificado, o perfil será primeiro copiado para uma nova tarefa pronta, e essa tarefa pronta será iniciada. A partir da versão 3.1, esta opção foi eliminada. |
 |`-s`,`--ssl-params` `<arg>` | Especifica um caminho de keystore, uma senha de keystore e uma senha de chave para uso de HTTPS. Separe os valores com vírgulas e não inclua espaços em branco. |
   
@@ -137,7 +137,7 @@ Se prático, essa configuração padrão deve ser mantida. Uma técnica como o t
 ```
 ssh -L localhost:9999:localhost:8443 crawloperator@crawler.example.com -N
 ```
-Isso diz ao SSH para abrir um túnel que encaminha conexões para "localhost: 9999" (na máquina local) para o "localhost: 8443" das máquinas remotas. Como resultado, a IU da Web do rastreador estará disponível por meio de "https: // localhost: 9999 /" enquanto o túnel existir (até que o comando ssh ou a conexão sejam interrompidos). Ninguém mais na rede pode conectar-se diretamente à porta 8443 em 'crawler.example.com' (since it is only listening on the local loopback address), e ninguém em outro lugar na rede pode se conectar diretamente à porta 9999 do operador (since it also is only listening on the local loopback address). 
+Isso diz ao SSH para abrir um túnel que encaminha conexões para "localhost: 9999" (na máquina local) para o "localhost: 8443" das máquinas remotas. Como resultado, a IU da Web do rastreador estará disponível por meio de "https: // localhost: 9999 /" enquanto o túnel existir (até que o comando ssh ou a conexão sejam interrompidos). Ninguém mais na rede pode conectar-se diretamente à porta 8443 em 'crawler.example.com' (já que está apenas escutando o endereço de lookpback local), e ninguém em outro lugar na rede pode se conectar diretamente à porta 9999 do operador (já que também está apenas escutando o endereço de lookback local). 
 
 Se você precisar da porta de escuta do Heritrix vinculada a um endereço público, o sinalizador de linha de comando '-b' poderá ser usado.  Esse sinalizador usa (como argumento) o nome do host/endereço a ser usado. O caractere '/' pode ser usado para indicar todos os endereços.
 
@@ -474,7 +474,7 @@ Exemplo de uma saída desse relatório:
 
 frontier-summary-report.txt
 
-Este relatório contém um detalhamento da atividade de frontier por thread. Para cada encadeamento em execução, o status da fila frontier pode ser examinado.
+Este relatório contém um detalhamento da atividade de frontier por thread (encadeamento de execução). Para cada thread em execução, o status da fila frontier pode ser examinado.
 
 Exemplo de uma saída desse relatório:
 
@@ -603,7 +603,7 @@ Observação
 
 threads-report.txt
 
-Contém a lista de encadeamentos ainda ativos no final do rastreamento, com informações detalhadas sobre cada um.
+Contém a lista de threads ainda ativos no final do rastreamento, com informações detalhadas sobre cada um.
 
 arquivos WARC 
 
@@ -830,7 +830,7 @@ Esse log é salvo pelo bean StatisticsTracker.  Em intervalos configuráveis, um
 | busy-thread | Número de toe threads ocupados processando um URI. |
 | mem-use-KB | Quantidade de memória sendo usada pelo Java Virtual Machine. |
 | heap-size-KB| O tamanho de heap atual da Java Virtual Machine. |
-|congestion | O índice de congestionamento é uma estimativa aproximada de quanta capacidade inicial, como um múltiplo da capacidade atual, seria necessária para rastrear a carga de trabalho atual, na taxa máxima disponível em determinadas configurações de politeness. Esse valor é calculado comparando o número de filas internas que estão progredindo em relação àquelas que estão aguardando a disponibilização de um encadeamento de execução. |
+|congestion | O índice de congestionamento é uma estimativa aproximada de quanta capacidade inicial, como um múltiplo da capacidade atual, seria necessária para rastrear a carga de trabalho atual, na taxa máxima disponível em determinadas configurações de politeness. Esse valor é calculado comparando o número de filas internas que estão progredindo em relação àquelas que estão aguardando a disponibilização de um thread. |
 | max-depth | O tamanho da fila Frontier com o maior número de URIs enfileirados.  |
 | avg-depth | O tamanho habitual de todas as filas Frontier. |
 
@@ -930,7 +930,7 @@ Este link exibe um relatório mostrando os hosts que estão na fila para serem c
 
 ###### ToeThreads (threads-report.txt)
 
-Este link exibe um relatório mostrando a atividade de cada encadeamento usado pelo Heritrix. A quantidade de tempo que o encadeamento está sendo executado é exibida, bem como o estado e o status Blocked/Waiting do encadeamento.
+Este link exibe um relatório mostrando a atividade de cada thread usado pelo Heritrix. A quantidade de tempo que o thread está sendo executado é exibida, bem como o estado e o status Blocked/Waiting do thread.
 
 
 
@@ -1162,21 +1162,21 @@ fetchHttp
 
 * soTimeoutMs - Se o *socket* não responder por esse determinado número de milissegundos, a solicitação será cancelada. Definir o valor como zero (sem tempo limite) não é recomendado, pois poderia travar um thread em um servidor que não responde. Esse tempo limite é usado para limitar o tempo de abertura e leituras de *socket*. Certifique-se de que esse valor seja menor que timeoutSegundos para a configuração ideal. Isso garante pelo menos uma nova tentativa de leitura.
 
-* sendIfModifiedSince - Send If-Modified-Since header, if previous Last-Modified fetch history information is available in URI history.
+* sendIfModifiedSince - Envia o cabeçalho If-Modified-Since, se as informações do histórico de busca do Last-Modified estiverem disponíveis no histórico de URIs.
 
-* sendIfNoneMatch - Send If-None-Match header, if previous Etag fetch history information is available in URI history.
+* sendIfNoneMatch - Envia o cabeçalho If-None-Match, se as informações anteriores do histórico de buscas do Etag estiverem disponíveis no histórico de URIs.
 
-* sendConnectionClose - Send Connection: close header with every request. - w3.org connection header documentation
+* sendConnectionClose - Enviar conexão: fecha o cabeçalho com todas as solicitações. - Documentação do cabeçalho de conexão w3.org
 
 * sendReferer- O cabeçalho do Referer contém o local de onde o rastreador veio. Esta é a página em que o URI atual foi descoberto. O Referer geralmente é registrado no servidor remoto e pode ajudar os webmasters a tentar descobrir como um rastreador chegou a uma determinada área em um site.
 
-* sendRange- Send the Range header when there is a limit on the retrieved document size.  This is for politeness purposes.  The Range header states that only the first n bytes are of interest.  It is only pertinent if maxLengthBytes is greater than zero.  Sending the Range header results in a 206 Partial Content status response, which is better than cutting the response mid-download. On rare occasion, sending the Range header will generate 416 Request Range Not Satisfiable response.
+* sendRange- Envia o cabeçalho Range quando houver um limite no tamanho do documento recuperado. Isso é para fins de cortesia.
 
 * ignoreCookies - Desativa o manuseio de cookies.
 
-* sslTrustLevel- The SSL certificate trust level. The range is from the default open (trust all certs including expired, selfsigned, and those for which we do not have a CA) through loose (trust all valid certificates including selfsigned), normal (all valid certificates not including selfsigned) and strict (Cert is valid and DN must match servername).
+* sslTrustLevel- O nível de confiança do certificado SSL. O intervalo vai desde o padrão "open" (confiar em todos os certs - incluindo expirados, autosignados e aqueles que não possuímos uma autoridade de certificação) até "loose" (confiar em todos os certificados válidos, incluindo autodesignados) e "strict" (Cert é válido e o DN deve corresponder ao nome do servidor).
 
-* acceptHeaders - Accept Headers para incluir em cada solicitação. Cada um deve ser o cabeçalho completo, por exemplo, Accept-Language: en.
+* acceptHeaders - Aceita cabeçalhos para incluir em cada solicitação. Cada um deve ser o cabeçalho completo, por exemplo, Accept-Language: en.
 
 * httpBindAddress- Endereço IP local ou nome do host a ser usado ao fazer conexões (binding sockets). Quando não especificado, usa endereços locais padrão.
 
@@ -1184,13 +1184,13 @@ fetchHttp
 
 * httpProxyPort - A porta do proxy.
 
-* digestContent - Whether or not to perform an on-the-fly digest hash of retrieved content-bodies.
+* digestContent - Se deve fazer ou não um digest instântaneo do conteúdo-de-corpo recuperado.
 
-* digestAlgorithm - Specifies which algorithm (for example MD5 or SHA-1) is used to perform an on-the-fly digest hash of retrieved content-bodies.
+* digestAlgorithm - Especifica qual algoritmo (por exemplo, MD5 ou SHA-1) é usado para fazer um digest instântaneo do conteúdo-de-corpo recuperado.
 
 extractorHtml
 
-* extractJavascript - If true, in-page Javascript is scanned for strings that appear to be URIs. This typically finds both valid and invalid URIs.  Attempts to fetch the invalid URIs can generate webmaster concern over odd crawler behavior. Default is true.
+* extractJavascript - Se definido como "true", o Javascript da página é escaneado a procura de strings que pareçam URIs. Esse processo normalmente encontra URIs válidos e inválidos. Tentativas de buscar URIs inválidos pode gerar preocupação entre os webmasters sobre o comportamento estranho do rastreador. O padrão é "true".
 
 * extractValueAttributes- Se definido como "true", o Javascript in-page é verificado em busca de strings que parecem ser URIs. Esse processo normalmente encontra tanto URIs válidos quanto inválidos. As tentativas de buscar os URIs inválidos podem gerar preocupação com o webmaster em relação ao comportamento estranho do rastreador. A definição padrão é true.
 
@@ -1993,11 +1993,11 @@ Exibe estatísticas que fornecem as taxas nas quais os documentos e bytes de dad
 
 Load
 
-Exibe estatísticas que fornecem informações de carregamento. O número de encadeamentos ativos, comparado ao total de encadeamentos disponíveis, é mostrado. Normalmente, se apenas um número pequeno de encadeamentos estiver ativo, é porque ativar mais encadeamentos excederia as configurações de cortesia configuradas. Por exemplo, se todos os URIs restantes estiverem em um único host, apenas um encadeamento estará ativo, a menos que as filas paralelas estejam ativadas. Às vezes, nenhum tópico estará ativo devido a pausas para considerações de cortesia.
+Exibe estatísticas que fornecem informações de carregamento. O número de threads ativos, comparado ao total de threads disponíveis, é mostrado. Normalmente, se apenas um número pequeno de threads estiver ativo, é porque ativar mais threads excederia as configurações de cortesia configuradas. Por exemplo, se todos os URIs restantes estiverem em um único host, apenas um thread estará ativo, a menos que as filas paralelas estejam ativadas. Às vezes, nenhum tópico estará ativo devido a pausas para considerações de cortesia.
 
 Congestion Ratio
 
-O índice de congestionamento é uma estimativa aproximada de quanta capacidade inicial, como um múltiplo da capacidade atual, seria necessária para rastrear a carga de tarefa atual na taxa máxima disponível em determinadas configurações de cortesia. Esse valor é calculado comparando o número de filas internas que estão progredindo em relação àquelas que estão aguardando a disponibilização de um encadeamento.
+O índice de congestionamento é uma estimativa aproximada de quanta capacidade inicial, como um múltiplo da capacidade atual, seria necessária para rastrear a carga de tarefa atual na taxa máxima disponível em determinadas configurações de cortesia. Esse valor é calculado comparando o número de filas internas que estão progredindo em relação àquelas que estão aguardando a disponibilização de um thread.
 
 Deepest Queue
 
@@ -2009,7 +2009,7 @@ Exibe o tempo decorrido, em milissegundos, que uma tarefa foi executada, excluin
 
 Threads
 
-Esta área da página do trabalho exibe o número de encadeamentos sendo usados. Clicar em "threads" para ver um relatório de detalhado.
+Esta área da página do trabalho exibe o número de threads sendo usados. Clicar em "threads" para ver um relatório de detalhado.
 
 Frontier
 
@@ -2086,7 +2086,7 @@ Há apenas um bean Frontier por tarefa de rastreamento.
 
 Crucialmente, a frontier do Heritrix3, além de armazenar várias filas de URLs para rastreamento em ordem de prioridade, também controla as configurações de cortesia de atraso de rastreamento por filas. Ou seja, controla, também, quando CrawlURIs devem ser rastreados, não somente a prioridade de rastreamento.
 
-O Heritrix BdbFrontier também implementa a rotação de filas, para garantir que todas as filas sejam vistas, mesmo quando houver um número maior de filas do que de encadeamentos disponíveis para executar o rastreamento. Isso significa que as filas de rastreamento do Heritrix têm "orçamentos de sessão" (para manipular a rotação), além de cotas de rastreamento gerais (que são aplicadas a todo o rastreamento).
+O Heritrix BdbFrontier também implementa a rotação de filas, para garantir que todas as filas sejam vistas, mesmo quando houver um número maior de filas do que de threads disponíveis para executar o rastreamento. Isso significa que as filas de rastreamento do Heritrix têm "orçamentos de sessão" (para manipular a rotação), além de cotas de rastreamento gerais (que são aplicadas a todo o rastreamento).
 
 Nas versões 3.0 e 3.1, existe apenas um tipo de Frontier, o Heritrix BdbFrontier. Outras frontiers que foram incluídas no Heritrix 1.x não são mais suportados.
 
@@ -2180,7 +2180,7 @@ O armazenamento da fila é gerenciado por meio de um banco de dados BDB JE incor
 
 A lista de de filas active/snoozed/etc são mantidas na memória e gravadas no disco durante o ponto de verificação no formato JSON. Se você retomar a fila a partir do ponto de vereificação, o BdbFrontier será reutilizado, mas as informações necessárias da fila serão fornecidas pelos arquivos JSON. Se o banco de dados da frontier *não* for reutilizado a partir de um ponto de verificação, o banco de dados será 'truncado' e todos os dados no BdbFrontier serão descartados.
 
-A atualização do conteúdo da frontier a partir de vários encadeamentos exige cuidado, pois é necessário fazer alterações e confirmá-las no disco sem que ocorram conflitos. Uma vez que qualquer alteração tenha sido feita, por exemplo, um WorkQueue, a chamada `wq.makeDirty ()` é usada para iniciar um processo no qual o WorkQueue é serializado para o disco e lido novamente (para assegurar a consistência, mas descartando todos os campos temporários). Isso significa que as atualizações para cada WorkQueue devem ser sincronizadas nos encadeamentos para que não haja duas atualizações ao mesmo tempo. Por exemplo:
+A atualização do conteúdo da frontier a partir de vários threads exige cuidado, pois é necessário fazer alterações e confirmá-las no disco sem que ocorram conflitos. Uma vez que qualquer alteração tenha sido feita, por exemplo, um WorkQueue, a chamada `wq.makeDirty ()` é usada para iniciar um processo no qual o WorkQueue é serializado para o disco e lido novamente (para assegurar a consistência, mas descartando todos os campos temporários). Isso significa que as atualizações para cada WorkQueue devem ser sincronizadas nos threads para que não haja duas atualizações ao mesmo tempo. Por exemplo:
 
 ```
  synchronized (wq) {
@@ -2274,7 +2274,7 @@ Os seguintes sufixos de arquivos são suportados:
 | Sufixo  | Descrição |  
 | ------------- | ------------- |  
 | `.seeds`| Um arquivo `.seeds` deve conter seeds que o operador do Heritrix deseja incluir no rastreamento. Colocar um arquivo `.seeds` no diretório "action" adicionará os seeds ao rastreamento em andamento. As mesmas diretivas que podem ser usadas em listas de seeds durante a configuração inicial de rastreamento podem ser usadas aqui. Se os seeds introduzidos no rastreameno dessa maneira já estiverem na frontier (talvez já um seed), esse método não as força. |
-| `.recover` | Um arquivo `.recover` será usado como um diário de recuperação tradicional. (O diário de recuperação pode reproduzir aproximadamente o estado das filas de um rastreamento e o conjunto já incluído, repetindo todos os eventos de conclusão de URI e de descoberta de URI. Um diário de recuperação reproduz menos estados do que um ponto de verificação adequado.) Em uma primeira passagem, todas as linhas que começarem com `Fs` no diário de recuperação serão consideradas incluídas, para que não possam ser enfileiradas novamente. Em seguida, em uma segunda passagem, as linhas que começarem com `F+` serão enfileiradas novamente para rastreamento (se não forem impedidas pela primeira passagem).  | 
+| `.recover` | Um arquivo `.recover` será usado como um diário de recuperação (recovery journal) tradicional. (O diário de recuperação pode reproduzir aproximadamente o estado das filas de um rastreamento e o conjunto já incluído, repetindo todos os eventos de conclusão de URI e de descoberta de URI. Um diário de recuperação reproduz menos estados do que um ponto de verificação adequado.) Em uma primeira passagem, todas as linhas que começarem com `Fs` no diário de recuperação serão consideradas incluídas, para que não possam ser enfileiradas novamente. Em seguida, em uma segunda passagem, as linhas que começarem com `F+` serão enfileiradas novamente para rastreamento (se não forem impedidas pela primeira passagem).  | 
 | `.include` | Um arquivo `.include` será usado como um diário de recuperação, mas todos os URIs, independentemente do prefixo de linha, serão marcados como já incluídos, evitando que eles sejam enfileirados novamente a partir desse ponto. (Os URIs já enfileirados ainda estarão qualificados para rastreamento quando surgirem.) O uso de um arquivo `.include` é uma maneira de suprimir o novo rastreamento de URIs. |
 | `.schedule` | Um arquivo `.schedule` será usado como um diário de recuperação, mas todos os URIs, independentemente do prefixo de linha, serão oferecidos para enfileiramento. (No entanto, se eles forem reconhecidos como já incluídos, eles não serão enfileirados.) O uso de um arquivo `.schedule` é uma maneira de incluir URIs em um rastreamento em andamento, inserindo-os nas filas de rastreamento do Heritrix. |
 | `.force` | Um arquivo `.force` será usado como um diário de recuperação com todos os URIs marcados para agendamento forçado. O uso de um arquivo `.force` é uma maneira de garantir que os URIs já incluídos sejam reenquadrados (e, portanto, sejam rastreados novamente).
@@ -2350,7 +2350,7 @@ Isso também se aplica a todos os logs.
 
 ###### Ponto de verificação (Checkpointing)
 
-O ponto de verificação do Heritrix é fortemente influenciado pelo ponto de verificação do rastreador Mercator. Em um artigo sobre o Mercator, o ponto de verificação é descrito da seguinte maneira: "O ponto de verificação é uma parte importante de qualquer processo de execução longo, como um rastreamento da Web. 'Ponto de verificação' é a gravação de uma representação do estado do rastreador em um armazenamento estável. Caso aconteça uma falha, o ponto de verificação deve ser suficiente para que, ao ser lido pelo rastreador, ele consiga recuperar seu estado antes da falha e retomar o rastreamento a partir desse ponto. Por essa definição, no caso de uma falha, qualquer trabalho realizado depois do ponto de verificação mais recente é perdido, apenas o trabalho realizado anteriormente fica salvo. No Mercator, a frequência com que o encadeamento secundário realiza um ponto de verificação é configurada pelo usuário, geralmente de 1 a 4 vezes por dia."
+O ponto de verificação do Heritrix é fortemente influenciado pelo ponto de verificação do rastreador Mercator. Em um artigo sobre o Mercator, o ponto de verificação é descrito da seguinte maneira: "O ponto de verificação é uma parte importante de qualquer processo de execução longo, como um rastreamento da Web. 'Ponto de verificação' é a gravação de uma representação do estado do rastreador em um armazenamento estável. Caso aconteça uma falha, o ponto de verificação deve ser suficiente para que, ao ser lido pelo rastreador, ele consiga recuperar seu estado antes da falha e retomar o rastreamento a partir desse ponto. Por essa definição, no caso de uma falha, qualquer trabalho realizado depois do ponto de verificação mais recente é perdido, apenas o trabalho realizado anteriormente fica salvo. No Mercator, a frequência com que o thread secundário realiza um ponto de verificação é configurada pelo usuário, geralmente de 1 a 4 vezes por dia."
 
 Ver Ponto de Verificação para informações sobre a implementação do Heritrix.
 
@@ -2385,7 +2385,7 @@ O disovery path de um seed é uma cadeia vazia.
 
 ###### Frontier
 
-Módulo conectável (pluggable) do Heritrix que mantém o estado interno do rastreamento. Ver Frontier.
+Módulo conectável do Heritrix que mantém o estado interno do rastreamento. Ver Frontier.
 
 ###### Host
 
@@ -2428,7 +2428,7 @@ Tentativas do software do rastreador de limitar a carga do site que ele está ra
 | snoozed | Devido ao atraso de rastreamento ou ao tempo de espera entre tentativas. |
 | active | Total de in-proncess + ready + snoozed. |
 | inactive | Filas que atualmente não estão sendo analisadas (devido à rotação de filas). |
-| inegilible | Filas inativas em que a precedência de fila excede a precedência mínima. |
+| inegilible | Filas inativas em que a precedência de fila excede a precedência de valor mínimo. |
 | retired | Desativadas por algum motivo, ex. a fila atingiu sua cota alocada. |
 | exhausted | Filas que estão vazias. |
 
@@ -2486,7 +2486,7 @@ Por exemplo, o seed http://www.archive.org/ se tornará o formato SURT e fornece
 
 ###### Toe Threads
 
-Ao realizar um rastreamento, o Heritrix emprega um número configurável de Toe Threads para processar URIs. Cada um desses encadeamentos solicitará um URI da Frontier, aplicará o conjunto de processadores a ele e, finalmente, o reportará como concluído para a Frontier.
+Ao realizar um rastreamento, o Heritrix emprega um número configurável de Toe Threads para processar URIs. Cada um desses threads solicitará um URI da Frontier, aplicará o conjunto de processadores a ele e, finalmente, o reportará como concluído para a Frontier.
 
 ## Configurando o escopo do rastreamento usando DecideRules
 
@@ -2528,7 +2528,7 @@ A tabela a seguir lista os DecideRules disponíveis:
 | NotMatchesFilePatternDecideRule | Aplica a decisão configurada a qualquer URI cujo sufixo não corresponda à expressão regular fornecida. |
 | NotMatchesRegexDecideRule | Aplica a decisão configurada a qualquer URI que não corresponda à expressão regular fornecida. |
 | NotExceedsDocumentLengthThresholdDecideRule | Aplica a decisão configurada a qualquer URI cujo comprimento de conteúdo não exceda o limite configurado. O tamanho do conteúdo vem do cabeçalho HTTP ou do tamanho do conteúdo baixado do URI. A partir da versão 3.1, essa regra foi renomeada para ResourceNoLongerThanDecideRule. |
-| ExceedsDocumentLengthThresholdDecideRule | Aplica a decisão configurada a qualquer URI cujo tamanho do conteúdo exceda o limite configurado. O tamanho do conteúdo vem do header HTTP ou do tamanho do conteúdo baixado do URI. A partir da versão 3.1, essa regra foi renomeada para ResourceLongerThanDecideRule. |
+| ExceedsDocumentLengthThresholdDecideRule | Aplica a decisão configurada a qualquer URI cujo tamanho do conteúdo exceda o limite configurado. O tamanho do conteúdo vem do cabeçalho HTTP ou do tamanho do conteúdo baixado do URI. A partir da versão 3.1, essa regra foi renomeada para ResourceLongerThanDecideRule. |
 | SurtPrefixedDecideRule | Aplica a decisão configurada a qualquer URI (expresso na forma SURT) que comece com um dos prefixos no conjunto configurado. Esse DecideRule retorna true quando o prefixo de um determinado URI corresponde a qualquer um dos SURTs listados. A lista de SURTs pode ser configurada de diferentes maneiras: o parâmetro surtsSourceFile especifica um arquivo para ler a lista de SURTs. Se o parâmetro seedsAsSurtPrefixes estiver definido como true, SurtPrefixedDecideRule adicionará todos os seeds à lista SURTs. Se a propriedade alsoCheckVia estiver configurada como true (padrão false), SurtPrefixedDecideRule também considerará Via URIs na correspondência. A partir da versão 3.1, o parâmetro "surtsSource" pode ser qualquer ReadSource, como um ConfigFile ou um ConfigString. Isso dá ao SurtPrefixedDecideRule a flexibilidade da propriedade "textSource" do bean TextSeedModule. |
 | NotSurtPrefixedDecideRule | Aplica a decisão configurada a qualquer URI (expresso na forma SURT) que não comece com um dos prefixos no conjunto configurado. | 
 | OnDomainsDecideRule | Aplica a decisão configurada a qualquer URI que esteja em um dos domínios do conjunto configurado. |
@@ -2664,7 +2664,7 @@ A seção do bean de escopo do arquivo `crawler-beans.cxml` é reproduzida abaix
 
 ## Suporte Whois
 
-A partir da versão 3.1, um buscador opcional é fornecido para dados do domínio 'whois'. Um pequeno conjunto de servidores 'whois' bem estabelecidos é pré-configurado. O fetcher usa uma interpretação ad-hoc/intuitive de um URI de esquema 'whois:'.
+A partir da versão 3.1, um fetcher opcional é fornecido para dados do domínio 'whois'. Um pequeno conjunto de servidores 'whois' bem estabelecidos é pré-configurado. O fetcher usa uma interpretação ad-hoc/intuitive de um URI de esquema 'whois:'.
 
 ```
 <bean id="fetchWhois" class="org.archive.modules.fetcher.FetchWhois">
@@ -2793,7 +2793,7 @@ A política de honra de robots também pode ser definida criando um bean que use
 
 | Nome da classe | Desrição |  
 | ------------- | ------------- |
-| org.archive.modules.net.FirstNamedRobotsPolicy | Usa uma lista ordenada de User-Agents. O primeiro User-Agent na lista é o User-Agent que é regularmente configurado.  Os outros User-Agents na lista são aqueles configurados na lista candidateUserAgents. Assim que um conjunto de diretivas correspondentes for encontrado, essas diretivas serão seguidas. Se nenhuma for encontrada, as diretivas "curinga" serão usadas (se existirem). |
+| org.archive.modules.net.FirstNamedRobotsPolicy | Usa uma lista ordenada de User-Agents. O primeiro User-Agent na lista é o User-Agent que é regularmente configurado.  Os outros User-Agents na lista são aqueles configurados na lista candidateUserAgents. Assim que um conjunto de diretivas correspondentes for encontrado, essas diretivas serão seguidas. Se nenhuma for encontrada, as diretivas "wildcards" serão usadas (se existirem). |
 | org.archive.modules.net.IgnoreRobotsPolicy | Ignora as diretivas do robots.txt |
 | org.archive.modules.net.ObeyRobotsPolicy | Obedece as diretivas do robots.txt |
 | org.archive.modules.net.CustomRobotsPolicy | Segue uma política de robots personalizada, em vez das próprias declarações do site |
@@ -2814,7 +2814,7 @@ O exemplo abaixo mostra o uso da política org.archive.modules.net.IgnoreRobotsP
 </bean>
 ```
 
-Além disso, a partir da versão 3.1, a análise do robots.txt agora rastrear curingas nas diretivas Disallow, que é um desvio comum do padrão original. O curinga é equivalente ao mesmo prefixo de caminho sem o caractere do curinga de rastreamento. Além disso, o tratamento das diretivas "Allow" e "Disallow" sobrepostas corresponde ao entendimento intuitivo dos webmasters e de outros rastreadores. As diretivas mais específicas/mais longas têm precedência.
+Além disso, a partir da versão 3.1, a análise do robots.txt agora rastreia wildcards nas diretivas Disallow, que é um desvio comum do padrão original. A wildcard é equivalente ao mesmo prefixo de caminho sem o caractere do wildcard de rastreamento. Além disso, o tratamento das diretivas "Allow" e "Disallow" sobrepostas corresponde ao entendimento intuitivo dos webmasters e de outros rastreadores. As diretivas mais específicas/mais longas têm precedência.
 
 ## Códigos de status
 
@@ -2854,7 +2854,7 @@ Outros códigos de status do Heritrix estão listados abaixo.
 | -5002 | Bloqueado por exceder uma cota estabelecida. |
 | -5004 | Bloqueado por excedor um tempo de execução estabelecido. |
 | -6000 | Excluído da Frontier pelo usuário.
-| -7000 | Thread de processamento foi terminado pelo operador. Isso pode acontecer se um encadeamento for uma condição sem resposta. |
+| -7000 | Thread de processamento foi terminado pelo operador. Isso pode acontecer se um thread for uma condição sem resposta. |
 | -9998 | As regras do Robots.txt impediram a busca. |
 
 **Observação:
@@ -3294,7 +3294,7 @@ Os seguintes parâmetros *curl* são usados ao chamar a API.
 | -u | Usuário. Permite o envio de um nome de usuário e senha para autenticar a solicitação HTTP. |
 | –anyauth | Qualquer tipo de autenticação. Permite a autenticação de uma solicitação com base em qualquer tipo de método de autenticação. | 
 | –location | Segue redirecionamentos HTTP. Essa opção é usada para que as chamadas de API que retornam dados (como HTML) não sejam interrompidas após o recebimento de um código de redirecionamento (como um HTTP 303). |
-| -H | Defina o valor de um header HTTP. Por exemplo, “Accept: application/xml”.
+| -H | Define o valor de um cabeçalho HTTP. Por exemplo, “Accept: application/xml”.
 
 Supõe-se que o leitor tenha um conhecimento prático do protocolo HTTP e da funcionalidade do Heritrix. Além disso, os exemplos assumem que o Heritrix é executado com um nome de usuário administrativo e senha de "admin".
 
@@ -3559,7 +3559,7 @@ Desativa um OOME que não é criado quando a memória está realmente esgotada, 
 
 O BdbFrontier foi estendido com uma série de configurações que permitem usar um processo de "orçamentação" para alocar sua atenção às filas internas (e, portanto, aos hosts individuais que mapeiam one-to-one para as filas).
 
-Com essas configurações, é possível alternar as filas entre dentro e fora do status 'ativo', em intervalos regulares. (Uma fila que está 'ativa' está qualificada para fornecer URIs para os encadeamentos de trabalho prontos.) A decisão de desativar uma fila baseia-se no esgotamento do 'saldo de atividade' atual em execução; esses saldos são esgotados mais rapidamente por URIs que são considerados como tendo um 'custo' mais alto. Assim, as filas com URIs mais interessantes (com menos custo) recebem mais atenção, enquanto aquelas com URIs menos interessantes (com mais custo) recebem menos atenção. Uma fila inativa vai para o final de uma fila FIFO de todas as filas inativas. As filas inativas são ativadas quando necessário para fornecer trabalho a um encadeamento de trabalho pronto (porque todas as outras filas 'ativas' já estão em andamento ou em "snooze"). Quando ativado, o saldo de atividade em execução de uma fila é reabastecido e cada URI subsequente tentado a partir dessa fila diminui esse saldo. Quando a balança não é positiva, a fila é novamente desativada, para dar às outras filas uma oportunidade de se tornarem ativas e receberem atenção do encadeamento. (Se não houver outras filas inativas, uma fila desativada será imediatamente reativada com uma nova execução.)
+Com essas configurações, é possível alternar as filas entre dentro e fora do status 'ativo', em intervalos regulares. (Uma fila que está 'ativa' está qualificada para fornecer URIs para os threads de trabalho prontos.) A decisão de desativar uma fila baseia-se no esgotamento do 'saldo de atividade' atual em execução; esses saldos são esgotados mais rapidamente por URIs que são considerados como tendo um 'custo' mais alto. Assim, as filas com URIs mais interessantes (com menos custo) recebem mais atenção, enquanto aquelas com URIs menos interessantes (com mais custo) recebem menos atenção. Uma fila inativa vai para o final de uma fila FIFO de todas as filas inativas. As filas inativas são ativadas quando necessário para fornecer trabalho a um thread de trabalho pronto (porque todas as outras filas 'ativas' já estão em andamento ou em "snooze"). Quando ativado, o saldo de atividade em execução de uma fila é reabastecido e cada URI subsequente tentado a partir dessa fila diminui esse saldo. Quando a balança não é positiva, a fila é novamente desativada, para dar às outras filas uma oportunidade de se tornarem ativas e receberem atenção do thread. (Se não houver outras filas inativas, uma fila desativada será imediatamente reativada com uma nova execução.)
 
 Um 'orçamento total' para toda a vida útil pode ser definido para uma fila. Quando as despesas totais em uma fila (para todos os momentos em que esteve ativa) excedem esse orçamento, a fila é 'aposentada' - colocada ao lado, permanentemente inativa. Somente a intervenção do operador - como aumentar o "orçamento total" para essa fila - pode tirar uma fila da "aposentadoria". No entanto, enquanto aposentada, a fila retém todos os seus URIs pendentes e continua a receber URIs recém-descobertos. A 'aposentadoria' é um bom lugar para manter uma fila enquanto tenta tomar decisões sobre quais, se algum, esforços serão feitos continuando a visitá-la.
 
@@ -3592,7 +3592,7 @@ O relatório Frontier agora inclui informações de despesas por fila, incluindo
 
 Para que o BdbFrontier se comporte exatamente como antes dos recursos de orçamento serem adicionados, defina 'hold-queue' como 'false' (para que todas as filas comecem ativadas, em um grande arranjo round-robin). Defina 'cost-policy' para ZeroCostAssignmentPolicy. (As configurações de 'balance-replenish-amount' e 'queue-total-budget' são irrelevantes.) Essa abordagem NÃO é recomendada; 'hold-queue' deve ser true para permitir pelo menos algum foco intenso em um conjunto menor de filas para minimizar o I/O aleatório do disco.
 
-Para usar o comportamento clássico 'site-first', defina 'hold-queue' como 'true' e mantenha o ZeroCostAssignmentPolicy. (Ou, se estiver usando uma política de custo diferente de zero, torne o 'balance-replenish-amount' muito grande). As filas começarão inativas e somente serão ativadas (começam a ser rastreadas) quando necessário, para manter os encadeamentos de trabalho ocupados. Em geral, somente quando os sites mais antigos terminam (ou diminuem a velocidade criando espaço para novas filas), novas filas serão ativadas, alcançando o efeito desejado de trabalhar uma fila até a conclusão antes de começar outras. No entanto, existe o risco de que, se as filas iniciais conterem materiais intermináveis de baixo valor/armadilhas, outras filas mais interessantes nunca serão ativadas.
+Para usar o comportamento clássico 'site-first', defina 'hold-queue' como 'true' e mantenha o ZeroCostAssignmentPolicy. (Ou, se estiver usando uma política de custo diferente de zero, torne o 'balance-replenish-amount' muito grande). As filas começarão inativas e somente serão ativadas (começam a ser rastreadas) quando necessário, para manter os threads de trabalho ocupados. Em geral, somente quando os sites mais antigos terminam (ou diminuem a velocidade criando espaço para novas filas), novas filas serão ativadas, alcançando o efeito desejado de trabalhar uma fila até a conclusão antes de começar outras. No entanto, existe o risco de que, se as filas iniciais conterem materiais intermináveis de baixo valor/armadilhas, outras filas mais interessantes nunca serão ativadas.
 
 Para introduzir a rotação orçamentada das filas, de modo que, uma vez que um certo progresso for feito em uma fila, ela fique inativa para permitir que outro processo ocorra em outras filas, altere a 'cost-policy' para outra coisa. UnitCostAssignmentPolicy atribui a todos os URIs um custo de 1, portanto, cada tentativa diminui um pouco o orçamento de ativação (tamanho padrão: 3000). WagCostAssignmentPolicy inclui algumas estimativas sobre quais URIs são menos interessantes e aumenta o custo de URIs com componentes de string de consulta, e que são idênticos a seu 'via', exceto em sua string de consulta. Isso garante que esses URIs 'mais caros' sejam (dentro de uma única fila) agendados após URIs de menos custo, e as filas dominadas por URIs mais caros permaneçam menos tempo ativas. Você também pode ajustar a "balance-replenish-amount" para controlar a rapidez com que as filas alternadas do status de ativas. (Um valor degenerado de '1' não se aproximaria de nenhum orçamento, round-robinning among all queues.)
 
@@ -3937,7 +3937,7 @@ def printProps(x) { appCtx.getData().printProps(rawOut, x) }
 printProps(job.crawlController.frontier)
 ```
 
-**alterando uma regra regex (decide rule)**
+**alterando uma regra regex (regra de decisão)**
 
 É recomendável pausar o rastreamento ao modificar as coleções das quais ele depende.
 
@@ -4808,7 +4808,7 @@ Depois que um documento é baixado, ele é processado por vários motivos. Recur
 
 Assim, o rastreador deve suportar um framework para "analisadores" conectáveis que processem documentos. Além disso, essa estrutura deve oferecer suporte à interoperabilidade efetiva entre os analisadores, garantindo que o bom trabalho de um grupo possa ser construído por outros.
 
-Os analisadores devem ter acesso ao máximo de metadados possíveis. Isso inclui o URL usado para buscar o objeto, download de timestamps (data e hora), informações de resolução de DNS e headers de solicitação e resposta usados durante a transação (e qualquer outro material usado para buscar o objeto, como senhas ou chaves SSL).
+Os analisadores devem ter acesso ao máximo de metadados possíveis. Isso inclui o URL usado para buscar o objeto, download de timestamps (data e hora), informações de resolução de DNS e cabeçalhos de solicitação e resposta usados durante a transação (e qualquer outro material usado para buscar o objeto, como senhas ou chaves SSL).
 
 Os analisadores devem ter acesso aos resultados de todas as solicitações, não apenas as bem-sucedidas. Isso é necessário, por exemplo, para detectar alterações na Web ou para detectar as "bordas" da *deep web*. Isso significa registrar, por exemplo, respostas 30x (moved/redirect) e 40x (invalid/not found/unauthorized). Isso também significa registrar solicitações negadas por regras de robot exclusion. Por fim, os arquivos de robot exclusion buscados automaticamente também devem estar sujeitos a análises regulares (em vez de serem manipulados por um caminho separado).
 
@@ -5164,7 +5164,7 @@ Atualize seu navegador para atualizar o painel:
 
 {height="250"}
 
-Isso mostra quantos URLs foram processados e quantos estão pendentes, taxas de processamento de URL, status do encadeamento e outros dados.
+Isso mostra quantos URLs foram processados e quantos estão pendentes, taxas de processamento de URL, status do thread e outros dados.
 
 ### Arquivos de saída WARC
 
@@ -5508,7 +5508,7 @@ Em termos gerais, esta é a principal capacidade que queremos adicionar nesta fa
 
 O objetivo dos rastreadores é visitar as páginas de um site não mais frequentemente do que cada intervalo mínimo de visita, mas não menos frequentemente do que o intervalo mínimo.
 
-A taxa real entre esses limites deve ser baseada nas taxas de mudança observadas - deduzidas a partir de conteúdo e headers
+A taxa real entre esses limites deve ser baseada nas taxas de mudança observadas - deduzidas a partir de conteúdo e cabeçalhos.
 
 ### Cenário Alvo Concreto
 
@@ -5578,7 +5578,7 @@ Questão: ferramenta de migração 1.x para 2.x
 
 * aguardará até que as configurações Spring-ified estejam prontas
 * trabalhará por configurações simples; fornecerá lista de exceções de problemas que o operador precisa corrigir manualmente no final
-* estratégia geral: walk 1.x settings, find handler for that setting, build new XML
+* estratégia geral: vá até as configurações 1.x, encontre o manipulador para essa configuração, crie um novo XML.
 
 Ver também: [Detalhes do Design do Heritrix Springified] (https://github.com/internetarchive/heritrix3/wiki/Springified%20Heritrix%20Design%20Details)
 
@@ -5629,7 +5629,7 @@ Coisas que acontecem a um URI descoberto, atualmente:
      * URI canonizado (entro da sincronização de frontier; bottleneck)
      * Valor de precedência de URI atribuído (dentro da sincronização de frontier; bottleneck)
      
-Pode haver outros bits de processamento/classificação que podem ocorrer em URIs descobertos mas ainda não buscados, portanto, configurar todas essas etapas em uma nova cadeia configurável faz sentido do ponto de vista da flexibilidade, from and offloading complexity from frontier standpoint, and decreasing serialized bottlenecks.
+Pode haver outros bits de processamento/classificação que podem ocorrer em URIs descobertos mas ainda não buscados, portanto, configurar todas essas etapas em uma nova cadeia configurável faz sentido do ponto de vista da flexibilidade, "desligando" a complexidade a partir do ponto de vista da frontier e diminuindo os afunilamentos serializados.
 
 ### Políticas aplicadas a URIs sendo buscados
 
@@ -5776,7 +5776,7 @@ Uma planilha será automaticamente iniciada na primeira vez que for pressionada.
 
 * dividir o processamento de URI em duas fases: uma transitória (pode ser descartada enquanto a URI for repetida), e uma que altera estatísticas ou estruturas persistentes (que devem ser concluídas até a consistência antes que o ponto de verificação continue)
 * step right after laggy network fetch is threshold between phases
-* iniciar um ponto de verificação requer um bloqueio exclusivo em um *frontier-atomic-mutation-lock* que, geralmente, está disponível para vários encadeamentos
+* iniciar um ponto de verificação requer um bloqueio exclusivo em um *frontier-atomic-mutation-lock* que, geralmente, está disponível para vários threads
 * permitir a retenção de URIs após a busca (rastreador semi-pausado) para que o ponto de verificação possa ocorrer assim que todo o processamento *needing-persistence* for concluído (mas sem esperar que todas as buscas sejam concluídas)
 
 ### Melhorar a velocidade
@@ -5881,7 +5881,7 @@ Os nomes dos pacotes das classes de módulos mudaram significativamente, mas de 
 
 ### Escopo de rastreamento
 
-Uma área de preocupação é a classe CrawlScope e suas subclasses, que não existem mais em 3.x. Foi substituído por um DecideRuleSequence genérico, que não pode ter status primário. Podemos criar conjuntos padrões de decide rules que se aproximam do comportamento das subclasses legadas do CrawlScope.
+Uma área de preocupação é a classe CrawlScope e suas subclasses, que não existem mais em 3.x. Foi substituído por um DecideRuleSequence genérico, que não pode ter status primário. Podemos criar conjuntos padrões de regras de decisão que se aproximam do comportamento das subclasses legadas do CrawlScope.
 
 ### Diretórios
 
@@ -6003,7 +6003,7 @@ Alguns problemas com as configurações atuais da interface do usuário da web i
 
 * as sobreposições às vezes não funcionam como esperado, não tendo efeito ou (em um momento, bug provavelmente corrigido) alterando as configurações globais
 
-* não está claro o que pode ser alterado de forma efetiva no meio do rastreamento e se é necessário pausar para fazer isso. Podemos documentar/impor isso melhor? Podemos tornar todas as mudanças "seguras", seja por meio de manter as definições constantes para um encadeamento até um momento que seja possível mudar atomicamente de forma segura?
+* não está claro o que pode ser alterado de forma efetiva no meio do rastreamento e se é necessário pausar para fazer isso. Podemos documentar/impor isso melhor? Podemos tornar todas as mudanças "seguras", seja por meio de manter as definições constantes para um thread até um momento que seja possível mudar atomicamente de forma segura?
 
 Embora as substituições mapeadas com prefixo SURT sejam um superconjunto da funcionalidade atual, ainda deve ser possível inserir um nome de host simples.
 
@@ -6035,10 +6035,10 @@ Bugs/defeitos/incomodações/comportamentos inesperados em UIs antigas e novas d
 
 Spam na Web é um grande problema para o mecanismo de pesquisa atual. Alguns sites de spam não contêm informações úteis. Rastrear esses sites é apenas um desperdício de tempo, esforço e espaço de armazenamento. O Heritrix não é, primeiramente, um rastreador de mecanismo de pesquisa, então não tem tanto problema conter um pouco de spam. No entanto, atualmente, o spam na Web utiliza muito dos recursos, proporcionalmente, portanto, é necessário que o Heritrix consiga detectar spam durante o rastreamento.
 
-Hoje em dia, sites de spam têm empregado todos os tipos de técnicas a fim de obter classificações mais elevadas do que merecem e esconder suas identidades. Essas técnicas podem ser categorizadas como *boosting* ou *hiding* [1]. Embora spam de conteúdo e link seja a técnica de *boosting* mais amplamente utilizada, redirecionamento (redirection) e camuflagem (cloaking) são técnicas *hiding*. Ao mesmo tempo, muitas técnicas de detecção de spam na Web foram propostas na literatura. Algumas delas usam recursos como a estrutura de hiperlinks entre páginas e os registros DNS de hosts, e alguns métodos baseados em conteúdo precisam de estágio de treinamento antes da detecção.  Eles não se encaixam bem na detecção de spam do Heritrix (já que o Heritrix não é um mecanismo de busca) e nas análises complexas feitas rapidamente (como analisar a estrutura de hiperlinks) e o conteúdo da página aumentaria a sobrecarga e afetaria sua funcionalidade principal - rastreamento de sites. Propomos, então, nos concentrar na detecção de spam baseado em redirecionamento e camuflagem por dois motivos: (1) Essas duas técnicas de spam são predominantes, atualmente. (2). As abordagens de detecção discutidas na próxima seção são simples e eficazes e causam menos sobrecarga. 
+Hoje em dia, sites de spam têm empregado todos os tipos de técnicas a fim de obter classificações mais elevadas do que merecem e esconder suas identidades. Essas técnicas podem ser categorizadas como *boosting* ou *hiding* [1]. Embora spam de conteúdo e link seja a técnica de *boosting* mais amplamente utilizada, redirecionamento (redirection) e cloaking são técnicas *hiding*. Ao mesmo tempo, muitas técnicas de detecção de spam na Web foram propostas na literatura. Algumas delas usam recursos como a estrutura de hiperlinks entre páginas e os registros DNS de hosts, e alguns métodos baseados em conteúdo precisam de estágio de treinamento antes da detecção.  Eles não se encaixam bem na detecção de spam do Heritrix (já que o Heritrix não é um mecanismo de busca) e nas análises complexas feitas rapidamente (como analisar a estrutura de hiperlinks) e o conteúdo da página aumentaria a sobrecarga e afetaria sua funcionalidade principal - rastreamento de sites. Propomos, então, nos concentrar na detecção de spam baseado em redirecionamento e cloaking por dois motivos: (1) Essas duas técnicas de spam são predominantes, atualmente. (2). As abordagens de detecção discutidas na próxima seção são simples e eficazes e causam menos sobrecarga. 
 
 
-Além disso, há outro motivo pelo qual este projeto é de interesse para a comunidade Heritrix. Como discutiremos na seção de metodologia, para detectar spam de redirecionamento de JavaScript e spam baseado em camuflagem (cloaking), é necessário o recurso de execução de JavaScript, e esse recurso também ajudará a descobrir links externos legítimos de uma página da web.
+Além disso, há outro motivo pelo qual este projeto é de interesse para a comunidade Heritrix. Como discutiremos na seção de metodologia, para detectar spam de redirecionamento de JavaScript e spam de cloaking, é necessário o recurso de execução de JavaScript, e esse recurso também ajudará a descobrir links externos legítimos de uma página da web.
 
 ### Metodologia
 
@@ -6079,15 +6079,15 @@ Claro que haverá falsos positivos. Para ser mais preciso, a investigação manu
 
 A ideia básica do *cloaking* é de servir conteúdo diferente para diferentes visitantes. O servidor da Web pode decidir qual página da Web será exibida com base no campo User Agent, endereços IP do visitante, etc. As páginas da Web podem conter scripts que reescreverão o conteúdo, de modo que os usuários verão conteúdo reconfigurado usando um navegador da Web, mas um rastreador talvez não consiga ver a mesma coisa, porque, normalmente, a maioria dos rastreadores não executa scripts.
 
-*Click-through cloaking* (cloaking através de cliques) é outra técnica de cloaking. Pode ser no lado do servidor ou no lado do cliente. Uma verificação do lado do servidor do campo Referer no cabeçalho HTTP é feita se o spammer possuir o site que hospeda o URL de spam; se a URL de spam for localizada em um site de hospedagem gratuita, uma verificação do lado do cliente do objeto document.referrer do navegador é realizada e, em seguida, com base no resultado, páginas diferentes são exibidas pelo servidor de hospedagem do site (primeiro caso) ou exibidas usando o documento .write () (segundo caso).
+*Cloaking por cliques (click-through cloaking)* é outra técnica de cloaking. Pode ser no lado do servidor ou no lado do cliente. Uma verificação do lado do servidor do campo Referer no cabeçalho HTTP é feita se o spammer possuir o site que hospeda o URL de spam; se a URL de spam for localizada em um site de hospedagem gratuita, uma verificação do lado do cliente do objeto document.referrer do navegador é realizada e, em seguida, com base no resultado, páginas diferentes são exibidas pelo servidor de hospedagem do site (primeiro caso) ou exibidas usando o documento .write () (segundo caso).
 
-Portanto, podemos detectar sites de spam baseados em *click-through cloaking* da seguinte maneira, o que também exige que o rastreador possa interpretar os scripts:
+Portanto, podemos detectar sites de spam baseados em cloaking por cliques da seguinte maneira, o que também exige que o rastreador possa interpretar os scripts:
 
 Primeiro passo. Primeira visita - acesse o site na forma normal do mecanismo de busca e obtenha o conteúdo do conteúdo da página (engine);
 Segundo passo. Segunda visita - para verificações de referência tanto do lado do servidor quanto do lado do cliente, faça com que o acesso pareça vir de uma busca através de cliques e obtenha o conteúdo do conteúdo da página (click-through);
 Etapa 3. Compare a diferença de conteúdo entre as duas visitas diff(content(engine) e content(click-through)). Se houver uma grande diferença, esse site é altamente suspeito de ser um site de spam e mais investigações precisam ser feitas, caso contrário, classifique-o como benigno.
 
-Neste projeto, focamos em detectar o *click-through cloaking*.
+Neste projeto, focamos em detectar cloaking por cliques.
                
 ### Bibliotecas de terceiros
 
@@ -6158,7 +6158,7 @@ Não importa qual seja o caso, o DetectJSRedirection só pode aceitar rastreamen
 
 **. Class DetectCloaking**
 
-A detecção de cloaking é implementada no processador DetectCloaking que, atualmente, foca apenas em *click-through cloaking*. Como mencionado na seção de metodologia, para detectar *click-through cloaking* do lado do cliente, precisamos comparar os documentos resultantes obtidos após a execução do código JS, com o document.referrer definido como empty e com o document.referrer definido como someting; se forem diferentes, cloaking do lado do cliente aconteceu. Para detectar *click-through cloaking* do lado do servidor, precisamos comparar os documentos buscados com o campo referenciador no cabeçalho HTTP definido como null ou something; se forem diferentes, ocorreu o cloaking do lado do servidor.
+A detecção de cloaking é implementada no processador DetectCloaking que, atualmente, foca apenas em cloaking por cliques. Como mencionado na seção de metodologia, para detectar cloaking por cliques do lado do cliente, precisamos comparar os documentos resultantes obtidos após a execução do código JS, com o document.referrer definido como empty e com o document.referrer definido como someting; se forem diferentes, cloaking do lado do cliente aconteceu. Para detectar cloaking por cliques do lado do servidor, precisamos comparar os documentos buscados com o campo referenciador no cabeçalho HTTP definido como null ou something; se forem diferentes, ocorreu o cloaking do lado do servidor.
 
 Portanto, algumas informações devem estar disponíveis para detectar *clich-through cloaking*:
 Para detecção de cloaking do lado do cliente
@@ -6169,7 +6169,7 @@ Para detecção de cloaking do lado do cliente
   - content-with-referrer: conteúdo obtido com o campo referrer definido como non null no cabeçalho HTTP.
   - content-without-referrer: conteúdo obtido com o campo referrer definido como null no cabeçalho HTTP.
   
-Como podemos ver, a fim de detectar *click-through cloaking* no lado do servidor, precisamos buscar a mesma página duas vezes com configurações de cabeçalho HTTP diferentes (claro que gostaríamos que as duas buscas passassem pela cadeia de processadores do Heritrix); também precisamos preservar as informações necessárias mencionadas acima. Então, para resolver esse problema, usamos o mesmo caminho que fizemos para a execução de JS, introduzimos outro cache - cache de cloaking, que possui um mapa, contendo todas as informações necessárias.
+Como podemos ver, a fim de detectar cloaking por cliques no lado do servidor, precisamos buscar a mesma página duas vezes com configurações de cabeçalho HTTP diferentes (claro que gostaríamos que as duas buscas passassem pela cadeia de processadores do Heritrix); também precisamos preservar as informações necessárias mencionadas acima. Então, para resolver esse problema, usamos o mesmo caminho que fizemos para a execução de JS, introduzimos outro cache - cache de cloaking, que possui um mapa, contendo todas as informações necessárias.
 
 **. Class Cache4CloakingDetection**
 
@@ -6272,7 +6272,7 @@ if (ExecuteJS module is added in the profile) then {
 }
 ```
 
-### Detecção de *click-through cloaking*
+### Detecção de cloaking por cliques
 
 Para o significado desses pré-requisitos, consulte a seção DetectCloaking em detalhes de design e implementação.
 
@@ -6556,7 +6556,7 @@ Na ausência de orientações ao contrário abaixo, as recomendações nas fonte
 * Recuo de 4 espaços por nível.
 * Coloque o colchete de abertura de um bloco de código na mesma linha que a declaração/teste esperando o bloco.
 * Use colchetes mesmo quando uma ramificação/bloco for apenas uma única linha de código (para fornecer uma sugestão visual adicional e para robustez, se outras linhas forem adicionadas posteriormente).
-* Prefer longs over ints anywhere a large count of artifacts or large-sized file/range is possible.
+* Prefira o uso de 'longs' ao inves de 'ints' quando uma grande quantidade de artefatos ou arquivos/intervalos de grande tamanho for possível.
 * Prefira 'protected' em vez de 'private', a menos que uma consideração do uso de subclasses em potencial sugira que o acesso direto é perigoso.
 * (Desvio das recomendações do Sun) É permissível declarar as variáveis locais o mais próximo possível do primeiro uso (ao contrário de declarar no início do bloqueio).
 * (Desvio de algumas recomendações) Os retornos antecipados e múltiplos dos métodos são encorajados a minimizar os níveis de indentação e a lidar com casos simples ou de erro rapidamente.
@@ -6575,7 +6575,7 @@ Na ausência de orientações ao contrário abaixo, as recomendações nas fonte
 * [Emmit best practices] (https://github.com/internetarchive/heritrix3/wiki/Issue%20best%20practices)
 * [Commit best practices] (https://github.com/internetarchive/heritrix3/wiki/Commit%20best%20practices)
 
-## Commit best practices
+## Melhores práticas - Commit
 
 ### especificar problema, arquivos modificados e resumo
 
@@ -6597,7 +6597,7 @@ por exemplo, changeset r6912
     renamings: prefer 'reenqueue' instead of 'reschedule' for describing simple (non-timed) retries
 ```
 
-## Issue best practices
+## Melhores práticas - Issue
 
 ### inclua o número de revisão ao colar os comentários commit nos problemas
 
@@ -6694,9 +6694,9 @@ Use os links de inclusão dinâmica para extrair uma cópia ativa da lista de oc
 
 Dê crédidito a todos os colaboradores novos, ou de fora, deste lançamento.
 
-### Roll to Official Release Version Numbers
+### Verificar os números da versão oficial do lançamento
 
-Faça um commit no trunk que define o número da versão oficial e vincula as 'notas de lançamento' na distribuição às notas completas da versão do wiki.
+Faça um commit no tronco que define o número da versão oficial e vincula as 'notas de lançamento' na distribuição às notas completas da versão do wiki.
 
 Especificamente no H1, isso afeta os arquivos 'src/articles/releasenotes.xml' e 'project.xml'. Em 'project.xml', a string:
 
@@ -6728,9 +6728,9 @@ Usando o perfil padrão, configure um rastreamento mínimo de teste de um site c
 
 No repositório SVN, copie a árvore 'trunk/heritrix' para release-'branches/heritrix-1.YEVEN.Z/heritrix'. Isso fornece uma ramificação nomeada de acordo com o que foi inserido na compilação.
 
-### Roll to Development Version Number
+### Verificar o número da versão de desenvolvimento
 
-Commit back to the trunk a version of 'project.xml' with an updated development version number:
+Altere (commit) de volta para o tronco uma versão de 'project.xml' com um número de versão de desenvolvimento atualizado:
 
 ```
 <currentVersion>1.YODD.Z${version.build.suffix}</currentVersion>
@@ -6791,7 +6791,7 @@ Atualize a página principal da wiki do projeto para listar a nova versão como 
 
 Envie um email para a lista de projetos do rastreador de arquivos anunciando o lançamento, com links para as notas de lançamento e área de download.
 
-Commit a change to the 'xdocs/index.xml' file in heritrix trunk que gera, automaticamente, a página inicial do http://crawler.archive.org para incluir um item de notícias no local apropriado anunciando a última versão. (PROBLEMAS PRECISAM DE SOLUÇÕES: Atualmente, as compilações automáticas não estão fazendo o upload do site alterado automaticamente para crawler.archive.org.)
+Commit uma mudança ao arquivo 'xdocs/index.xml' no tronco do heritrix que gera, automaticamente, a página inicial do http://crawler.archive.org para incluir um item de notícias no local apropriado anunciando a última versão. (PROBLEMAS PRECISAM DE SOLUÇÕES: Atualmente, as compilações automáticas não estão fazendo o upload do site alterado automaticamente para crawler.archive.org.)
 
 ### Heritrix 3
 
