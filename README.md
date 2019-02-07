@@ -767,7 +767,7 @@ No Heritrix, uma tarefa é baseada no Framework Spring. Beans Spring representam
 </bean>
 ```
 
-## Análise da tarefa
+## Análise de tarefa
 
 O Heritrix oferece várias opções para examinar os detalhes de um rastreamento. Esses relatórios e logs também estão disponíveis durante o tempo de execução.
 
@@ -777,17 +777,17 @@ Cada tarefa de rastreamento tem seu próprio conjunto de arquivos de logs.
 
 Os logs podem sem encontrados no diretório "logs", que existe sob o diretório de uma tarefa específica. A localização de arquivos logs específicos é fornecida na seção "Configuration-referenced paths" da página da tarefa.
 
-Propriedades de logs
+###### Propriedades de logs
 
 As propriedades de log podem ser configuradas modificando o arquivo logging.properties localizado no diretório ./conf. Para obter informações sobre como usar propriedades de log, visite http://logging.apache.org/log4j/.
 
-Arquivos log
+###### Arquivos log
 
-alerts.log
+**alerts.log**
 
 Esse log contém alertas que indicam problemas com os rastreamentos.
 
-crawl.log
+**crawl.log**
 
 Cada URI que o Heritrix tenta buscar fará com que uma linha de log seja gravada no arquivo crawl.log. Abaixo está um extrato de duas linhas do log.
 
@@ -814,7 +814,7 @@ UOKDGOLGI5JYHDTXRFFQ5FF4N2EJRV - -
 | Annotations | Se uma anotação tiver sido feita, ela será exibida. Possíveis anotações incluem: o número de vezes que o URI foi tentado, o "lenTrunc" literal se o download foi truncado devido a limites de tamanho excedidos configurados, o "timeTrunc" literal se o download foi truncado devido a limites de tempo excedidos configurados, ou "midFetchTrunc" se um filtro midfetch determinar que o download deve ser truncado. |
 | warc | Nome do arquivo WARC/ARC em que o conteúdo rastreado foi salvo. Esse valor só será salvo se a propriedade logExtraInfo do bean loggerModule está definida como true. Essa informação registrada será salva no formato JSON. |
 
-progress-statistics.log
+**progress-statistics.log**
 
 Esse log é salvo pelo bean StatisticsTracker.  Em intervalos configuráveis, uma linha de log detalhando o progresso do rastreamento é gravada nesse arquivo.
 
@@ -834,15 +834,15 @@ Esse log é salvo pelo bean StatisticsTracker.  Em intervalos configuráveis, um
 | max-depth | O tamanho da fila Frontier com o maior número de URIs enfileirados.  |
 | avg-depth | O tamanho habitual de todas as filas Frontier. |
 
-runtime-errors.log
+**runtime-errors.log**
 
 Esse log captura exceções e erros inesperados que ocorrem durante o rastreamento, que podem ser resultantes de limitações do hardware (sem memória, embora esse erro possa ocorrer sem ser gravado neste log). No entanto, a maioria ocorre por causa de bugs do software, talvez no núcleo do Heritrix, mas provavelmente em uma de suas classes conectáveis.
 
-uri-errors.log
+**uri-errors.log**
 
 Esse log armazena erros de tentativas de busca de URI, normalmente causados por URIs não existentes. Esse log normalmente é de interesse apenas para usuários avançados que tentam explicar comportamentos inesperados de rastreamento.
 
-frontier.recover.gz
+**frontier.recover.gz**
 
 O arquivo frontier.recover.gz é um log gzipado de eventos Frontier que pode ser usado para restaurar a Frontier após uma falha.
 
@@ -873,8 +873,7 @@ Os relatórios são encontrados no diretório "reports", que existe no diretóri
 
 | Nome do campo  | Descrição |
 | ------------- | ------------- |
-| code | | 0 = não rastreado
-1 = rastreado |
+| code | | 0 = não rastreado 1 = rastreado |
 | status | Descrição legível informando se o seed foi rastreado. Por exemplo, "CRAWLED". |
 | seed | O URI seed. |
 | redirect | O URI para o qual o seed foi redirecionado. |
@@ -997,56 +996,44 @@ http://www.myhost3.net/pictures
 No nível de tarefa, uma tarefa de rastreamento do Heritrix possui três pipelines principais conhecidas como Cadeias de Processadores (aplicação sequencial de módulos de Processador trocáveis -- ver Configurações de Processador), com a Frontier atuando como um buffer entre as duas primeiras:
 
 * Chain Candidates:
-
-- Processa os URIs de rastreamento de entrada, decidindo se deve mantê-los (de acordo com o escopo) e se eles serão depositados na Frontier.
-
-- Ver Candidate Chain Processors
-
+    * Processa os URIs de rastreamento de entrada, decidindo se deve mantê-los (de acordo com o escopo) e se eles serão depositados na Frontier.
+    * Ver [Processadores da Candidate Chain] (https://github.com/internetarchive/heritrix3/wiki/Candidate-Chain-Processors)
+    
 * Frontier:
-
-- Os URIs de rastreamento aceitos nesse rastreamento são armazenados aqui em ordem de prioridade, em um conjunto de filas distintas.
-
-- Normalmente, há uma fila por "autoridade" (por exemplo, `exemplo.com:80`) e o gerenciamento de filas garante que o atraso de rastreamento desejado seja respeitado para cada fila.
-
-- Ver Frontier
+    * Os URIs de rastreamento aceitos nesse rastreamento são armazenados aqui em ordem de prioridade, em um conjunto de filas distintas.
+    * Normalmente, há uma fila por "autoridade" (por exemplo, `exemplo.com:80`) e o gerenciamento de filas garante que o atraso de rastreamento desejado seja respeitado para cada fila.
+    * Ver [Frontier] (https://github.com/internetarchive/heritrix3/wiki/Frontier)
 
 * Fetch Chain:
-
-- Como os URIs de rastreamento são emitidos pela Frontier, a cadeia de busca processa cada um deles e decide o que fazer, como baixar etc.
-
-- Também realiza operações como extração de links.
-
-- Ver Fetch Chain Processors
+    * Como os URIs de rastreamento são emitidos pela Frontier, a cadeia de busca processa cada um deles e decide o que fazer, como baixar etc.
+    * Também realiza operações como extração de links.
+    * Ver [Processadores da Fetch Chain] (https://github.com/internetarchive/heritrix3/wiki/Fetch-Chain-Processors)
 
 * Disposition Chain:
-
-- Trata de pós-processamentos necessários após o termino da cadeia de busca.
-
-- Por exemplo, é aqui que os recursos baixados são salvos no formato WARC.
-
-- Ver Disposition Chain Processors
+    * Trata de pós-processamentos necessários após o termino da cadeia de busca.
+    * Por exemplo, é aqui que os recursos baixados são salvos no formato WARC.
+    * Ver [Processadores da Disposition Chain] (https://github.com/internetarchive/heritrix3/wiki/Disposition-Chain-Processors)
 
 Todo URI retirado da fila Frontier é executado pelas cadeias de processamento. Os URIs são sempre processados na ordem mostrada no diagrama abaixo, a menos que um processador em particular exiba um erro fatal ou decida interromper o processamento do URI atual.
 
 Cada cadeia de processamento é composta de zero ou mais processadores individuais. Por exemplo, o FetchChain pode incluir os processadores extractorCss e extractorJs. Em uma etapa de processamento, a ordem em que os processadores são executados é a ordem em que eles são listados no arquivo crawler-beans.cxml.
 
-### Processadores da cadeia de candidatos (Candidate Chain Processors)
+### Processadores da Candidate Chain
 
 | Nome do processador  | Descrição |
 | ------------- | ------------- |
 | candidateScoper | Aplica regras de escopo a cada URI candidato. |
 | preparer | Prepara os URIs aceitos para enfileirar na Frontier.  |
 
-### Processadores da cadeia de busca (Fetch Chain Processors)
+### Processadores da Fetch Chain
 
 | Nome do processador  | Descrição | Nome da classe |
 | ------------- | ------------- | ------------- |
 | preparer | Prepara os URIs aceitos para enfileirar na Frontier.  | |
 | preconditions | Verifica ou aciona a busca de URIs de pré-requisito.  | |
 | fetchDns | Busca DNS URIs.  | |
-| fetchHttp | Busca os URIs HTTP.  A partir da versão 3.1, o rastreador decodificará corretamente a codificação de transferência 'em partes' ('chunked' transfer-encoding) - mesmo se encontrada quando não deveria ser usada, como em uma resposta a uma solicitação HTTP/1.0. Além disso, o processador fetchHttp agora inclui o parâmetro 'useHTTP11', que, se true, fará com que o Heritrix relate suas solicitações como 'HTTP/1.1'. Isso permite que os sites utilizem a codificação de transferência 'em partes'. (O padrão para esse parâmetro é, no momento, false, e o Heritrix ainda não reutiliza conexões persistentes para mais de uma solicitação para um site.)
-O fetchHttp também inclui o parâmetro 'acceptCompression', que, se for true, fará com que os pedidos do Heritrix incluam um cabeçalho "Accept-Encoding:gzip,deflate", que se oferece para receber respostas compactadas. (O padrão para este parâmetro, no momento, é false.)  | |
-| extractorHttp |   | org.archive.modules.extractor.ExtractorHTTP |
+| fetchHttp | Busca os URIs HTTP.  A partir da versão 3.1, o rastreador decodificará corretamente a codificação de transferência 'em partes' ('chunked' transfer-encoding) - mesmo se encontrada quando não deveria ser usada, como em uma resposta a uma solicitação HTTP/1.0. Além disso, o processador fetchHttp agora inclui o parâmetro 'useHTTP11', que, se true, fará com que o Heritrix relate suas solicitações como 'HTTP/1.1'. Isso permite que os sites utilizem a codificação de transferência 'em partes'. (O padrão para esse parâmetro é, no momento, false, e o Heritrix ainda não reutiliza conexões persistentes para mais de uma solicitação para um site.) O fetchHttp também inclui o parâmetro 'acceptCompression', que, se for true, fará com que os pedidos do Heritrix incluam um cabeçalho "Accept-Encoding:gzip,deflate", que se oferece para receber respostas compactadas. (O padrão para este parâmetro, no momento, é false.)  | |
+| extractorHttp | Extrai links de cabeçalhos HTTP. A partir da versão 3.1, o processador extractorHttp utiliza qualquer URI em um nome de host para indicar que o '/favicon.ico' do mesmo host deve ser buscado. Ainda a partir da versão 3.1, a propriedade "inferRootPage" foi adicionada ao bean extractorHttp. Se essa propriedade for "true", o Heritrix inferirá a página raiz '/' de qualquer outro URI no mesmo nome de host. O padrão para essa configuração é "false" (comportamento pré-3.1 de buscar apenas a página raiz se ela for um seed ou se for descoberta de alguma outra forma e o escopo no objeto permanecer em vigor. A descoberta por meio dessas novas heurísticas é considerada um novo tipo de hop 'I' (inferred) e é tratada da mesma forma em decisões de escopo/transclusão como 'E' (embed).  | org.archive.modules.extractor.ExtractorHTTP |
 | extractorHtml | Extrai links de conteúdos HTML.  | org.archive.modules.extractor.ExtractorHTML |
 | extractorCss | Extrai links de conteúdos CSS.  | org.archive.modules.extractor.ExtractorCSS |
 | extractorJs | Extrai links de conteúdos JavaScript. | org.archive.modules.extractor.ExtractorJs |
@@ -1108,11 +1095,11 @@ A maioria dos processadores de extração é pré-configurada no arquivo de conf
 
 Os processadores têm configurações que efetuam rastreamentos. Cada processador pode ser ativado ou desativado. Se desativado, o Processador não será aplicado a nenhum URI. Os seguintes processadores possuem configurações padrões configuradas pelo Heritrix.
 
-preparer
+###### preparer
 
-* preferenceDepthHops -  Number of hops (of any sort) from a seed up to which a URI has higher priority scheduling than any remaining seed. For example, if set to one, items one hop (link, embed, redirect, etc.) away from a seed will be scheduled with HIGH priority. If set to -1, no preferencing will occur, and a breadth-first search with seeds processed before discovered links will proceed. If set to zero, a purely depth-first search will proceed, with all discovered links processed before remaining seeds. Seed redirects are treated as one hop from a seed.
+* preferenceDepthHops -  Número de hops (de qualquer tipo) de um seed até a qual um URI tem uma prioridade de agendamento maior que qualquer seed restante. Por exemplo, se definido como 1, os itens a um hop (link, embed, redirect, etc.) de distância de um seed serão agendados com prioridade ALTA (high). Se definido como -1, nenhuma preferência ocorrerá e uma busca em largura (bread-first search) com seeds processados antes dos links descobertos continuará. Se definido como 0, apenas uma busca em profundidade (depth-first search) prosseguirá, com todos os links descobertos processados antes dos seeds remanescentes. Redirecionamentos de seeds são considerados um hop de distância de um seed.
 
-* preferenceEmbedHops - Number of embed hops (ERX) to bump to front of host queue.
+* preferenceEmbedHops - Número de *embed hops* (ERX) para mover para a frente da fila ho host.
 
 * canonicalizationPolicy - Lista ordenada de regras de canonização de URI. As regras são aplicadas na ordem listada, de cima para baixo.
 
@@ -1131,7 +1118,7 @@ preselector
 
 * allowByRegex - Permite que apenas URIs que correspondam à expressão regular sejam processados.
 
-preconditions
+###### preconditions
 
 * ipValidityDurationSeconds - O intervalo mínimo para o qual um registro de DNS será considerado válido (em segundos). Se o DNS TTL do registro for maior, ele será usado no lugar.
 
@@ -1139,16 +1126,16 @@ preconditions
 
 * calculateRobotsOnly - Se deve calcular o status *robot* de um URI, sem aplicar quaisquer exclusões encontradas. Se for true, os URIs excluídos serão apenas anotados no arquivo crawl.log, mas ainda assim obtidos.
 
-fetchDns
+###### fetchDns
 
-* acceptNonDnsResolves - Whether or not to fall-back to InetAddress resolution if a DNS lookup fails.  InetAddress resolution may use local 'hosts' files or other mechanisms.
+* acceptNonDnsResolves - Se deve ou não retornar à resolução InetAddress se uma pesquisa de DNS falhar. A resolução InetAddress pode usar arquivos 'hosts' locais ou outros mecanismos.
 
-* digestContent - Whether or not to perform an on-the-fly digest hash of retrieved content-bodies.
+* digestContent - Se deve ou não fazer um digest instântaneo de um hash de conteúdo-de-corpo recuperado.
 
-* digestAlgorithm - The algorithm (for example MD5 or SHA-1) used to perform an on-the-fly digest hash of retrieved content-bodies.
+* digestAlgorithm - O algoritimo (por exemplo, MD5 ou SHA-1) usado para fazer o digest instântaneo de um hash de conteúdo-de-corpo recuperado.
 
 
-fetchHttp
+###### fetchHttp
 
 * timeoutSeconds - Determina por quanto tempo uma solicitação HTTP aguardará um recurso responder. Essa configuração deve ser configurada para um valor alto.
 
@@ -1184,11 +1171,11 @@ fetchHttp
 
 * httpProxyPort - A porta do proxy.
 
-* digestContent - Se deve fazer ou não um digest instântaneo do conteúdo-de-corpo recuperado.
+* digestContent - Se deve ou não fazer um digest instântaneo de um hash de conteúdo-de-corpo recuperado.
 
-* digestAlgorithm - Especifica qual algoritmo (por exemplo, MD5 ou SHA-1) é usado para fazer um digest instântaneo do conteúdo-de-corpo recuperado.
+* digestAlgorithm - Especifica qual algoritmo (por exemplo, MD5 ou SHA-1) é usado para fazer um digest instântaneo de um hash de conteúdo-de-corpo recuperado.
 
-extractorHtml
+###### extractorHtml
 
 * extractJavascript - Se definido como "true", o Javascript da página é escaneado a procura de strings que pareçam URIs. Esse processo normalmente encontra URIs válidos e inválidos. Tentativas de buscar URIs inválidos pode gerar preocupação entre os webmasters sobre o comportamento estranho do rastreador. O padrão é "true".
 
@@ -1208,7 +1195,7 @@ extractorHtml
 
 * maxAttributeValueLength - Comprimento máximo de um valor de atributo HTML.
 
-warcWriter
+###### warcWriter
 
 * compress - Se essa configuração for definida como "true", conteúdo do arquivo WARC será compactado. Observe que a compactação se aplica a cada item de conteúdo armazenado no WARC.
 
@@ -1237,17 +1224,17 @@ warcWriter
 * writeRevisitForNotModified - Decide se deve gravar registros do tipo revisit quando uma resposta 304-Not Modified é recebida. A definição padrão é "true".
 
 
-candidates
+###### candidates
 
 * seedsRedirectNewSeeds - Se ativado, qualquer URI encontrado porque um seed redirecionou para ele (seed original retornou código 301 ou 302) também será tratado como um seed.
 
-disposition
+###### disposition
 
 * delayFactor - Quantos múltiplos do último tempo transcorrido para aguardar antes de entrar em contato com o mesmo servidor.
 
 * minDelayMs- O tempo mínimo para aguardar após uma solicitação ser concluída antes de entrar em contato novamente com o mesmo servidor. Este valor sobrepõe o delayFactor.
 
-* respectCrawlDelayUpToSeconds - Whether to respect a Crawl-Delay (in seconds) provided by the site's robots.txt.
+* respectCrawlDelayUpToSeconds - Se deve ou não respeitar um Crawl-Delay (em segundos) fornecido pelo robots.txt do site.
 
 * maxDelayMs- A quantidade máxima de tempo para esperar após uma solicitação ser concluída antes de entrar em contato novamente com o mesmo servidor. Este valor substitui o delayFactor.
 
@@ -1422,15 +1409,15 @@ Para usar a credencial `GET` ou `POST` do Formulário HTML, forneça um `domíni
 
 Antes de um URI ser agendado para rastreamento, o Heritrix procura por pré-condições. Exemplos de pré-condições incluem a captura do registro DNS do servidor que hospeda o URI e a busca do arquivo robots.txt. As credenciais do formulário HTML também são processadas como pré-condição. Se houver credenciais de formulário HTML para um determinado CrawlServer no repositório de credenciais, o URI especificado no campo de login de credencial do formulário HTML será agendado como uma pré-condição para o site, após as condições prévias do DNS e do robots.txt.
 
-domain
+###### domain
 
 Ver o domínio (BASIC AND DIGEST Auth).
 
-login-uri
+###### login-uri
 
 O login-uri é um URI relativo ou absoluto ao qual o Formulário HTML é enviado. Não é necessariamente a página que contém o formulário HTML; mas sim o ACTION URI ao qual o formulário é submetido.
 
-form-items
+###### form-items
 
 Itens de formulário (form-items) são uma listagem de pares de chave/valor de formulário HTML. O botão de envio geralmente deve ser incluído nos itens de formulário.
 
@@ -1481,11 +1468,11 @@ A maneira como a autenticação RFC2617 funciona no Heritrix é que, em resposta
 
 Quando a nova tentativa é feita, as credenciais encontradas são adicionadas à solicitação.  Se a solicitação for bem-sucedida com um código de resposta 200, as credenciais serão promovidas para o servidor CrawlServer e todas as solicitações subsequentes, feitas no CrawlServer, fornecerão a credencial de forma preventiva. Se a credencial falhar com um código de resposta 401, não haverão novas tentivas com o CrawlURI.
 
-domain
+###### domain
 
 Domain (domínio) é o URI de raiz canônico do RFC2617; é o nome ou a autoridade do URI do CrawlServer (domínio mais porta se diferente da porta 80). Exemplos de domínios são: 'www.archive.org' ou 'www.archive.org:8080'.
 
-realm
+###### realm
 
 O realm (território) é definido na FAQ RFC2617. A cadeia do realm deve corresponder exatamente ao nome do realm apresentado no desafio de autenticação atendido pelo servidor da web.
 
@@ -1595,7 +1582,7 @@ Além disso, despausar o rastreamento dessa maneira pode resultar na redescobert
 
 possibilidade de criação de Avisos
 
-Observação: feeding the entire frontier back to the crawler is likely to produce many "Problem line" warnings in the job log. Some operators find it useful to allow the entire recovery file to be ingested by the crawler before attempting to resume (unpause), to help isolate this chatter, and to minimize generating duplicate crawldata during recovery.
+Observação: alimentar a frontier inteira de volta ao rastreador provavelmente resultará em vários avisos de "Problem line" no log de tarefas. Alguns operadores acham melhor permitir que todo o arquivo de recuperação seja processado pelo rastreador antes de tentar retomar (unpause) o rastreamento, ajudando a isolar essa conversação e minimizar a geração de crawldatas duplicados durante a recuperação.
 
 ### split recover
 
@@ -1603,8 +1590,8 @@ Uma forma alternativa de executar o processo de recuperação é ilustrada abaix
 
 Para executar o processo de recuperação alternativo:
 
-1. move aside prior logs and ARCs/WARCs as above
-2. Abrir novamente o rastreamento com falha
+1. deixe de lado logs e ARCs/WARCs anteriores, como acima
+2. Abrir novamente o rastreamento que falhou
 3. Dividir qualquer arquivo de origem `frontier.recover.gz` usando comandos como os seguintes:
 
 ```
@@ -1879,7 +1866,7 @@ Um aprimoramento futuro para esses recursos pode levar adiante as informações 
 
 O Heritrix possui scripts de utilidade Unix.
 
-manifest_bundle.pl
+###### manifest_bundle.pl
 
 Esse script agrupa todos os recursos mencionados no arquivo de manifesto de rastreamento. Um pacote é um tarball não comprimido ou comprimido. A estrutura de diretórios do tarball é:
 
@@ -1896,7 +1883,7 @@ manifest_bundle.pl crawl_name manifest_file -f output_tar_file -z [ -flag direct
 configuration, logs and reports
 ```
 
-* manifest-bundle.pl (exemplo)
+###### manifest-bundle.pl (exemplo)
 
 ```
 manifest_bundle.pl testcrawl crawl-manifest.txt -f /0/testcrawl/manifest-bundle.tar.gz -z -F filters
@@ -1913,7 +1900,7 @@ Para o exemplo acima, o tarball conterá a seguinte estrutura de diretórios:
 
        |- filters
        
-hoppath.pl
+###### hoppath.pl
 
 Esse script Perl, localizado em (HERETRIX_HOME)/bin, recria o caminho do hop para o URI especificado. O caminho do hop é o caminho de links (URIs) que foram seguidos para chegar ao URI especificado.
 
@@ -1927,13 +1914,13 @@ Wrap this parameter in quotes to avoid shell interpretation
 of any '&' present in URI_PREFIX.
 ```
 
-hoppath.pl (exemplo)
+###### hoppath.pl (exemplo)
 
 ```
 hoppath.pl crawl.log 'http://www.house.gov/'
 ```
 
-hoppath.pl (resultado)
+###### hoppath.pl (resultado)
 
 ```
 2004-02-25-02-36-06 - http://www.house.gov/house/MemberWWW_by_State.html
@@ -1943,7 +1930,7 @@ hoppath.pl (resultado)
 
 O `L` no exemplo refere-se ao tipo de link seguido.
 
-RecoveryLogMapper
+###### RecoveryLogMapper
 
 A classe Java `org.archive.crawler.util.RecoveryLogMapper` é semelhante ao script `hoppath.pl`. Foi contribuído por Mike Schwartz. O `RecoveryLogMapper` analisa um arquivo de log de recuperação do Heritrix e cria mapas que permitem que um chamador pesquise qualquer URI de origem. O RecoveryLogMapper então retorna uma lista de todos os URIs rastreados com sucesso a partir do seed. O `RecoveryLogMapper` também pode encontrar o URI de origem do qual qualquer URI rastreado foi capturado.
 
@@ -1963,118 +1950,118 @@ Depois que uma tarefa de rastreamento tiver sido criada e configurada corretamen
 
 ### Elementos de dados da página de tarefa
 
-Job name
+###### Job name
 
 O nome da tarefa e o número de vezes que foi executada.
 
-Avaible checkpoints to recover
+###### Avaible checkpoints to recover
 
 A partir da versão 3.1, se um rastreamento tiver sido verificado, uma caixa suspensa será exibida mostrando todos os pontos de verificação que foram executados.
 
-Job Log
+###### Job Log
 
 O log da tarefa contém um registro dos comandos emitidos na página da tarefa, incluindo respostas de comando.
 
-Job Status
+###### Job Status
 
 Exibe o status da tarefa.
 
-Totals
+###### Totals
 
 Exibe estatísticas que fornecem informações sobre o número de documentos rastreados e baixados.
 
-Alerts
+###### Alerts
 
 Lista os alertas gerados pelo rastreamento. Os alertas podem ser avisos ou problemas que abortam o rastreamento mas que não prejudicam o rastreamento, mas podem prejudicar o resultado do rastreamento.
 
-Rates
+###### Rates
 
 Exibe estatísticas que fornecem as taxas nas quais os documentos e bytes de dados estão sendo baixados. O número de URIs processados por segundo, com sucesso, é mostrado. Nessa estatística, é mostrada a taxa do último intervalo de amostragem e a taxa média (entre parênteses). O intervalo de amostragem é geralmente cerca de 20 segundos e pode ser controlado pela propriedade intervalSeconds do bean Spring do StatisticsTracker. A taxa mais recente de progresso pode flutuar consideravelmente à medida que a carga de trabalho do rastreador varia e ocorrem a memória de manutenção e as operações de arquivo. Isso é principalmente verdade se o intervalo de amostragem tiver sido definido com um valor baixo. A taxa de coleta de conteúdo bem-sucedida em KB /segundo para o intervalo de amostragem mais recente e (entre parênteses) a média desde o início do rastreamento também são exibidas.
 
-Load
+###### Load
 
 Exibe estatísticas que fornecem informações de carregamento. O número de threads ativos, comparado ao total de threads disponíveis, é mostrado. Normalmente, se apenas um número pequeno de threads estiver ativo, é porque ativar mais threads excederia as configurações de cortesia configuradas. Por exemplo, se todos os URIs restantes estiverem em um único host, apenas um thread estará ativo, a menos que as filas paralelas estejam ativadas. Às vezes, nenhum tópico estará ativo devido a pausas para considerações de cortesia.
 
-Congestion Ratio
+###### Congestion Ratio
 
 O índice de congestionamento é uma estimativa aproximada de quanta capacidade inicial, como um múltiplo da capacidade atual, seria necessária para rastrear a carga de tarefa atual na taxa máxima disponível em determinadas configurações de cortesia. Esse valor é calculado comparando o número de filas internas que estão progredindo em relação àquelas que estão aguardando a disponibilização de um thread.
 
-Deepest Queue
+###### Deepest Queue
 
 A estatística de fila mais profunda é a cadeia mais longa de URIs que deve ser processada sequencialmente. Essa estatística é um indicador superior do trabalho restante do que o número total de URIs pendentes. Por exemplo, 1000 URIs em 1000 filas podem ser concluídos rapidamente, mas 1000 URIs em uma única fila levarão muito mais tempo para serem concluídos. A profundidade média é a profundidade média do último URI em todas as filas seqüenciais ativas.
 
-Elapsed
+###### Elapsed
 
 Exibe o tempo decorrido, em milissegundos, que uma tarefa foi executada, excluindo o tempo no estado "pausado".
 
-Threads
+###### Threads
 
 Esta área da página do trabalho exibe o número de threads sendo usados. Clicar em "threads" para ver um relatório de detalhado.
 
-Frontier
+###### Frontier
 
 Exibe estatísticas da Frontier, como o número de URIs enfileirados. Clicar em "frontier" para ver um relatório de detalhado.
 
-Memory
+###### Memory
 
 Exibe a quantidade de memória alocada ao heap Java, a quantidade de memória em uso e o tamanho máximo do heap Java.
 
-Crawl Log
+###### Crawl Log
 
 Exibe a saída do log de rastreamento. O log de rastreamento contém informações detalhadas sobre um rastreamento em execução, como os URIs que foram buscados.
 
-Advanced
+###### Advanced
 
 Fornece acesso a recursos avançados que podem ser usados para controlar uma tarefa.
 
-Configuration-referenced Paths
+###### Configuration-referenced Paths
 
 Exibe os caminhos relevantes para a configuração e registro de tarefa. Por exemplo, o caminho para o arquivo `crawl.log` é exibido.
 
 ### Operações da página de trabalho
 
-Edit
+###### Edit
 
 Permite editar o arquivo `crawler-beans.cxml`. O arquivo `crawler-beans.cxml` contém a configuração Spring da tarefa de rastreamento. A edição desse arquivo é a maneira padrão de configurar uma tarefa ou perfil.
 
-Build
+###### Build
 
 Constrói as classes Java Spring que são configuradas por meio do arquivo `crawler-beans.cxml`. Antes de uma tarefa ser executada, ela deve ser construída.
 
-Launch
+###### Launch
 
 Inicia uma tarefa de rastreamento. Antes de ser lançada, a tarefa deve ser construída. Uma vez que a tarefa é lançada, ela estará pausada ou em execução. Se estiver pausada, o botão "unpause" deve ser clicado para iniciar o rastreamento. A partir da versão 3.1, se um ponto de verificação ou vários pontos de verificação foi/foram executados, um ponto de verificação pode ser selecionado na caixa suspensa do ponto de verificação. A tarefa pode ser reiniciada no ponto de verificação clicando em "launch".
 
-Pause
+###### Pause
 
 Pausa o rastramento em andamento.
 
-Unpause
+###### Unpause
 
 Despausa o rastreamento.
 
-Checkpoint
+###### Checkpoint
 
 Salva o estado atual do rastreamento no armazenamento. Durante o tempo em que o rastreamento está sendo verificado, ele é pausado e nenhum URI será rastreado. O ponto de verificação (checkpoint) é útil se um rastreamento deve ser interrompido e, em seguida, reiniciado.
 
-Terminate
+###### Terminate
 
 Encerra um rastreamento.
 
-Teardown
+###### Teardown
 
 Descarta as classes Spring Java atuais da tarefa e permite que uma nova configuração Spring seja construída. Qualquer alteração no arquivo `crawler-beans.cxml` após o botão "Build" ter sido chamado requer uma desmontagem (teardown) e outra montagem a ser executada.
 
-Copy
+###### Copy
 
 Permite a cópia da configuração da tarefa atual para uma nova tarefa ou um novo perfil.
 
-Scripting Console
+###### Scripting Console
 
 Exibe um formulário de entrada que pode ser usado para inserir e executar comandos de script. Os comandos de script podem ser usados para controlar o comportamento de uma tarefa de rastreamento. Várias linguagens de script estão disponíveis, como AppleScript e ECMAScript. Exemplos de scripts podem ser encontrados aqui.
 
 
-Browse Beans
+###### Browse Beans
 
 Exibe a hierarquia dos beans Spring que formam uma tarefa de rastreamento. As propriedades e associações de cada bean podem ser visualizadas ou editadas clicando no bean.
 
@@ -3867,25 +3854,25 @@ Scripts úteis do Heritrix 3 H3 para executar no console de script.
 * printProps (obj) e utilização do appCtx.getData ()
 * mudando uma regra regex (decide rule)
 * adicionar um surt de exclusão
-* take a gander at the decide rules
-* check your metadata
-* add a sheet forcing many queues into 'retired' state
-* create a sheet for forcing queue assignment, and associate two surts with it
-* add a decide rule sheet association
-* apply sheet (ignoreRobots) to a list of URIs as strings, taken from the seeds.txt file
+* checanco as regras de decisão
+* checando os metadados
+* adicionar uma planilha para forçar várias filas ao estado 'retired'
+* criar uma planilha para forçar a atribuição de filas, e associar dois surts a ela
+* adicionar uma planilha de associação de regras de decisão
+* aplicar planilha (ignoreRobots) a uma lista de URIs como strings, retirada do arquivo seeds.txt
 * reconsiderRetiredQueues
-* run arbitrary command on the machine (BE CAREFUL WITH THIS, OBVIOUSLY)
-* list pending urls
-* GC Garbage Collector Collection Info
-* Retrieving history for URI
-* dump surts
-* Add cookie to running crawl
-* Delete urls matching regex from frontier
-* Force a site to crawl through a proxy
-* Force wake all snoozed queues
-* Add a DecideRule to scope rejecting the second speculative hop
-* Retire Queues Matching Regex
-* Determine which multi-machine crawler is responsible for given URI
+* executar um comando arbitrário na máquina (TENHA CUIDADO)
+* listar urls pendentes
+* Informações sobre GC Garbage Collector Collection 
+* Recuperando histórico para URI 
+* despejar surts
+* Adicionar cookies a um rastreamento em andamento
+* Deletar urls correspondentes ao regex da Frontier
+* Forçar um site a rastrear por meio de um proxy
+* Forçar URLs dormentes (snoozed) a "acordar"
+* Adicionar uma DecideRule ao escopo, rejeitando o secundo hop especulativo
+* Desativar as filas que correspondem ao Regex
+* Determinar qual rastreador de várias máquinas é responsável por determinado URI
 
 **obtenção de uma lista de seeds do arquivo de seeds no disco**
 
@@ -3985,7 +3972,7 @@ stringList.each() { rawOut.println( rule.surtPrefixes.considerAsAddDirective("${
 rule.surtPrefixes.each{ rawOut.println(it) }
 ```
 
-**checar decide rule**
+**checando as regras de decisão**
 
 ```
 //Groovy
@@ -4008,7 +3995,7 @@ appCtx.getBean("scope").rules.each { rule ->
 }
 ```
 
-**checar metadados**
+**checando os metadados**
 
 ```
 appCtx.getBean("metadata").keyedProperties.each{ k, v ->
@@ -4040,7 +4027,7 @@ mgr.sheetNamesBySurt.each{ rawOut.println(it) }
 rawOut.println(mgr.sheetNamesBySurt.size())
 ```
 
-**adicionar uma associação de planilha decide rule**
+**adicionar uma planilha de associação de regras de decisão**
 
 forçar atribuição de fila baseada no hop path
 
@@ -4238,6 +4225,22 @@ cookies.put(cookie.getSortKey(), cookie);
 // groovy
 count = job.crawlController.frontier.deleteURIs(".*", "^http://de.wikipedia.org/.*")
 rawOut.println count + " uris deleted from frontier"
+```
+
+**Forçar um site a rastrear por meio de um proxy**
+
+```
+//groovy
+mgr = appCtx.getBean("sheetOverlaysManager");
+newSheetName = "proxyFetch"
+mgr.putSheetOverlay(newSheetName, "fetchHttp.httpProxyHost", "my.proxy.host"); //hostname or ip
+mgr.putSheetOverlay(newSheetName, "fetchHttp.httpProxyPort", "8443"); //port
+
+mgr.addSurtAssociation("http://(com,timgriffinforcongress,", newSheetName);
+
+//check your results
+mgr.sheetNamesBySurt.each{ rawOut.println(it) }
+rawOut.println(mgr.sheetNamesBySurt.size())
 ```
 
 **Forçar URLs dormentes (snoozed) a "acordar"**
