@@ -236,23 +236,23 @@ A página do console principal aparece logo após o login. Esse página lista to
 
 ### Elementos e operações de dados do controle principal
 
-rescan
+###### rescan
 
 Faz com que o Heritrix examine o sistema de arquivos procurando qualquer mudança no diretório "tarefas". A exibição é, então, sincronizada com o sistema de arquivos.
 
-create
+###### create
 
 Permite que um nome seja inserido e uma nova tarefa de rastreamento seja criada. A tarefa de rastreamento será baseada nos perfis padrões.
 
-add
+###### add
 
 Permite que um diretório de tarefa não gerenciado pelo Heritrix seja especificado. Após inserir o caminho para o novo diretório e clicar em "add", o Heritrix permitirá que você administre o diretório. Por exemplo, será possível configurar a tarefa usando o arquivo crawler-beans.cxml.
 
-status
+###### status
 
 O status das tarefas em andamento, o número de vezes que uma tarefa foi iniciada e o caminho para o arquivo de configuração das tarefas aparecem na página do Console Principal. Também aparecem as estatísticas de memória do Heritrix e se a tarefa é um perfil ou não.
 
-Exit Java Process
+###### Exit Java Process
 
 A partir da versão 3.1, existe o botão "Exit Java Process". Após ser selecionado juntamente com a opção "I'm sure", fará com que o Heritrix seja encerrado e fechado.
 
@@ -292,15 +292,15 @@ Além dos logs, os seguintes arquivos são gerados. Algumas das informações co
 * threads-report.txt
 * arquivos WARC
 
-surts.dump
+###### surts.dump
 
 Contém os formatos SURTs dos seed URIs.
 
-negative-surts.dump
+###### negative-surts.dump
 
 Contém o formulário SUR de URIs que devem ser excluídos do rastreamento.
 
-heritrix_out.log
+###### heritrix_out.log
 
 Captura a saída para saída padrão e erro padrão. A maior parte da saída consiste em exceções de baixo nível e informações de registro.
 
@@ -327,7 +327,7 @@ max user processes              (-u) 266
 virtual memory          (kbytes, -v) unlimited
 ```
 
-crawl-report.txt
+###### crawl-report.txt
 
 Contém métricas úteis sobre tarefas terminadas. O relatório é criado pelo bean StatisticsTracker e é escrito no fim do rastreamento.  
 
@@ -350,7 +350,7 @@ Total Raw Data Size in Bytes: 23865329 (23 MB)
 Novel Bytes: 23877375 (23 MB)
 ```
 
-hosts-report.txt
+###### hosts-report.txt
 
 Contém uma visão geral dos hosts que foram rastreados. Também mostra o número de documentos rastreados e a quantidade de bytes baixados por cada host.
 
@@ -364,7 +364,7 @@ Exemplo de um output desse arquivo:
 0 0 dns: 0 0
 ```
 
-mimetype-report.txt
+###### mimetype-report.txt
 
 Contém um relatório mostrando o número de documentos e dados baixados por tipo mime.
 
@@ -444,7 +444,7 @@ Processor: org.archive.crawler.postprocessor.CandidatesProcessor
 Processor: org.archive.crawler.postprocessor.DispositionProcessor
 ```
 
-responsecode-report.txt
+###### responsecode-report.txt
 
 Contém um relatório que exibe o número de documentos baixados por código de status por código de status bem-sucedido. Para códigos de falha, consulte o arquivo crawl.log.
 
@@ -459,7 +459,7 @@ Exemplo de uma saída desse relatório:
 1 1
 ```
 
-seeds-report.txt
+###### seeds-report.txt
 
 Contém o status de rastreamento de cada seed.
 
@@ -472,7 +472,7 @@ Exemplo de uma saída desse relatório:
 200 CRAWLED http://www.smokebox.net
 ```
 
-frontier-summary-report.txt
+###### frontier-summary-report.txt
 
 Este relatório contém um detalhamento da atividade de frontier por thread (encadeamento de execução). Para cada thread em execução, o status da fila frontier pode ser examinado.
 
@@ -567,7 +567,7 @@ Queue com,fizzandpop,www, (p1)
  -----===== RETIRED QUEUES =====-----
  ```
  
-source-report.txt
+###### source-report.txt
 
 Contém uma linha de item para cada host, que inclui o seed por qual o host foi alcançado.
 
@@ -601,7 +601,7 @@ Observação
 </bean>
 ```
 
-threads-report.txt
+###### threads-report.txt
 
 Contém a lista de threads ainda ativos no final do rastreamento, com informações detalhadas sobre cada um.
 
