@@ -1,13 +1,13 @@
 # Guia de usuário Heritrix
 ## Introdução:
-Heritrix é o rastreador de web do Internet Archive com qualidade de arquivamento extensível, escálavel e de código aberto.
-Esse guia explica como instalar , configurar e usar o Heritrix para rastrear a web. Assume-se que o usuário possui um conhecimento geral de conceitos computacionais como HTML e URLs.
+Heritrix é o rastreador da web do Internet Archive, com qualidade de arquivamento extensível, escálavel e de código aberto.
+Esse guia explica como instalar, configurar e usar o Heritrix para rastrear a web. Assume-se que o usuário possui um conhecimento geral de conceitos computacionais como HTML e URLs.
 
 ### Usuários:
 Os usuários desse documento constituem-se de administradores do Heritrix e outras equipes técnicas que desejam rastrear a internet usando o Heritrix.
 
 ### Versões:
-As informações desse guia referem-se à versão 3.0 do Heritrix, a não ser que o contŕário seja informado. Seções referentes à versão 3.1 estão marcadas com a nota "A partir da versão 3.1".
+As informações desse guia referem-se à versão 3.0 do Heritrix, a não ser que o contŕário seja informado. Seções referentes à versão 3.1 estão marcadas com a nota "A partir da versão 3.1"
 
 ## Requisitos do sistema
 
